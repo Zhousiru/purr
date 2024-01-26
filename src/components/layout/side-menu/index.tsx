@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils/cn'
 import {
   IconList,
   IconNotification,
@@ -5,7 +6,6 @@ import {
   IconPlus,
   IconSettings,
 } from '@tabler/icons-react'
-import clsx from 'clsx'
 import { ButtonHTMLAttributes } from 'react'
 
 function Button({
@@ -15,9 +15,9 @@ function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
-      className={clsx(
-        className,
+      className={cn(
         'flex aspect-square items-center justify-center text-white transition',
+        className,
       )}
       {...props}
     >

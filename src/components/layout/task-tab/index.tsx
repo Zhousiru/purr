@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils/cn'
 import {
   IconCircle,
   IconEar,
@@ -5,7 +6,6 @@ import {
   IconLanguage,
   IconSearch,
 } from '@tabler/icons-react'
-import clsx from 'clsx'
 import { ButtonHTMLAttributes, ReactNode } from 'react'
 
 function Button({
@@ -15,7 +15,7 @@ function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
-      className={clsx(
+      className={cn(
         className,
         'flex h-10 items-center gap-2 rounded-md px-4 transition hover:bg-gray-200',
       )}
