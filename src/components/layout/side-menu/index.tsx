@@ -1,3 +1,6 @@
+'use client'
+
+import { NewTaskModal } from '@/components/modal/new-task'
 import { cn } from '@/lib/utils/cn'
 import {
   IconList,
@@ -6,7 +9,7 @@ import {
   IconPlus,
   IconSettings,
 } from '@tabler/icons-react'
-import { ButtonHTMLAttributes } from 'react'
+import { ButtonHTMLAttributes, useState } from 'react'
 
 function Button({
   className,
@@ -27,24 +30,33 @@ function Button({
 }
 
 export function SideMenu() {
-  return (
-    <div className="z-50 flex w-14 flex-col bg-gray-900">
-      <Button className="bg-blue-500 hover:bg-blue-600">
-        <IconPlus />
-      </Button>
-      <Button className=" hover:bg-gray-800">
-        <IconList />
-      </Button>
-      <Button className="hover:bg-gray-800">
-        <IconPencil />
-      </Button>
+  const [newTaskModal, setNewTaskModal] = useState(false)
 
-      <Button className="mt-auto hover:bg-gray-800">
-        <IconNotification />
-      </Button>
-      <Button className="hover:bg-gray-800">
-        <IconSettings />
-      </Button>
-    </div>
+  return (
+    <>
+      <div className="z-50 flex w-14 flex-col bg-gray-900">
+        <Button
+          className="bg-blue-500 hover:bg-blue-600"
+          onClick={() => setNewTaskModal(true)}
+        >
+          <IconPlus />
+        </Button>
+        <Button className=" hover:bg-gray-800">
+          <IconList />
+        </Button>
+        <Button className="hover:bg-gray-800">
+          <IconPencil />
+        </Button>
+
+        <Button className="mt-auto hover:bg-gray-800">
+          <IconNotification />
+        </Button>
+        <Button className="hover:bg-gray-800">
+          <IconSettings />
+        </Button>
+      </div>
+
+      <NewTaskModal isOpen={newTaskModal} onClose={setNewTaskModal} />
+    </>
   )
 }

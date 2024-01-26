@@ -8,7 +8,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="selection:bg-slate-500/25">
+      <body className="text-gray-900 selection:bg-slate-500/25">
         <div className="flex h-screen">
           <SideMenu />
           <div className="flex-grow">{children}</div>
