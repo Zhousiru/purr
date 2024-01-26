@@ -11,7 +11,7 @@ export default function RootLayout({
       <body className="selection:bg-slate-500/25">
         <div className="flex h-screen">
           <SideMenu />
-          <div className="flex-1">{children}</div>
+          <div className="flex-grow">{children}</div>
         </div>
       </body>
     </html>

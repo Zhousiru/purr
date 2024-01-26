@@ -4,7 +4,11 @@ import { Task, TaskStatus } from '@/types/task'
 import { ReactNode } from 'react'
 
 function TaskItemWrapper({ children }: { children: ReactNode }) {
-  return <div className="flex flex-col">{children}</div>
+  return (
+    <div className="flex flex-col overflow-hidden rounded border">
+      {children}
+    </div>
+  )
 }
 
 function Progress({
@@ -23,9 +27,8 @@ function Progress({
     >
       <div
         className={cn(
-          'absolute inset-0 bg-gradient-to-r from-blue-200 to-blue-300 transition',
-          status === 'stopped' && 'from-red-200 to-red-300',
-          status === 'done' && 'from-green-200 to-green-300',
+          'absolute inset-0 bg-blue-400 transition',
+          status === 'stopped' && 'bg-gray-400',
         )}
         style={{ transform: `translateX(${progress - 100}%)` }}
       ></div>
@@ -33,30 +36,41 @@ function Progress({
   )
 }
 
+function ProgressText({
+  status,
+  progress = 0,
+}: {
+  status: TaskStatus
+  progress?: number
+}) {
+  return (
+    <div className="ml-auto bg-transparent text-xs text-gray-300">
+      {status === 'done' && 'DONE'}
+      {status === 'queued' && 'QUEUED'}
+      {status === 'stopped' && 'STOPPED'}
+      {status === 'processing' && `${progress}%`}
+    </div>
+  )
+}
+
 export function TaskItem({ data }: { data: Task }) {
-  if (data.type === 'transcribe') {
-    return (
-      <TaskItemWrapper>
-        <div className="p-4">
-          <div className="text-lg font-bold">{data.name}</div>
-          <div className="text-sm text-gray-400">{data.group}</div>
+  return (
+    <TaskItemWrapper>
+      <div className="p-4">
+        <div className="text-lg font-bold">{data.name}</div>
+        <div className="text-sm text-gray-400">{data.group}</div>
 
-          <div className="mt-2 flex items-end gap-2">
-            <Badge>Transcribe</Badge>
-            {data.options.translateWith && (
-              <Badge className="border bg-transparent">Then translate</Badge>
-            )}
-            <div className="ml-auto bg-transparent text-xs text-gray-300">
-              {data.status === 'done' && 'DONE'}
-              {data.status === 'queued' && 'QUEUED'}
-              {data.status === 'stopped' && 'STOPPED'}
-              {data.status === 'processing' && `${data.result?.progress ?? 0}%`}
-            </div>
-          </div>
+        <div className="mt-2 flex items-end gap-2">
+          {data.type === 'transcribe' && <Badge>Transcribe</Badge>}
+          {data.type === 'translate' && <Badge>Translate</Badge>}
+          {data.type === 'transcribe' && data.options.translateWith && (
+            <Badge className="border bg-transparent">Then translate</Badge>
+          )}
+          <ProgressText status={data.status} progress={data.result?.progress} />
         </div>
+      </div>
 
-        <Progress status={data.status} progress={data.result?.progress} />
-      </TaskItemWrapper>
-    )
-  }
+      <Progress status={data.status} progress={data.result?.progress} />
+    </TaskItemWrapper>
+  )
 }

@@ -101,7 +101,7 @@ export function TaskList() {
     },
     {
       name: 'Translation Task 1',
-      group: 'Translation',
+      group: 'Group 1',
       status: 'stopped',
       type: 'translate',
       options: {
@@ -129,7 +129,7 @@ export function TaskList() {
     },
     {
       name: 'Translation Task 2',
-      group: 'Translation',
+      group: 'Group 2',
       status: 'processing',
       type: 'translate',
       options: {
@@ -158,10 +158,13 @@ export function TaskList() {
   ]
 
   return (
-    <div className="divide-y">
+    <div className="flex flex-col gap-2 p-2">
       {mockTasks.map((t) => (
         <TaskItem key={t.name} data={t} />
       ))}
+      <div className="my-6 flex items-center justify-center text-sm font-light text-gray-400">
+        {mockTasks.length} task(s)
+      </div>
     </div>
   )
 }
