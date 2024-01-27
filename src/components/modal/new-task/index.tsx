@@ -29,7 +29,7 @@ export function NewTaskModal({
     '/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/2.mp3',
   ])
 
-  let step: number = 2
+  let step: number = 1
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

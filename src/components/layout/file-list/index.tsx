@@ -12,24 +12,30 @@ export function FileList({
   }
 
   return (
-    <div className="h-[300px] divide-y overflow-y-auto rounded-md border bg-gray-50">
-      {data.map((p) => (
-        <div key={p} className="flex items-center gap-2 bg-white p-2">
-          <div className="max-w-full flex-shrink-0 overflow-hidden text-ellipsis">
-            {p.substring(p.lastIndexOf('/') + 1)}
-          </div>
-          <div className="h-4 border-l"></div>
-          <div className="overflow-hidden text-ellipsis text-sm text-gray-400">
-            {p}
-          </div>
-          <button
-            className="ml-auto flex-shrink-0 text-gray-400 hover:text-gray-600"
-            onClick={() => handleRemove(p)}
+    <div className="h-[300px] overflow-y-auto rounded-md border bg-gray-50">
+      <div>
+        {data.map((p) => (
+          <div
+            key={p}
+            className="flex items-center gap-2 border-b bg-white p-2 last:shadow-sm"
           >
-            <IconX size={18} />
-          </button>
-        </div>
-      ))}
+            <div className="max-w-full flex-shrink-0 overflow-hidden text-ellipsis">
+              {p.substring(p.lastIndexOf('/') + 1)}
+            </div>
+            <div className="h-4 border-l"></div>
+            <div className="overflow-hidden text-ellipsis text-sm text-gray-400">
+              {p}
+            </div>
+            <button
+              className="ml-auto flex-shrink-0 text-gray-400 hover:text-gray-600"
+              onClick={() => handleRemove(p)}
+            >
+              <IconX size={18} />
+            </button>
+          </div>
+        ))}
+      </div>
+
       <div className="flex h-8 items-center justify-center text-xs font-light text-gray-400">
         {data.length === 0 ? 'No file' : `${data.length} file(s)`}
       </div>

@@ -162,7 +162,7 @@ export function TaskList() {
       {mockTasks.map((t) => (
         <TaskItem key={t.name} data={t} />
       ))}
-      <div className="my-6 flex items-center justify-center text-sm font-light text-gray-400">
+      <div className="flex h-8 items-center justify-center text-sm font-light text-gray-400">
         {mockTasks.length} task(s)
       </div>
     </div>
