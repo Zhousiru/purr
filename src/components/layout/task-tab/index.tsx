@@ -10,7 +10,6 @@ import { ButtonHTMLAttributes, ReactNode } from 'react'
 
 function Button({
   className,
-  children,
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
@@ -20,9 +19,7 @@ function Button({
         'flex h-10 items-center gap-2 rounded-md px-4 transition hover:bg-gray-200',
       )}
       {...props}
-    >
-      {children}
-    </button>
+    />
   )
 }
 

@@ -1,8 +1,10 @@
 import { FileList } from '@/components/layout/file-list'
+import { TranslationOptionsForm } from '@/components/layout/translation-options-form'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import Modal from '@/components/ui/modal'
+import { Modal } from '@/components/ui/modal'
+import { Textarea } from '@/components/ui/textarea'
 import {
   IconChevronRight,
   IconPlus,
@@ -29,7 +31,7 @@ export function NewTaskModal({
     '/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/data/2.mp3',
   ])
 
-  let step: number = 1
+  let step: number = 3
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -51,11 +53,22 @@ export function NewTaskModal({
 
         {step === 2 && (
           <>
-            <div className="text-lg">Transcribe Options</div>
+            <div className="text-lg">Transcription Options</div>
+            <label>Language</label>
+            <Checkbox>Auto detect</Checkbox>
+            <Input
+              type="text"
+              className="w-[200px]"
+              placeholder="e.g. English / Japanese"
+            />
+            <label>Initial prompt</label>
+            <Textarea className="max-h-[25vh] min-h-14" />
             <Checkbox>Use VAD filter</Checkbox>
-            <Input type="text" placeholder="Folder" />
+            <Checkbox>Create translation task</Checkbox>
           </>
         )}
+
+        {step === 3 && <TranslationOptionsForm />}
 
         <div className="flex justify-end gap-1">
           <Button icon={<IconX />} variant="ghost">

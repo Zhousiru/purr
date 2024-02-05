@@ -2,7 +2,6 @@ import { cn } from '@/lib/utils/cn'
 import { HTMLAttributes } from 'react'
 
 export function PageHeader({
-  children,
   className,
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
@@ -13,8 +12,6 @@ export function PageHeader({
         className,
       )}
       {...props}
-    >
-      {children}
-    </div>
+    />
   )
 }

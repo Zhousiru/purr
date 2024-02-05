@@ -1,11 +1,7 @@
 import { cn } from '@/lib/utils/cn'
 import { HTMLAttributes } from 'react'
 
-export function Badge({
-  className,
-  children,
-  ...props
-}: HTMLAttributes<HTMLDivElement>) {
+export function Badge({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <span
       className={cn(
@@ -13,8 +9,6 @@ export function Badge({
         className,
       )}
       {...props}
-    >
-      {children}
-    </span>
+    />
   )
 }
