@@ -1,5 +1,3 @@
-'use client'
-
 import { Listbox, Transition } from '@headlessui/react'
 import { IconCheck, IconSelector } from '@tabler/icons-react'
 import {

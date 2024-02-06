@@ -4,7 +4,7 @@ import { atomWithStorage } from 'jotai/utils'
 export interface WhisperServerConfig {
   startupPath: string
   host: string
-  port: string
+  port: number
   device: 'auto' | 'cpu' | 'cuda'
   quantizationType: string
   model: string
@@ -15,10 +15,14 @@ const configAtom = atomWithStorage<WhisperServerConfig>(
   {
     startupPath: '',
     host: '127.0.0.1',
-    port: '23330',
+    port: 23330,
     device: 'auto',
     quantizationType: 'default',
     model: '',
+  },
+  undefined,
+  {
+    getOnInit: true,
   },
 )
 
