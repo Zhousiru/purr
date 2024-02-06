@@ -19,11 +19,11 @@ export function FileList({
             key={p}
             className="flex items-center gap-2 border-b bg-white p-2 last:shadow-sm"
           >
-            <div className="max-w-full flex-shrink-0 overflow-hidden text-ellipsis">
+            <div className="max-w-full flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap">
               {p.substring(p.lastIndexOf('/') + 1)}
             </div>
             <div className="h-4 border-l"></div>
-            <div className="overflow-hidden text-ellipsis text-sm text-gray-400">
+            <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-gray-400">
               {p}
             </div>
             <button
