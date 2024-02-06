@@ -23,11 +23,11 @@ const Select = forwardRef<
   return (
     <Listbox ref={ref} {...props}>
       <div className={className}>
-        <Listbox.Button className="z-20 flex h-9 w-full items-center justify-between gap-2 rounded-md border border-gray-900 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50">
+        <Listbox.Button className="z-20 flex h-9 w-full items-center justify-between gap-2 rounded-md border border-gray-900 px-3 py-2 text-sm shadow placeholder:text-gray-400 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50">
           {({ value }) => (
             <>
               <div className="overflow-hidden text-ellipsis whitespace-nowrap">
-                {items.find((item) => item.key === value)!.name}
+                {items.find((item) => item.key === value)?.name ?? value}
               </div>
               <IconSelector className="flex-shrink-0" size={18} />
             </>

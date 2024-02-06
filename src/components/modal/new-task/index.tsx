@@ -33,6 +33,8 @@ export function NewTaskModal({
 
   let step: number = 3
 
+  // FIXME: Refactor with `Label`
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="flex flex-col gap-2">

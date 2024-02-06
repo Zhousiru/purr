@@ -92,7 +92,7 @@ export function SideMenu() {
 
   return (
     <>
-      <div className="relative z-50 flex w-14 flex-col bg-gray-900">
+      <div className="relative z-50 flex w-14 flex-shrink-0 flex-col bg-gray-900">
         <Button
           className="bg-blue-500 hover:bg-blue-600"
           onClick={() => setNewTaskModal(true)}

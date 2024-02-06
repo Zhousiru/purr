@@ -15,6 +15,7 @@
     "@headlessui/react": "^1.7.18",
     "@tabler/icons-react": "^2.47.0",
     "clsx": "^2.1.0",
+    "filesize": "^10.1.0",
     "jotai": "^2.6.4",
     "next": "14.1.0",
     "react": "^18.2.0",
