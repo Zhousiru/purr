@@ -8,15 +8,27 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
+import { commands } from '@/lib/commands'
 import { cn } from '@/lib/utils/cn'
-import { IconFolderOpen } from '@tabler/icons-react'
+import { IconFolderOpen, IconRefresh } from '@tabler/icons-react'
+import { open } from '@tauri-apps/api/dialog'
+import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ModelSwitch } from '../model-switch'
 
 export function WhisperServerConfigForm({ className }: { className?: string }) {
   const [config, setConfig] = useWhisperServerConfig()
-  const { register, handleSubmit, control, formState, reset } =
-    useForm<WhisperServerConfig>({ defaultValues: config })
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState,
+    reset,
+    setValue,
+    getValues,
+  } = useForm<WhisperServerConfig>({ defaultValues: config })
+
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   function handleSaveConfig(data: WhisperServerConfig) {
     // TODO: Validate config
@@ -24,12 +36,36 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
     reset(data)
   }
 
+  async function handleSelectDir(
+    field: keyof WhisperServerConfig,
+    onSuccess?: () => void,
+  ) {
+    const selected = await open({
+      directory: true,
+    })
+    if (typeof selected === 'string') {
+      setValue(field, selected, { shouldDirty: true })
+      onSuccess && onSuccess()
+    }
+  }
+
+  async function handleRefreshModel() {
+    setIsRefreshing(true)
+
+    console.log(await commands.listModels({ path: getValues('modelDir') }))
+
+    setIsRefreshing(false)
+  }
+
   return (
     <div className={cn('flex flex-col gap-2', className)}>
       <Label text="Startup path">
         <div className="flex gap-1">
-          <Input type="text" {...register('startupPath')} />
-          <Button icon={<IconFolderOpen />} />
+          <Input type="text" {...register('startupDir')} />
+          <Button
+            icon={<IconFolderOpen />}
+            onClick={() => handleSelectDir('startupDir')}
+          />
         </div>
       </Label>
       <div className="flex gap-1">
@@ -59,7 +95,14 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
       <Label text="Quantization type">
         <Input type="text" {...register('quantizationType')} />
       </Label>
-      <Label text="Model">
+      <Label text="Model" className="flex flex-col gap-1.5">
+        <div className="flex gap-1">
+          <Input type="text" {...register('modelDir')} />
+          <Button
+            icon={<IconFolderOpen />}
+            onClick={() => handleSelectDir('modelDir', handleRefreshModel)}
+          />
+        </div>
         <Controller
           control={control}
           name="model"
@@ -87,7 +130,17 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
             />
           )}
         />
+
+        <div>
+          <Button
+            icon={<IconRefresh />}
+            variant="ghost"
+            onClick={handleRefreshModel}
+            loading={isRefreshing}
+          />
+        </div>
       </Label>
+
       <div className="mt-auto flex justify-end gap-1">
         {formState.isDirty && (
           <Button variant="outline" onClick={handleSubmit(handleSaveConfig)}>

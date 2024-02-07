@@ -9,7 +9,7 @@ export function Label({
 }: HTMLAttributes<HTMLDivElement> & { text: ReactNode }) {
   return (
     <div className={cn('flex flex-col gap-0.5', className)} {...props}>
-      <label>{text}</label>
+      <div>{text}</div>
       {children}
     </div>
   )
