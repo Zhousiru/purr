@@ -1,12 +1,8 @@
 import { cn } from '@/lib/utils/cn'
+import { ModelItem } from '@/types/whisper-server'
 import { IconCheck } from '@tabler/icons-react'
 import { filesize } from 'filesize'
 import { forwardRef } from 'react'
-
-export interface ModelItem {
-  name: string
-  size: number
-}
 
 export interface ModelSwitchProps {
   models: ModelItem[]
@@ -17,10 +13,7 @@ export interface ModelSwitchProps {
 const ModelSwitch = forwardRef<HTMLDivElement, ModelSwitchProps>(
   ({ models, value, onChange }, ref) => {
     return (
-      <div
-        ref={ref}
-        className="min-h-[200px] overflow-y-auto rounded-md border"
-      >
+      <div ref={ref} className="overflow-y-auto rounded-md border">
         <div className="flex flex-col divide-y">
           {models.map((model) => (
             <button
@@ -45,6 +38,12 @@ const ModelSwitch = forwardRef<HTMLDivElement, ModelSwitchProps>(
               />
             </button>
           ))}
+
+          {models.length === 0 && (
+            <div className="flex h-10 items-center justify-center text-sm text-gray-400">
+              No models
+            </div>
+          )}
         </div>
       </div>
     )

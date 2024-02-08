@@ -8,13 +8,20 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
-import { commands } from '@/lib/commands'
+import { cmd } from '@/lib/commands'
 import { cn } from '@/lib/utils/cn'
+import { ModelItem } from '@/types/whisper-server'
 import { IconFolderOpen, IconRefresh } from '@tabler/icons-react'
 import { open } from '@tauri-apps/api/dialog'
-import { useState } from 'react'
+import { listen } from '@tauri-apps/api/event'
+import { useCallback, useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ModelSwitch } from '../model-switch'
+
+listen('whisper-server-daemon', (event) => {
+  // FIXME
+  console.log((event.payload as any).type, (event.payload as any).data)
+})
 
 export function WhisperServerConfigForm({ className }: { className?: string }) {
   const [config, setConfig] = useWhisperServerConfig()
@@ -28,7 +35,23 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
     getValues,
   } = useForm<WhisperServerConfig>({ defaultValues: config })
 
+  const [models, setModels] = useState<ModelItem[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
+
+  async function handleLaunch() {
+    await cmd.launchWhisperServer({
+      program: 'E:\\whisper-server\\python',
+      args: [
+        'E:\\whisper-server\\src\\main.py',
+        '--model',
+        'D:\\faster-whisper-model\\large-v2',
+      ],
+    })
+  }
+
+  async function handleKill() {
+    await cmd.killWhisperServer()
+  }
 
   function handleSaveConfig(data: WhisperServerConfig) {
     // TODO: Validate config
@@ -49,17 +72,19 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
     }
   }
 
-  async function handleRefreshModel() {
+  const handleRefreshModel = useCallback(async () => {
     setIsRefreshing(true)
-
-    console.log(await commands.listModels({ path: getValues('modelDir') }))
-
+    setModels(await cmd.listModels({ path: getValues('modelDir') }))
     setIsRefreshing(false)
-  }
+  }, [getValues])
+
+  useEffect(() => {
+    handleRefreshModel()
+  }, [handleRefreshModel])
 
   return (
     <div className={cn('flex flex-col gap-2', className)}>
-      <Label text="Startup path">
+      <Label text="Startup directory">
         <div className="flex gap-1">
           <Input type="text" {...register('startupDir')} />
           <Button
@@ -106,29 +131,7 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
         <Controller
           control={control}
           name="model"
-          render={({ field }) => (
-            <ModelSwitch
-              models={[
-                {
-                  name: 'faster-whisper-large-v3',
-                  size: 233330,
-                },
-                {
-                  name: 'faster-whisper-large-v2',
-                  size: 233330,
-                },
-                {
-                  name: 'faster-whisper-large-v1',
-                  size: 233330,
-                },
-                {
-                  name: 'faster-whisper-medium',
-                  size: 233330,
-                },
-              ]}
-              {...field}
-            />
-          )}
+          render={({ field }) => <ModelSwitch models={models} {...field} />}
         />
 
         <div>
@@ -147,9 +150,10 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
             Save
           </Button>
         )}
-        <Button onClick={handleSubmit((d) => console.log(d))}>
+        <Button onClick={handleLaunch}>
           {formState.isDirty ? 'Save and launch' : 'Launch'}
         </Button>
+        <Button onClick={handleKill}>Kill</Button>
       </div>
     </div>
   )

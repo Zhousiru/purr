@@ -1,13 +1,26 @@
+import { ModelItem } from '@/types/whisper-server'
 import { invoke } from '@tauri-apps/api'
 import { InvokeArgs } from '@tauri-apps/api/tauri'
 
+export type CommandFunction<T, P> = T extends null
+  ? () => Promise<P>
+  : (args: T) => Promise<P>
+
 export interface Commands {
-  listModels: (args: {
-    path: string
-  }) => Promise<{ name: string; size: number }[]>
+  listModels: CommandFunction<
+    {
+      path: string
+    },
+    ModelItem[]
+  >
+  launchWhisperServer: CommandFunction<
+    { program: string; args: string[] },
+    void
+  >
+  killWhisperServer: CommandFunction<null, void>
 }
 
-export const commands = new Proxy(
+export const cmd = new Proxy(
   {},
   {
     get(target, p, receiver) {

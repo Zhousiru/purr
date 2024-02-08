@@ -37,7 +37,7 @@ export function FileList({
       </div>
 
       <div className="flex h-8 items-center justify-center text-xs font-light text-gray-400">
-        {data.length === 0 ? 'No file' : `${data.length} file(s)`}
+        {data.length === 0 ? 'No files' : `${data.length} file(s)`}
       </div>
     </div>
   )

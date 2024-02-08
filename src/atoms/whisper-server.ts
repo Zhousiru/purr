@@ -1,4 +1,4 @@
-import { useAtom } from 'jotai'
+import { atom, useAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
 
 export interface WhisperServerConfig {
@@ -29,3 +29,6 @@ const configAtom = atomWithStorage<WhisperServerConfig>(
 )
 
 export const useWhisperServerConfig = () => useAtom(configAtom)
+
+const isRunningAtom = atom(false)
+const terminalLinesAtom = atom<string[]>([])
