@@ -7,6 +7,7 @@ mod utils;
 mod whisper_server;
 
 use std::sync::Mutex;
+use tauri::{Manager, State, WindowEvent};
 use whisper_server::commands::{kill_whisper_server, launch_whisper_server, list_models};
 use whisper_server::daemon::Daemon;
 
@@ -21,6 +22,19 @@ fn main() {
       kill_whisper_server
     ])
     .manage(WhisperServerDaemon(Default::default()))
+    .on_window_event(move |event| match event.event() {
+      WindowEvent::Destroyed => {
+        let daemon: State<'_, WhisperServerDaemon> = event.window().state();
+        let daemon = daemon.0.lock().unwrap();
+        match *daemon {
+          Some(ref daemon) => {
+            daemon.kill();
+          }
+          _ => {}
+        }
+      }
+      _ => {}
+    })
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
