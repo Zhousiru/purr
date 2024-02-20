@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  isRunningAtom,
   useWhisperServerConfig,
   WhisperServerConfig,
 } from '@/atoms/whisper-server'
@@ -13,17 +14,13 @@ import { cn } from '@/lib/utils/cn'
 import { ModelItem } from '@/types/whisper-server'
 import { IconFolderOpen, IconRefresh } from '@tabler/icons-react'
 import { open } from '@tauri-apps/api/dialog'
-import { listen } from '@tauri-apps/api/event'
+import { useAtomValue } from 'jotai'
 import { useCallback, useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ModelSwitch } from '../model-switch'
 
-listen('whisper-server-daemon', (event) => {
-  // FIXME
-  console.log((event.payload as any).type, (event.payload as any).data)
-})
-
 export function WhisperServerConfigForm({ className }: { className?: string }) {
+  const isRunning = useAtomValue(isRunningAtom)
   const [config, setConfig] = useWhisperServerConfig()
   const {
     register,
@@ -38,13 +35,22 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
   const [models, setModels] = useState<ModelItem[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  async function handleLaunch() {
+  async function handleLaunch(data: WhisperServerConfig) {
+    // TODO: Use path join.
     await cmd.launchWhisperServer({
-      program: 'E:\\whisper-server\\python',
+      program: data.startupDir + '/python',
       args: [
-        'E:\\whisper-server\\src\\main.py',
+        data.startupDir + '/src/main.py',
+        '--host',
+        data.host,
+        '--port',
+        data.port.toString(),
+        '--device',
+        data.device,
+        '--type',
+        data.quantizationType,
         '--model',
-        'D:\\faster-whisper-model\\large-v2',
+        data.modelDir + '/' + data.model,
       ],
     })
   }
@@ -146,14 +152,45 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
 
       <div className="mt-auto flex justify-end gap-1">
         {formState.isDirty && (
-          <Button variant="outline" onClick={handleSubmit(handleSaveConfig)}>
-            Save
+          <>
+            <Button variant="outline" onClick={handleSubmit(handleSaveConfig)}>
+              Save
+            </Button>
+
+            {isRunning && (
+              <Button
+                onClick={handleSubmit(async (data) => {
+                  handleSaveConfig(data)
+                  await handleKill()
+                  handleLaunch(data)
+                })}
+              >
+                Save & restart
+              </Button>
+            )}
+
+            {!isRunning && (
+              <Button
+                onClick={handleSubmit((data) => {
+                  handleSaveConfig(data)
+                  handleLaunch(data)
+                })}
+              >
+                Save & launch
+              </Button>
+            )}
+          </>
+        )}
+
+        {!formState.isDirty && !isRunning && (
+          <Button onClick={() => handleLaunch(config)}>Launch</Button>
+        )}
+
+        {isRunning && (
+          <Button variant="destructive" onClick={handleKill}>
+            Kill
           </Button>
         )}
-        <Button onClick={handleLaunch}>
-          {formState.isDirty ? 'Save and launch' : 'Launch'}
-        </Button>
-        <Button onClick={handleKill}>Kill</Button>
       </div>
     </div>
   )

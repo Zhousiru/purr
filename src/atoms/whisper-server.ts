@@ -1,3 +1,4 @@
+import { store } from '@/lib/store'
 import { atom, useAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
 
@@ -9,6 +10,13 @@ export interface WhisperServerConfig {
   quantizationType: string
   modelDir: string
   model: string
+}
+
+export type TerminalLineType = 'launch' | 'exit' | 'stdout' | 'stderr'
+
+export interface TerminalLine {
+  type: TerminalLineType
+  data: string
 }
 
 const configAtom = atomWithStorage<WhisperServerConfig>(
@@ -30,5 +38,12 @@ const configAtom = atomWithStorage<WhisperServerConfig>(
 
 export const useWhisperServerConfig = () => useAtom(configAtom)
 
-const isRunningAtom = atom(false)
-const terminalLinesAtom = atom<string[]>([])
+// TODO: Recover running status from backend.
+export const isRunningAtom = atom(false)
+export const setIsRunning = (value: boolean) => store.set(isRunningAtom, value)
+
+export const terminalLinesAtom = atom<TerminalLine[]>([])
+export function pushTerminalLine(type: TerminalLineType, data: string) {
+  store.set(terminalLinesAtom, (prev) => [...prev, { type, data }])
+}
+export const resetTerminalLines = () => store.set(terminalLinesAtom, [])

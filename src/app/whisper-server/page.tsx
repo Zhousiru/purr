@@ -1,6 +1,7 @@
 import { ClientOnly } from '@/components/common/client-only'
 import { PageHeader } from '@/components/layout/page-header'
 import { WhisperServerConfigForm } from '@/components/layout/whisper-server-config-form'
+import { WhisperServerTerminal } from '@/components/layout/whisper-server-terminal'
 
 export default function Page() {
   return (
@@ -12,10 +13,7 @@ export default function Page() {
             <WhisperServerConfigForm className="absolute inset-0 overflow-y-auto p-4" />
           </ClientOnly>
         </div>
-
-        <div className="flex-grow bg-gray-600 p-4 font-mono text-white">
-          Terminal
-        </div>
+        <WhisperServerTerminal />
       </div>
     </div>
   )

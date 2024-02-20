@@ -2,13 +2,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod error;
+mod event_name;
 mod utils;
 mod whisper_server;
 
-use whisper_server::daemon::Daemon;
-
-use crate::whisper_server::commands::{kill_whisper_server, launch_whisper_server, list_models};
 use std::sync::Mutex;
+use whisper_server::commands::{kill_whisper_server, launch_whisper_server, list_models};
+use whisper_server::daemon::Daemon;
 
 #[derive(Default)]
 pub struct WhisperServerDaemon(Mutex<Option<Daemon>>);
