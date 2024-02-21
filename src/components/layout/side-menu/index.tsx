@@ -1,5 +1,6 @@
 'use client'
 
+import { isReadyAtom, isRunningAtom } from '@/atoms/whisper-server'
 import { NewTaskModal } from '@/components/modal/new-task'
 import { cn } from '@/lib/utils/cn'
 import {
@@ -10,6 +11,7 @@ import {
   IconPlus,
   IconSettings,
 } from '@tabler/icons-react'
+import { useAtomValue } from 'jotai'
 import { usePathname, useRouter } from 'next/navigation'
 import { ButtonHTMLAttributes, ReactNode, useMemo, useState } from 'react'
 
@@ -34,43 +36,70 @@ interface MenuItem {
   icon: ReactNode
 }
 
-const menu: {
-  top: MenuItem[]
-  bottom: MenuItem[]
-} = {
-  top: [
-    {
-      name: 'Tasks',
-      pathname: '/tasks',
-      icon: <IconList />,
-    },
-    {
-      name: 'Editor',
-      pathname: '/editor',
-      icon: <IconPencil />,
-    },
-    {
-      name: 'Whisper Server',
-      pathname: '/whisper-server',
-      icon: <IconEar />,
-    },
-  ],
-  bottom: [
-    {
-      name: 'Notifications',
-      pathname: '/notifications',
-      icon: <IconNotification />,
-    },
-    {
-      name: 'Settings',
-      pathname: '/settings',
-      icon: <IconSettings />,
-    },
-  ],
-}
-
 export function SideMenu() {
+  const isWhisperRunning = useAtomValue(isRunningAtom)
+  const isWhisperReady = useAtomValue(isReadyAtom)
+
   const [newTaskModal, setNewTaskModal] = useState(false)
+
+  const menu: {
+    top: MenuItem[]
+    bottom: MenuItem[]
+  } = useMemo(
+    () => ({
+      top: [
+        {
+          name: 'Tasks',
+          pathname: '/tasks',
+          icon: <IconList />,
+        },
+        {
+          name: 'Editor',
+          pathname: '/editor',
+          icon: <IconPencil />,
+        },
+        {
+          name: 'Whisper Server',
+          pathname: '/whisper-server',
+          icon: (
+            <div className="relative h-[24px] w-[24px]">
+              <div
+                className={cn(
+                  'absolute inset-0 opacity-100 transition duration-500',
+                  isWhisperRunning && !isWhisperReady && 'opacity-0',
+                  !isWhisperRunning && 'opacity-50',
+                )}
+              >
+                <IconEar />
+              </div>
+
+              <div
+                className={cn(
+                  'absolute inset-0 opacity-0 transition duration-500',
+                  isWhisperRunning && !isWhisperReady && 'opacity-100',
+                )}
+              >
+                <IconEar className="animate-pulse" />
+              </div>
+            </div>
+          ),
+        },
+      ],
+      bottom: [
+        {
+          name: 'Notifications',
+          pathname: '/notifications',
+          icon: <IconNotification />,
+        },
+        {
+          name: 'Settings',
+          pathname: '/settings',
+          icon: <IconSettings />,
+        },
+      ],
+    }),
+    [isWhisperReady, isWhisperRunning],
+  )
 
   const router = useRouter()
   const pathname = usePathname()
@@ -88,7 +117,7 @@ export function SideMenu() {
     }
 
     return ''
-  }, [pathname])
+  }, [menu.bottom, menu.top, pathname])
 
   return (
     <>

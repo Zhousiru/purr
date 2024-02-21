@@ -1,10 +1,12 @@
 'use client'
 
 import {
+  isReadyAtom,
   isRunningAtom,
   useWhisperServerConfig,
   WhisperServerConfig,
 } from '@/atoms/whisper-server'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,6 +23,7 @@ import { ModelSwitch } from '../model-switch'
 
 export function WhisperServerConfigForm({ className }: { className?: string }) {
   const isRunning = useAtomValue(isRunningAtom)
+  const isReady = useAtomValue(isReadyAtom)
   const [config, setConfig] = useWhisperServerConfig()
   const {
     register,
@@ -150,7 +153,21 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
         </div>
       </Label>
 
-      <div className="mt-auto flex justify-end gap-1">
+      <div className="mt-auto flex items-end gap-1">
+        <Badge
+          className={cn(
+            'font-bold text-black/75',
+            isRunning && !isReady && 'bg-blue-200',
+            isReady && 'bg-green-200',
+          )}
+        >
+          {!isRunning && 'STOPPED'}
+          {isRunning && !isReady && 'LOADING'}
+          {isReady && 'READY'}
+        </Badge>
+
+        <div className="flex-grow" />
+
         {formState.isDirty && (
           <>
             <Button variant="outline" onClick={handleSubmit(handleSaveConfig)}>
@@ -187,8 +204,8 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
         )}
 
         {isRunning && (
-          <Button variant="destructive" onClick={handleKill}>
-            Kill
+          <Button variant="outline" onClick={handleKill}>
+            Stop
           </Button>
         )}
       </div>

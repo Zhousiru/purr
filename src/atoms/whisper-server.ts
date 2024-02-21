@@ -42,6 +42,9 @@ export const useWhisperServerConfig = () => useAtom(configAtom)
 export const isRunningAtom = atom(false)
 export const setIsRunning = (value: boolean) => store.set(isRunningAtom, value)
 
+export const isReadyAtom = atom(false)
+export const setIsReady = (value: boolean) => store.set(isReadyAtom, value)
+
 export const terminalLinesAtom = atom<TerminalLine[]>([])
 export function pushTerminalLine(type: TerminalLineType, data: string) {
   store.set(terminalLinesAtom, (prev) => [...prev, { type, data }])

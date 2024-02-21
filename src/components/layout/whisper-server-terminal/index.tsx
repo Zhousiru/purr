@@ -9,7 +9,7 @@ export function WhisperServerTerminal() {
 
   return (
     <div className="relative flex-grow">
-      <div className="absolute inset-0 overflow-y-auto whitespace-pre-wrap bg-gray-600 px-2 py-4 font-mono text-white">
+      <div className="absolute inset-0 overflow-y-auto whitespace-pre-wrap bg-gray-600 px-2 py-4 font-mono text-white selection:!bg-black/75">
         {lines.map((line, index) => (
           <div
             key={index}
