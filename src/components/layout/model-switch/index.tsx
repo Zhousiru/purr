@@ -22,7 +22,7 @@ const ModelSwitch = forwardRef<HTMLDivElement, ModelSwitchProps>(
               className="flex items-center justify-between gap-2 px-3 py-2 text-left hover:bg-gray-100"
               onClick={() => onChange(model.name)}
             >
-              <div>
+              <div className="w-full">
                 <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                   {model.name}
                 </div>

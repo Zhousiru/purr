@@ -8,7 +8,7 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        'z-20 flex h-14 items-center px-4 text-xl shadow',
+        'z-40 flex h-14 items-center bg-white px-4 text-xl shadow',
         className,
       )}
       {...props}
