@@ -55,4 +55,6 @@ export interface TranslateTask extends BasicTask {
   result: TranslateResult | null
 }
 
+export type BasicTaskOptions = Omit<BasicTask, 'status'>
+
 export type Task = TranscribeTask | TranslateTask

@@ -1,6 +1,9 @@
+'use client'
+
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils/cn'
-import { Task, TaskStatus } from '@/types/task'
+import { TaskStatus, TranscribeTask, TranslateTask } from '@/types/tasks'
+import { PrimitiveAtom, useAtomValue } from 'jotai'
 import { ReactNode } from 'react'
 
 function TaskItemWrapper({ children }: { children: ReactNode }) {
@@ -53,24 +56,30 @@ function ProgressText({
   )
 }
 
-export function TaskItem({ data }: { data: Task }) {
+export function TaskItem({
+  taskAtom,
+}: {
+  taskAtom: PrimitiveAtom<TranscribeTask> | PrimitiveAtom<TranslateTask>
+}) {
+  const task = useAtomValue(taskAtom)
+
   return (
     <TaskItemWrapper>
       <div className="p-4">
-        <div className="text-lg font-bold">{data.name}</div>
-        <div className="text-sm text-gray-400">{data.group}</div>
+        <div className="text-lg font-bold">{task.name}</div>
+        <div className="text-sm text-gray-400">{task.group}</div>
 
         <div className="mt-2 flex items-end gap-2">
-          {data.type === 'transcribe' && <Badge>Transcribe</Badge>}
-          {data.type === 'translate' && <Badge>Translate</Badge>}
-          {data.type === 'transcribe' && data.options.translateWith && (
+          {task.type === 'transcribe' && <Badge>Transcribe</Badge>}
+          {task.type === 'translate' && <Badge>Translate</Badge>}
+          {task.type === 'transcribe' && task.options.translateWith && (
             <Badge className="border bg-transparent">Then translate</Badge>
           )}
-          <ProgressText status={data.status} progress={data.result?.progress} />
+          <ProgressText status={task.status} progress={task.result?.progress} />
         </div>
       </div>
 
-      <Progress status={data.status} progress={data.result?.progress} />
+      <Progress status={task.status} progress={task.result?.progress} />
     </TaskItemWrapper>
   )
 }
