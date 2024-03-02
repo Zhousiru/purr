@@ -34,7 +34,9 @@ export function TaskList() {
       ))}
 
       <div className="flex h-8 items-center justify-center text-sm font-light text-gray-400">
-        {tasks.length === 0 ? 'No tasks' : `${tasks.length} task(s)`}
+        {tasks.length === 0
+          ? 'No matched tasks'
+          : `${tasks.length} matched task(s)`}
       </div>
     </div>
   )

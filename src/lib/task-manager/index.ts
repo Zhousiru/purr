@@ -9,7 +9,7 @@ import { TaskPool } from './pool'
 import { transcribeProcessor } from './processor'
 
 // TODO: Custom max concurrency.
-const maxTranscribe = 1
+const maxTranscribe = 2
 const maxTranslate = 2
 
 const transcribePool = new TaskPool(
@@ -18,6 +18,7 @@ const transcribePool = new TaskPool(
   maxTranscribe,
 )
 
+// TODO: Init translate pool.
 // const translatePool = new TaskPool(
 //   translateTaskListAtom
 //   translateProcessor,

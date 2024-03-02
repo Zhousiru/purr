@@ -1,80 +1,20 @@
-import { cn } from '@/lib/utils/cn'
-import {
-  IconCircle,
-  IconEar,
-  IconFolderFilled,
-  IconLanguage,
-  IconSearch,
-} from '@tabler/icons-react'
-import { ButtonHTMLAttributes, ReactNode } from 'react'
+'use client'
 
-function Button({
-  className,
-  ...props
-}: ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      className={cn(
-        className,
-        'flex h-10 items-center gap-2 rounded-md px-4 transition hover:bg-gray-200',
-      )}
-      {...props}
-    />
-  )
-}
-
-function ButtonGroup({
-  title,
-  children,
-}: {
-  title: string
-  children: ReactNode
-}) {
-  return (
-    <div className="flex flex-col">
-      <div className="border-b p-2 text-sm text-gray-400">{title}</div>
-      <div className="flex flex-col gap-1 p-2">{children}</div>
-    </div>
-  )
-}
+import { IconSearch } from '@tabler/icons-react'
+import { GroupFilter } from './GroupFilter'
+import { TabButton } from './TabButton'
+import { TypeFilter } from './TypeFilter'
 
 export function TaskTab() {
   return (
     <div className="flex w-[200px] flex-col border-r bg-gray-100">
-      <ButtonGroup title="Type">
-        <Button>
-          <IconCircle size={18} />
-          All types
-        </Button>
-        <Button>
-          <IconEar size={18} />
-          Transcribe
-        </Button>
-        <Button>
-          <IconLanguage size={18} />
-          Translate
-        </Button>
-      </ButtonGroup>
+      <TypeFilter />
+      <GroupFilter />
 
-      <ButtonGroup title="Group">
-        <Button>
-          <IconCircle size={18} />
-          All groups
-        </Button>
-        <Button>
-          <IconFolderFilled className="text-amber-500" size={18} />
-          Group 1
-        </Button>
-        <Button>
-          <IconFolderFilled className="text-indigo-500" size={18} />
-          Group 2
-        </Button>
-      </ButtonGroup>
-
-      <Button className="m-2 mt-auto">
+      <TabButton className="m-2 mt-auto">
         <IconSearch size={18} />
         Search
-      </Button>
+      </TabButton>
     </div>
   )
 }

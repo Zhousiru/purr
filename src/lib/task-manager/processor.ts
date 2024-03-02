@@ -2,6 +2,7 @@ import { TranscribeTask } from '@/types/tasks'
 import { PrimitiveAtom } from 'jotai'
 import { store } from '../store'
 import { TaskProcessor } from './pool'
+import { initTaskResult, isRecoveredTask } from './utils'
 
 export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
   taskAtom: PrimitiveAtom<TranscribeTask>,
@@ -11,30 +12,32 @@ export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
   let abort: null | (() => void) = null
 
   const promise = new Promise<void>((resolve, reject) => {
+    if (isRecoveredTask(taskAtom)) {
+      // TODO: Support for recovering transcribing.
+    }
+
+    initTaskResult(taskAtom, {
+      progress: 0,
+      transcription: [],
+    })
+
     const intervalId = setInterval(() => {
-      console.log('interval')
+      store.set(taskAtom, (prev) => ({
+        ...prev,
+        result: {
+          progress: prev.result!.progress + 10,
+          transcription: [],
+        },
+      }))
 
-      store.set(taskAtom, (prev) => {
-        console.log(prev.result?.progress)
-        return {
-          ...prev,
-          result: {
-            transcription: [],
-            progress: (prev.result?.progress ?? 0) + 10,
-          },
-        }
-      })
-
-      if ((store.get(taskAtom).result?.progress ?? 0) === 100) {
+      if (store.get(taskAtom).result!.progress === 100) {
         clearInterval(intervalId)
-        console.log('Done')
         resolve()
       }
     }, 500)
 
     abort = () => {
       clearInterval(intervalId)
-      console.log('Abort')
       reject()
       return
     }

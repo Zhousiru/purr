@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils/cn'
 import { TaskStatus, TranscribeTask, TranslateTask } from '@/types/tasks'
-import { PrimitiveAtom, useAtomValue } from 'jotai'
+import { PrimitiveAtom, useAtom } from 'jotai'
 import { ReactNode } from 'react'
 
 function TaskItemWrapper({ children }: { children: ReactNode }) {
@@ -59,14 +59,23 @@ function ProgressText({
 export function TaskItem({
   taskAtom,
 }: {
-  taskAtom: PrimitiveAtom<TranscribeTask> | PrimitiveAtom<TranslateTask>
+  taskAtom: PrimitiveAtom<TranscribeTask | TranslateTask>
 }) {
-  const task = useAtomValue(taskAtom)
+  const [task, setTask] = useAtom(taskAtom)
+
+  function handledebug() {
+    setTask({
+      ...task,
+      group: 'Group 2',
+    })
+  }
 
   return (
     <TaskItemWrapper>
       <div className="p-4">
-        <div className="text-lg font-bold">{task.name}</div>
+        <div className="text-lg font-bold" onClick={handledebug}>
+          {task.name}
+        </div>
         <div className="text-sm text-gray-400">{task.group}</div>
 
         <div className="mt-2 flex items-end gap-2">
