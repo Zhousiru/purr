@@ -1,18 +1,13 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils/cn'
 import { TaskStatus, TranscribeTask, TranslateTask } from '@/types/tasks'
+import { IconPencil, IconPlayerStop } from '@tabler/icons-react'
 import { PrimitiveAtom, useAtom } from 'jotai'
-import { ReactNode } from 'react'
-
-function TaskItemWrapper({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex flex-col overflow-hidden rounded border">
-      {children}
-    </div>
-  )
-}
+import { useState } from 'react'
+import { GhostButton } from './GhostButton'
 
 function Progress({
   status,
@@ -62,6 +57,7 @@ export function TaskItem({
   taskAtom: PrimitiveAtom<TranscribeTask | TranslateTask>
 }) {
   const [task, setTask] = useAtom(taskAtom)
+  const [showActions, setShowActions] = useState(false)
 
   function handledebug() {
     setTask({
@@ -71,10 +67,32 @@ export function TaskItem({
   }
 
   return (
-    <TaskItemWrapper>
+    <div
+      className="flex flex-col overflow-hidden rounded border"
+      onMouseEnter={() => setShowActions(true)}
+      onMouseLeave={() => setShowActions(false)}
+    >
       <div className="p-4">
-        <div className="text-lg font-bold" onClick={handledebug}>
-          {task.name}
+        <div className="flex items-center justify-between">
+          <div className="text-lg font-bold" onClick={handledebug}>
+            {task.name}
+          </div>
+          <div
+            className={cn(
+              'flex gap-1 transition',
+              !showActions && 'pointer-events-none opacity-0',
+            )}
+          >
+            <TooltipGroup>
+              <Tooltip content="Open in editor">
+                <GhostButton icon={<IconPencil />} />
+              </Tooltip>
+
+              <Tooltip content="Stop task">
+                <GhostButton icon={<IconPlayerStop />} />
+              </Tooltip>
+            </TooltipGroup>
+          </div>
         </div>
         <div className="text-sm text-gray-400">{task.group}</div>
 
@@ -89,6 +107,6 @@ export function TaskItem({
       </div>
 
       <Progress status={task.status} progress={task.result?.progress} />
-    </TaskItemWrapper>
+    </div>
   )
 }

@@ -9,10 +9,10 @@ export function TabButton({
   return (
     <button
       className={cn(
-        className,
-        'flex h-10 items-center gap-2 rounded-md px-4 transition',
+        'flex h-10 flex-shrink-0 items-center gap-2 rounded-md px-4 transition',
         !active && 'hover:bg-gray-200',
         active && 'z-10 bg-white shadow',
+        className,
       )}
       {...props}
     />
@@ -22,14 +22,30 @@ export function TabButton({
 export function TabButtonGroup({
   title,
   children,
+  className,
 }: {
   title: string
   children: ReactNode
+  className?: string
 }) {
   return (
-    <div className="flex flex-col">
+    <div className={cn('flex flex-col', className)}>
       <div className="border-b p-2 text-sm text-gray-400">{title}</div>
-      <div className="flex flex-col gap-1 p-2">{children}</div>
+      {children}
     </div>
+  )
+}
+
+TabButtonGroup.Content = TabButtonGroupContent
+
+function TabButtonGroupContent({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <div className={cn('flex flex-col gap-1 p-2', className)}>{children}</div>
   )
 }

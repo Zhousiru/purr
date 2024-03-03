@@ -10,24 +10,26 @@ export function TypeFilter() {
 
   return (
     <TabButtonGroup title="Type">
-      <TabButton onClick={() => setFilter('all')} active={filter === 'all'}>
-        <IconCircle size={18} />
-        All types
-      </TabButton>
-      <TabButton
-        onClick={() => setFilter('transcribe')}
-        active={filter === 'transcribe'}
-      >
-        <IconEar size={18} />
-        Transcribe
-      </TabButton>
-      <TabButton
-        onClick={() => setFilter('translate')}
-        active={filter === 'translate'}
-      >
-        <IconLanguage size={18} />
-        Translate
-      </TabButton>
+      <TabButtonGroup.Content>
+        <TabButton onClick={() => setFilter('all')} active={filter === 'all'}>
+          <IconCircle size={18} />
+          All types
+        </TabButton>
+        <TabButton
+          onClick={() => setFilter('transcribe')}
+          active={filter === 'transcribe'}
+        >
+          <IconEar size={18} />
+          Transcribe
+        </TabButton>
+        <TabButton
+          onClick={() => setFilter('translate')}
+          active={filter === 'translate'}
+        >
+          <IconLanguage size={18} />
+          Translate
+        </TabButton>
+      </TabButtonGroup.Content>
     </TabButtonGroup>
   )
 }

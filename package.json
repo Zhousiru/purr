@@ -12,6 +12,7 @@
     "format": "prettier . -w"
   },
   "dependencies": {
+    "@floating-ui/react": "^0.26.9",
     "@headlessui/react": "^1.7.18",
     "@tabler/icons-react": "^2.47.0",
     "@tauri-apps/api": "^1.5.3",
