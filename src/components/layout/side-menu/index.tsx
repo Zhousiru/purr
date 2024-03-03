@@ -149,9 +149,9 @@ export function SideMenu() {
           {menu.bottom.map((item, index) => (
             <Tooltip key={item.pathname} content={item.name} placement="right">
               <Button
-                key={pathname}
+                key={item.pathname}
                 className={cn(index === 0 && 'mt-auto')}
-                onClick={() => router.push(pathname)}
+                onClick={() => router.push(item.pathname)}
               >
                 {item.icon}
               </Button>
