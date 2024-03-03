@@ -2,6 +2,7 @@
 
 import { isReadyAtom, isRunningAtom } from '@/atoms/whisper-server'
 import { NewTaskModal } from '@/components/modal/new-task'
+import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils/cn'
 import {
   IconEar,
@@ -13,14 +14,21 @@ import {
 } from '@tabler/icons-react'
 import { useAtomValue } from 'jotai'
 import { usePathname, useRouter } from 'next/navigation'
-import { ButtonHTMLAttributes, ReactNode, useMemo, useState } from 'react'
+import {
+  ButtonHTMLAttributes,
+  ReactNode,
+  forwardRef,
+  useMemo,
+  useState,
+} from 'react'
 
-function Button({
-  className,
-  ...props
-}: ButtonHTMLAttributes<HTMLButtonElement>) {
+const Button = forwardRef<
+  HTMLButtonElement,
+  ButtonHTMLAttributes<HTMLButtonElement>
+>(function Button({ className, ...props }, ref) {
   return (
     <button
+      ref={ref}
       className={cn(
         'flex aspect-square items-center justify-center text-white transition hover:bg-gray-800',
         className,
@@ -28,7 +36,7 @@ function Button({
       {...props}
     />
   )
-}
+})
 
 interface MenuItem {
   name: string
@@ -121,45 +129,46 @@ export function SideMenu() {
 
   return (
     <>
-      <div className="relative z-50 flex w-14 flex-shrink-0 flex-col bg-gray-900">
-        <Button
-          className="bg-blue-500 hover:bg-blue-600"
-          onClick={() => setNewTaskModal(true)}
-        >
-          <IconPlus />
-        </Button>
-
-        {menu.top.map((item) => (
+      <TooltipGroup>
+        <div className="relative z-50 flex w-14 flex-shrink-0 flex-col bg-gray-900">
           <Button
-            key={item.pathname}
-            title={item.name}
-            onClick={() => router.push(item.pathname)}
+            className="bg-blue-500 hover:bg-blue-600"
+            onClick={() => setNewTaskModal(true)}
           >
-            {item.icon}
+            <IconPlus />
           </Button>
-        ))}
 
-        {menu.bottom.map(({ name, pathname, icon }, index) => (
-          <Button
-            key={pathname}
-            title={name}
-            className={cn(index === 0 && 'mt-auto')}
-            onClick={() => router.push(pathname)}
+          {menu.top.map((item) => (
+            <Tooltip key={item.pathname} content={item.name} placement="right">
+              <Button onClick={() => router.push(item.pathname)}>
+                {item.icon}
+              </Button>
+            </Tooltip>
+          ))}
+
+          {menu.bottom.map((item, index) => (
+            <Tooltip key={item.pathname} content={item.name} placement="right">
+              <Button
+                key={pathname}
+                className={cn(index === 0 && 'mt-auto')}
+                onClick={() => router.push(pathname)}
+              >
+                {item.icon}
+              </Button>
+            </Tooltip>
+          ))}
+
+          <div
+            className={cn(
+              'pointer-events-none absolute inset-x-0 flex aspect-square items-center transition-all',
+              indicatorTop === '' && 'hidden',
+            )}
+            style={{ top: indicatorTop }}
           >
-            {icon}
-          </Button>
-        ))}
-
-        <div
-          className={cn(
-            'pointer-events-none absolute inset-x-0 flex aspect-square items-center transition-all',
-            indicatorTop === '' && 'hidden',
-          )}
-          style={{ top: indicatorTop }}
-        >
-          <div className="h-8 w-1 bg-blue-500"></div>
+            <div className="h-8 w-1 bg-blue-500"></div>
+          </div>
         </div>
-      </div>
+      </TooltipGroup>
 
       <NewTaskModal isOpen={newTaskModal} onClose={setNewTaskModal} />
     </>

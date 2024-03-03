@@ -163,7 +163,7 @@ const TooltipContent = forwardRef<
           ...props.style,
           ...styles,
         }}
-        className="rounded-md bg-black/75 px-2 py-1 text-xs text-white"
+        className="z-50 rounded-md bg-black/75 px-2 py-1 text-xs text-white"
         {...state.getFloatingProps(props)}
       />
     </FloatingPortal>
