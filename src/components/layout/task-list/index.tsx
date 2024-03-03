@@ -3,7 +3,7 @@
 import { taskListAtom } from '@/atoms/tasks'
 import { Button } from '@/components/ui/button'
 import { addTask } from '@/lib/task-manager'
-import { TranscribeOptions } from '@/types/tasks'
+import { TranscribeOptions, TranslateOptions } from '@/types/tasks'
 import { useAtomValue } from 'jotai'
 import { useRef } from 'react'
 import { TaskItem } from './TaskItem'
@@ -13,7 +13,7 @@ export function TaskList() {
 
   const debugCounts = useRef(0)
 
-  function handleDebugAddTask() {
+  function handleDebugAddTranscribeTask() {
     debugCounts.current++
     addTask(
       'transcribe',
@@ -22,11 +22,21 @@ export function TaskList() {
     )
   }
 
+  function handleDebugAddTranslateTask() {
+    debugCounts.current++
+    addTask(
+      'translate',
+      { name: 'Task ' + debugCounts.current, group: 'Group 1' },
+      {} as TranslateOptions,
+    )
+  }
+
   return (
     <div className="flex flex-col gap-2 p-2">
       {/* FIXME: Debug buttons. */}
-      <div className="absolute bottom-4 right-4">
-        <Button onClick={handleDebugAddTask}>Add</Button>
+      <div className="fixed bottom-4 right-4 z-40 flex gap-1">
+        <Button onClick={handleDebugAddTranslateTask}>Add translate</Button>
+        <Button onClick={handleDebugAddTranscribeTask}>Add transcribe</Button>
       </div>
 
       {tasks.map((t) => (

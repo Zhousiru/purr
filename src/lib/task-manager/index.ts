@@ -1,4 +1,4 @@
-import { transcribeTaskListAtom } from '@/atoms/tasks'
+import { transcribeTaskListAtom, translateTaskListAtom } from '@/atoms/tasks'
 import {
   BasicTaskOptions,
   Task,
@@ -6,10 +6,10 @@ import {
   TranslateOptions,
 } from '@/types/tasks'
 import { TaskPool } from './pool'
-import { transcribeProcessor } from './processor'
+import { transcribeProcessor, translateProcessor } from './processor'
 
 // TODO: Custom max concurrency.
-const maxTranscribe = 2
+const maxTranscribe = 1
 const maxTranslate = 2
 
 const transcribePool = new TaskPool(
@@ -18,12 +18,11 @@ const transcribePool = new TaskPool(
   maxTranscribe,
 )
 
-// TODO: Init translate pool.
-// const translatePool = new TaskPool(
-//   translateTaskListAtom
-//   translateProcessor,
-//   maxTranslate,
-// )
+const translatePool = new TaskPool(
+  translateTaskListAtom,
+  translateProcessor,
+  maxTranslate,
+)
 
 export function addTask(
   type: 'transcribe',
@@ -52,7 +51,37 @@ export function addTask<T extends Task>(
       break
 
     case 'translate':
-      // TODO: Add to translate pool.
+      translatePool.addTask({
+        type,
+        ...basicOptions,
+        options: options as TranslateOptions,
+        status: 'queued',
+        result: null,
+      })
+      break
+  }
+}
+
+export function stopTask(type: Task['type'], taskName: string) {
+  switch (type) {
+    case 'transcribe':
+      transcribePool.stopTask(taskName)
+      break
+
+    case 'translate':
+      translatePool.stopTask(taskName)
+      break
+  }
+}
+
+export function startTask(type: Task['type'], taskName: string) {
+  switch (type) {
+    case 'transcribe':
+      transcribePool.startTask(taskName)
+      break
+
+    case 'translate':
+      translatePool.startTask(taskName)
       break
   }
 }

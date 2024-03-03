@@ -1,13 +1,11 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils/cn'
-import { TaskStatus, TranscribeTask, TranslateTask } from '@/types/tasks'
-import { IconPencil, IconPlayerStop } from '@tabler/icons-react'
+import { Task, TaskStatus } from '@/types/tasks'
 import { PrimitiveAtom, useAtom } from 'jotai'
 import { useState } from 'react'
-import { GhostButton } from './GhostButton'
+import { TaskActions } from './TaskActions'
 
 function Progress({
   status,
@@ -51,20 +49,9 @@ function ProgressText({
   )
 }
 
-export function TaskItem({
-  taskAtom,
-}: {
-  taskAtom: PrimitiveAtom<TranscribeTask | TranslateTask>
-}) {
+export function TaskItem({ taskAtom }: { taskAtom: PrimitiveAtom<Task> }) {
   const [task, setTask] = useAtom(taskAtom)
   const [showActions, setShowActions] = useState(false)
-
-  function handledebug() {
-    setTask({
-      ...task,
-      group: 'Group 2',
-    })
-  }
 
   return (
     <div
@@ -74,25 +61,8 @@ export function TaskItem({
     >
       <div className="p-4">
         <div className="flex items-center justify-between">
-          <div className="text-lg font-bold" onClick={handledebug}>
-            {task.name}
-          </div>
-          <div
-            className={cn(
-              'flex gap-1 transition',
-              !showActions && 'pointer-events-none opacity-0',
-            )}
-          >
-            <TooltipGroup>
-              <Tooltip content="Open in editor">
-                <GhostButton icon={<IconPencil />} />
-              </Tooltip>
-
-              <Tooltip content="Stop task">
-                <GhostButton icon={<IconPlayerStop />} />
-              </Tooltip>
-            </TooltipGroup>
-          </div>
+          <div className="text-lg font-bold">{task.name}</div>
+          <TaskActions task={task} isShow={showActions} />
         </div>
         <div className="text-sm text-gray-400">{task.group}</div>
 
