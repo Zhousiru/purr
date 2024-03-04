@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils/cn'
 import { Task, TaskStatus } from '@/types/tasks'
-import { PrimitiveAtom, useAtom } from 'jotai'
+import { PrimitiveAtom, useAtomValue } from 'jotai'
 import { useState } from 'react'
 import { TaskActions } from './TaskActions'
 
@@ -50,19 +50,27 @@ function ProgressText({
 }
 
 export function TaskItem({ taskAtom }: { taskAtom: PrimitiveAtom<Task> }) {
-  const [task, setTask] = useAtom(taskAtom)
-  const [showActions, setShowActions] = useState(false)
+  const task = useAtomValue(taskAtom)
+
+  const [isHover, setIsHover] = useState(false)
+  const [isFocusActions, setIsFocusActions] = useState(false)
+  const showActions = isHover || isFocusActions
 
   return (
     <div
       className="flex flex-col overflow-hidden rounded border"
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
+      onMouseEnter={() => setIsHover(true)}
+      onMouseLeave={() => setIsHover(false)}
     >
       <div className="p-4">
         <div className="flex items-center justify-between">
           <div className="text-lg font-bold">{task.name}</div>
-          <TaskActions task={task} isShow={showActions} />
+          <TaskActions
+            task={task}
+            isShow={showActions}
+            onFocus={() => setIsFocusActions(true)}
+            onBlur={() => setIsFocusActions(false)}
+          />
         </div>
         <div className="text-sm text-gray-400">{task.group}</div>
 

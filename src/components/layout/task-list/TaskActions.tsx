@@ -8,9 +8,15 @@ import {
   IconPlayerStop,
   IconTrash,
 } from '@tabler/icons-react'
+import { HTMLAttributes } from 'react'
 import { GhostButton } from './GhostButton'
 
-export function TaskActions({ task, isShow }: { task: Task; isShow: boolean }) {
+export function TaskActions({
+  task,
+  isShow,
+  className,
+  ...props
+}: HTMLAttributes<HTMLDivElement> & { task: Task; isShow: boolean }) {
   function handleOpenInEditor() {
     alert('Open in editor')
   }
@@ -32,7 +38,9 @@ export function TaskActions({ task, isShow }: { task: Task; isShow: boolean }) {
       className={cn(
         'flex gap-1 transition',
         !isShow && 'pointer-events-none opacity-0',
+        className,
       )}
+      {...props}
     >
       <TooltipGroup>
         <Tooltip content="Open in editor">
