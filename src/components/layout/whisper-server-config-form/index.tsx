@@ -3,7 +3,7 @@
 import {
   isRunningAtom,
   useWhisperServerConfig,
-  WhisperServerConfig
+  WhisperServerConfig,
 } from '@/atoms/whisper-server'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,6 +30,7 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
     reset,
     setValue,
     getValues,
+    watch,
   } = useForm<WhisperServerConfig>({ defaultValues: config })
 
   const [models, setModels] = useState<ModelItem[]>([])
@@ -131,11 +132,14 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
             onClick={() => handleSelectDir('modelDir', handleRefreshModel)}
           />
         </div>
-        <Controller
-          control={control}
-          name="model"
-          render={({ field }) => <ModelSwitch models={models} {...field} />}
-        />
+
+        {watch('modelDir') && (
+          <Controller
+            control={control}
+            name="model"
+            render={({ field }) => <ModelSwitch models={models} {...field} />}
+          />
+        )}
 
         <div>
           <Button
