@@ -20,7 +20,7 @@ export interface TerminalLine {
 }
 
 const configAtom = atomWithStorage<WhisperServerConfig>(
-  'whisper-server.config',
+  'whisper-server-config',
   {
     startupDir: '',
     host: '127.0.0.1',
