@@ -8,7 +8,7 @@ class Database extends Dexie {
   constructor() {
     super('db')
     this.version(1).stores({
-      tasks: '[type+name], group, status, options, result',
+      tasks: '[type+name], group, status, creationTimestamp, options, result',
     })
   }
 }

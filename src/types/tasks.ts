@@ -4,6 +4,7 @@ export interface BasicTask {
   name: string
   group: string
   status: TaskStatus
+  creationTimestamp: number
 }
 
 export interface AudioMeta {
@@ -55,6 +56,6 @@ export interface TranslateTask extends BasicTask {
   result: TranslateResult | null
 }
 
-export type BasicTaskOptions = Omit<BasicTask, 'status'>
+export type BasicTaskOptions = Omit<BasicTask, 'status' | 'creationTimestamp'>
 
 export type Task = TranscribeTask | TranslateTask

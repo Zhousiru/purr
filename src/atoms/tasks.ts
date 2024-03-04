@@ -1,4 +1,5 @@
 import { TaskAtom, createTaskListAtomWithDb } from '@/lib/db/task-atom-storage'
+import { store } from '@/lib/store'
 import { Task, TranscribeTask, TranslateTask } from '@/types/tasks'
 import { atom } from 'jotai'
 import { selectAtom } from 'jotai/utils'
@@ -42,7 +43,6 @@ export const taskGroupsAtom = atom((get) => {
   return result
 })
 
-// TODO: Sort the list.
 export const taskListAtom = atom((get) => {
   let list: Array<TaskAtom<Task>> = []
 
@@ -68,5 +68,10 @@ export const taskListAtom = atom((get) => {
   if (groupFilter) {
     return list.filter((a) => get(selectTaskGroupAtom(a)) === groupFilter)
   }
-  return list
+
+  // `createdTimestamp` is designed to be unchangeable.
+  // So, we use `store.get()` to avoid unnecessary recomputation.
+  return list.sort(
+    (a, b) => store.get(b).creationTimestamp - store.get(a).creationTimestamp,
+  )
 })

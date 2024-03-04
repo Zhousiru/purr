@@ -47,6 +47,7 @@ export function addTask<T extends Task>(
         ...basicOptions,
         options: options as TranscribeOptions,
         status: 'queued',
+        creationTimestamp: Date.now(),
         result: null,
       })
       break
@@ -57,6 +58,7 @@ export function addTask<T extends Task>(
         ...basicOptions,
         options: options as TranslateOptions,
         status: 'queued',
+        creationTimestamp: Date.now(),
         result: null,
       })
       break
