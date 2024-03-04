@@ -1,13 +1,15 @@
+import {
+  TaskAtom,
+  createTaskListAtomAndFetchFromDb,
+} from '@/lib/db/task-atom-storage'
 import { Task, TranscribeTask, TranslateTask } from '@/types/tasks'
-import { PrimitiveAtom, atom } from 'jotai'
+import { atom } from 'jotai'
 import { selectAtom } from 'jotai/utils'
 
-export const transcribeTaskListAtom = atom<
-  Array<PrimitiveAtom<TranscribeTask>>
->([])
-export const translateTaskListAtom = atom<Array<PrimitiveAtom<TranslateTask>>>(
-  [],
-)
+export const transcribeTaskListAtom =
+  createTaskListAtomAndFetchFromDb<TranscribeTask>('transcribe')
+export const translateTaskListAtom =
+  createTaskListAtomAndFetchFromDb<TranslateTask>('translate')
 
 export const taskTypeFilterAtom = atom<'all' | Task['type']>('all')
 
@@ -24,7 +26,7 @@ export const guardedTaskGroupFilterAtom = atom(
   },
 )
 
-function selectTaskGroupAtom<T extends Task>(atom: PrimitiveAtom<T>) {
+function selectTaskGroupAtom<T extends Task>(atom: TaskAtom<T>) {
   return selectAtom(atom, (t) => t.group)
 }
 
@@ -33,7 +35,7 @@ export const taskGroupsAtom = atom((get) => {
   const atoms = [
     ...get(transcribeTaskListAtom),
     ...get(translateTaskListAtom),
-  ] as Array<PrimitiveAtom<Task>>
+  ] as Array<TaskAtom<Task>>
 
   atoms.forEach((a) => {
     const group = get(selectTaskGroupAtom(a))
@@ -45,22 +47,22 @@ export const taskGroupsAtom = atom((get) => {
 
 // TODO: Sort the list.
 export const taskListAtom = atom((get) => {
-  let list: Array<PrimitiveAtom<Task>> = []
+  let list: Array<TaskAtom<Task>> = []
 
   switch (get(taskTypeFilterAtom)) {
     case 'transcribe':
-      list = get(transcribeTaskListAtom) as Array<PrimitiveAtom<Task>>
+      list = get(transcribeTaskListAtom) as Array<TaskAtom<Task>>
       break
 
     case 'translate':
-      list = get(translateTaskListAtom) as Array<PrimitiveAtom<Task>>
+      list = get(translateTaskListAtom) as Array<TaskAtom<Task>>
       break
 
     case 'all':
       list = [
         ...get(transcribeTaskListAtom),
         ...get(translateTaskListAtom),
-      ] as Array<PrimitiveAtom<Task>>
+      ] as Array<TaskAtom<Task>>
       break
   }
 

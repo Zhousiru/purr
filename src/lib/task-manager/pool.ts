@@ -1,26 +1,30 @@
 import { Task, TaskStatus } from '@/types/tasks'
-import { PrimitiveAtom, atom } from 'jotai'
+import {
+  TaskAtom,
+  TaskListAtom,
+  createTaskAtomAndPutToDb,
+} from '../db/task-atom-storage'
 import { store } from '../store'
 
-export type TaskProcessor<T extends Task> = (taskAtom: PrimitiveAtom<T>) => {
+export type TaskProcessor<T extends Task> = (taskAtom: TaskAtom<T>) => {
   abort: () => void
   promise: Promise<void>
 }
 
 export interface TaskExecution<T extends Task> {
-  taskAtom: PrimitiveAtom<T>
+  taskAtom: TaskAtom<T>
   processor: ReturnType<TaskProcessor<T>>
 }
 
 export type TaskSlot<T extends Task> = TaskExecution<T> | null
 
 export class TaskPool<T extends Task> {
-  private taskListAtom: PrimitiveAtom<PrimitiveAtom<T>[]>
+  private taskListAtom: TaskListAtom<T>
   private taskProcessor: TaskProcessor<T>
   private taskSlots: Array<TaskSlot<T>>
 
   constructor(
-    taskListAtom: PrimitiveAtom<PrimitiveAtom<T>[]>,
+    taskListAtom: TaskListAtom<T>,
     processor: TaskProcessor<T>,
     maxConcurrency: number,
   ) {
@@ -81,12 +85,15 @@ export class TaskPool<T extends Task> {
     return taskAtoms
   }
 
-  private updateTaskStatus(taskAtom: PrimitiveAtom<T>, status: TaskStatus) {
+  private updateTaskStatus(taskAtom: TaskAtom<T>, status: TaskStatus) {
     store.set(taskAtom, (prev) => ({ ...prev, status }))
   }
 
   public addTask(task: T) {
-    store.set(this.taskListAtom, (prev) => [...prev, atom(task)])
+    store.set(this.taskListAtom, (prev) => [
+      ...prev,
+      createTaskAtomAndPutToDb(task),
+    ])
     this.tryAssignTaskToAll()
   }
 
