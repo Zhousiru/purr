@@ -5,6 +5,7 @@ import {
   TranscribeOptions,
   TranslateOptions,
 } from '@/types/tasks'
+import { removeFromTaskListAtomWithDb } from '../db/task-atom-storage'
 import { TaskPool } from './pool'
 import { transcribeProcessor, translateProcessor } from './processor'
 
@@ -82,6 +83,18 @@ export function startTask(type: Task['type'], taskName: string) {
 
     case 'translate':
       translatePool.startTask(taskName)
+      break
+  }
+}
+
+export function removeTask(type: Task['type'], taskName: string) {
+  switch (type) {
+    case 'transcribe':
+      removeFromTaskListAtomWithDb(transcribeTaskListAtom, taskName)
+      break
+
+    case 'translate':
+      removeFromTaskListAtomWithDb(translateTaskListAtom, taskName)
       break
   }
 }

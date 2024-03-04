@@ -1,15 +1,12 @@
-import {
-  TaskAtom,
-  createTaskListAtomAndFetchFromDb,
-} from '@/lib/db/task-atom-storage'
+import { TaskAtom, createTaskListAtomWithDb } from '@/lib/db/task-atom-storage'
 import { Task, TranscribeTask, TranslateTask } from '@/types/tasks'
 import { atom } from 'jotai'
 import { selectAtom } from 'jotai/utils'
 
 export const transcribeTaskListAtom =
-  createTaskListAtomAndFetchFromDb<TranscribeTask>('transcribe')
+  createTaskListAtomWithDb<TranscribeTask>('transcribe')
 export const translateTaskListAtom =
-  createTaskListAtomAndFetchFromDb<TranslateTask>('translate')
+  createTaskListAtomWithDb<TranslateTask>('translate')
 
 export const taskTypeFilterAtom = atom<'all' | Task['type']>('all')
 

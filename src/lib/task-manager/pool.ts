@@ -2,7 +2,7 @@ import { Task, TaskStatus } from '@/types/tasks'
 import {
   TaskAtom,
   TaskListAtom,
-  createTaskAtomAndPutToDb,
+  createTaskAtomWithDb,
 } from '../db/task-atom-storage'
 import { store } from '../store'
 
@@ -92,7 +92,7 @@ export class TaskPool<T extends Task> {
   public addTask(task: T) {
     store.set(this.taskListAtom, (prev) => [
       ...prev,
-      createTaskAtomAndPutToDb(task),
+      createTaskAtomWithDb(task),
     ])
     this.tryAssignTaskToAll()
   }

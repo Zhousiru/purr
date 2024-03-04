@@ -1,5 +1,5 @@
 import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
-import { startTask, stopTask } from '@/lib/task-manager'
+import { removeTask, startTask, stopTask } from '@/lib/task-manager'
 import { cn } from '@/lib/utils/cn'
 import { Task } from '@/types/tasks'
 import {
@@ -18,6 +18,7 @@ export function TaskActions({
   ...props
 }: HTMLAttributes<HTMLDivElement> & { task: Task; isShow: boolean }) {
   function handleOpenInEditor() {
+    // TODO: Open in editor.
     alert('Open in editor')
   }
 
@@ -30,7 +31,7 @@ export function TaskActions({
   }
 
   function handleRemove() {
-    alert('Remove task')
+    removeTask(task.type, task.name)
   }
 
   return (

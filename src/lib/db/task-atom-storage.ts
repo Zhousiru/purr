@@ -26,9 +26,7 @@ function atomTaskList<T extends Task>(initialTaskList: Array<TaskAtom<T>>) {
   return atom<Array<TaskAtom<T>>>(initialTaskList)
 }
 
-export function createTaskListAtomAndFetchFromDb<T extends Task>(
-  taskType: T['type'],
-) {
+export function createTaskListAtomWithDb<T extends Task>(taskType: T['type']) {
   const taskListAtom = atomTaskList<T>([])
 
   ;(async () => {
@@ -49,7 +47,7 @@ export function createTaskListAtomAndFetchFromDb<T extends Task>(
   return taskListAtom
 }
 
-export function createTaskAtomAndPutToDb<T extends Task>(task: T) {
+export function createTaskAtomWithDb<T extends Task>(task: T) {
   const taskAtom = atomTask<T>(task)
 
   ;(async () => {
@@ -61,4 +59,27 @@ export function createTaskAtomAndPutToDb<T extends Task>(task: T) {
   })()
 
   return taskAtom
+}
+
+export function removeFromTaskListAtomWithDb<T extends Task>(
+  taskListAtom: TaskListAtom<T>,
+  taskName: string,
+) {
+  const taskList = store.get(taskListAtom)
+  const taskAtom = taskList.find((a) => store.get(a).name === taskName)!
+
+  store.set(
+    taskListAtom,
+    taskList.filter((a) => a !== taskAtom),
+  )
+
+  const task = store.get(taskAtom)
+
+  ;(async () => {
+    if (isServer()) {
+      return
+    }
+
+    await db!.tasks.delete([task.type, task.name])
+  })()
 }
