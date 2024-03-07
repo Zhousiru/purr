@@ -23,10 +23,10 @@ const ModelSwitch = forwardRef<HTMLDivElement, ModelSwitchProps>(
               onClick={() => onChange(model.name)}
             >
               <div className="w-full">
-                <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm">
                   {model.name}
                 </div>
-                <div className="text-sm text-gray-400">
+                <div className="text-xs text-gray-400">
                   {filesize(model.size)}
                 </div>
               </div>
@@ -35,6 +35,7 @@ const ModelSwitch = forwardRef<HTMLDivElement, ModelSwitchProps>(
                   'flex-shrink-0',
                   model.name !== value && 'hidden',
                 )}
+                size={18}
               />
             </button>
           ))}

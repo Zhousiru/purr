@@ -35,7 +35,7 @@ export const FileList = forwardRef<HTMLDivElement, FileListProps>(
                 key={p}
                 className="flex items-center gap-2 border-b bg-white p-2 last:shadow-sm"
               >
-                <div className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                <div className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm">
                   {getFilename(p)}
                 </div>
 

@@ -9,7 +9,7 @@ export function TabButton({
   return (
     <button
       className={cn(
-        'flex h-10 flex-shrink-0 items-center gap-2 rounded-md px-4 transition',
+        'flex h-10 flex-shrink-0 items-center gap-2 rounded-md px-4 text-sm transition',
         !active && 'hover:bg-gray-200',
         active && 'z-10 bg-white shadow',
         className,

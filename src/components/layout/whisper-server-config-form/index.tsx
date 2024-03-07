@@ -124,7 +124,7 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
       <Label text="Quantization type">
         <Input type="text" {...register('quantizationType')} />
       </Label>
-      <Label text="Model" className="flex flex-col gap-1.5">
+      <Label text="Model">
         <div className="flex gap-1">
           <Input type="text" {...register('modelDir')} />
           <Button
@@ -133,20 +133,22 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
           />
         </div>
 
-        {watch('modelDir') && (
-          <Controller
-            control={control}
-            name="model"
-            render={({ field }) => <ModelSwitch models={models} {...field} />}
-          />
-        )}
+        <div className="mt-2 flex flex-col gap-1">
+          {watch('modelDir') && (
+            <Controller
+              control={control}
+              name="model"
+              render={({ field }) => <ModelSwitch models={models} {...field} />}
+            />
+          )}
 
-        <div>
-          <Button
-            icon={<IconRefresh />}
-            variant="ghost"
-            onClick={handleRefreshModel}
-          />
+          <div>
+            <Button
+              icon={<IconRefresh />}
+              variant="ghost"
+              onClick={handleRefreshModel}
+            />
+          </div>
         </div>
       </Label>
 

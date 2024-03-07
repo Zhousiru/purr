@@ -14,7 +14,6 @@ const CheckboxPrimitive = forwardRef<
   Omit<ComponentPropsWithoutRef<typeof Switch>, 'children'>
 >(({ className, ...props }, ref) => {
   return (
-    // TODO: Support `disabled` if necessary.
     <Switch
       ref={ref}
       className={cn(
@@ -61,7 +60,10 @@ const Checkbox = forwardRef<
             className={cn(disabled && 'cursor-default')}
           />
           <Switch.Label
-            className={cn('cursor-pointer pl-2', disabled && 'cursor-default')}
+            className={cn(
+              'cursor-pointer pl-2 text-sm',
+              disabled && 'cursor-default',
+            )}
             aria-disabled={disabled}
           >
             {children}
