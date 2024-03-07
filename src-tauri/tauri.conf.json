@@ -14,6 +14,9 @@
     "allowlist": {
       "dialog": {
         "all": true
+      },
+      "path": {
+        "all": true
       }
     },
     "bundle": {

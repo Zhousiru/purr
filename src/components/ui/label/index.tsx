@@ -10,7 +10,7 @@ export function Label({
   return (
     <div className={cn('flex flex-col gap-0.5', className)} {...props}>
       <div>{text}</div>
-      {children}
+      <div className="flex flex-col gap-1">{children}</div>
     </div>
   )
 }

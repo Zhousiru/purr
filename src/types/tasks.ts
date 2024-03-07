@@ -24,7 +24,9 @@ export interface Translation extends Transcription {
 export interface TranscribeOptions {
   sourcePath: string
   sourceMeta: AudioMeta
-  language: string | null
+  language: string
+  prompt: string
+  vadFilter: boolean
   translateWith: Omit<TranslateOptions, 'transcription'> | null
 }
 
@@ -41,6 +43,7 @@ export interface TranscribeTask extends BasicTask {
 
 export interface TranslateOptions {
   transcription: Transcription[]
+  model: string
   prompt: string
   batchSize: number
 }

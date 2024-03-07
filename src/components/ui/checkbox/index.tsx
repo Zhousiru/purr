@@ -7,6 +7,7 @@ import {
   ReactNode,
   forwardRef,
 } from 'react'
+import { FieldValues, UseControllerProps, useController } from 'react-hook-form'
 
 const CheckboxPrimitive = forwardRef<
   ElementRef<typeof Switch>,
@@ -61,5 +62,22 @@ const Checkbox = forwardRef<
 })
 
 Checkbox.displayName = 'Checkbox'
+
+export function FormCheckbox<T extends FieldValues>(
+  props: UseControllerProps<T> & { children?: ReactNode },
+) {
+  const { field } = useController(props)
+
+  return (
+    <Checkbox
+      name={field.name}
+      checked={field.value}
+      onChange={(e) => field.onChange(e)}
+      onBlur={field.onBlur}
+    >
+      {props.children}
+    </Checkbox>
+  )
+}
 
 export { Checkbox }

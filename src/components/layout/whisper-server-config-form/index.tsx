@@ -13,6 +13,7 @@ import { cmd } from '@/lib/commands'
 import { cn } from '@/lib/utils/cn'
 import { ModelItem } from '@/types/whisper-server'
 import { IconFolderOpen, IconRefresh } from '@tabler/icons-react'
+import { path } from '@tauri-apps/api'
 import { open } from '@tauri-apps/api/dialog'
 import { useAtomValue } from 'jotai'
 import { useCallback, useEffect, useState } from 'react'
@@ -36,11 +37,10 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
   const [models, setModels] = useState<ModelItem[]>([])
 
   async function handleLaunch(data: WhisperServerConfig) {
-    // TODO: Use path join.
     await cmd.launchWhisperServer({
-      program: data.startupDir + '/python',
+      program: await path.join(data.startupDir, 'python'),
       args: [
-        data.startupDir + '/src/main.py',
+        await path.join(data.startupDir, 'src', 'main.py'),
         '--host',
         data.host,
         '--port',

@@ -1,7 +1,7 @@
 'use client'
 
 import { isReadyAtom, isRunningAtom } from '@/atoms/whisper-server'
-import { NewTaskModal } from '@/components/modal/new-task'
+import { NewTaskModal } from '@/components/modal/new-tasks'
 import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils/cn'
 import {
