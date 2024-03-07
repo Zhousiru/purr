@@ -2,14 +2,15 @@ import { NewTasks } from '@/types/new-tasks-form'
 
 export const newTasksDefaultValues: NewTasks = {
   files: [],
-  transcribeOption: {
+  transcriptionOption: {
     language: '',
     prompt: '',
     vadFilter: true,
   },
   translationOption: { model: 'gpt-3.5-turbo', batchSize: 20, prompt: '' },
   state: {
-    autoLanguage: true,
+    createTranscription: true,
     createTranslation: true,
+    autoLanguage: true,
   },
 }

@@ -142,7 +142,7 @@ export function NewTaskModal({
                   type="text"
                   className="w-[200px]"
                   placeholder="e.g. English / Japanese"
-                  {...register('transcribeOption.language')}
+                  {...register('transcriptionOption.language')}
                 />
               )}
             </Label>
@@ -150,12 +150,15 @@ export function NewTaskModal({
             <Label text="Initial prompt">
               <Textarea
                 className="max-h-[25vh] min-h-14"
-                {...register('transcribeOption.prompt')}
+                {...register('transcriptionOption.prompt')}
               />
             </Label>
 
             <div className="flex flex-col gap-1">
-              <FormCheckbox control={control} name="transcribeOption.vadFilter">
+              <FormCheckbox
+                control={control}
+                name="transcriptionOption.vadFilter"
+              >
                 Use VAD filter
               </FormCheckbox>
               <FormCheckbox control={control} name="state.createTranslation">
