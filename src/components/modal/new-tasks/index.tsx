@@ -86,11 +86,9 @@ export function NewTaskModal({
 
     const prev = getValues('files')
 
-    if (Array.isArray(selected)) {
-      setValue('files', [...new Set([...prev, ...selected])])
-    }
-    if (typeof selected === 'string') {
-      setValue('files', [...new Set([...prev, selected])])
+    if (selected !== null) {
+      const paths = Array.isArray(selected) ? selected : [selected]
+      setValue('files', [...new Set([...prev, ...paths])])
     }
   }
 
@@ -100,7 +98,7 @@ export function NewTaskModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="flex h-[360px] flex-col gap-2">
+      <div className="flex min-h-[400px] flex-col gap-2">
         {currentStep === 'file' && (
           <>
             <div className="text-lg">Select files</div>
@@ -123,7 +121,9 @@ export function NewTaskModal({
             <Controller
               control={control}
               name="files"
-              render={({ field }) => <FileList {...field} />}
+              render={({ field }) => (
+                <FileList {...field} className="flex-grow" />
+              )}
             />
           </>
         )}
@@ -131,6 +131,10 @@ export function NewTaskModal({
         {currentStep === 'transcription' && (
           <>
             <div className="text-lg">Transcription Options</div>
+
+            <Label text="Task group">
+              <Input type="text" className="w-[200px]" {...register('group')} />
+            </Label>
 
             <Label text="Language">
               <FormCheckbox control={control} name="state.autoLanguage">

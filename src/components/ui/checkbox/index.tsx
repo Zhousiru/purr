@@ -42,15 +42,28 @@ CheckboxPrimitive.displayName = 'CheckboxPrimitive'
 const Checkbox = forwardRef<
   ElementRef<typeof CheckboxPrimitive>,
   ComponentPropsWithoutRef<typeof CheckboxPrimitive> & {
+    disabled?: boolean
     children?: ReactNode
   }
->(({ children, ...props }, ref) => {
+>(({ disabled, children, ...props }, ref) => {
   if (children) {
     return (
       <Switch.Group ref={ref}>
-        <div className="flex items-center">
-          <CheckboxPrimitive {...props} />
-          <Switch.Label className="cursor-pointer pl-2">
+        <div
+          className={cn(
+            'flex items-center',
+            disabled && 'pointer-events-none opacity-50',
+          )}
+        >
+          <CheckboxPrimitive
+            {...props}
+            aria-disabled={disabled}
+            className={cn(disabled && 'cursor-default')}
+          />
+          <Switch.Label
+            className={cn('cursor-pointer pl-2', disabled && 'cursor-default')}
+            aria-disabled={disabled}
+          >
             {children}
           </Switch.Label>
         </div>
@@ -63,9 +76,10 @@ const Checkbox = forwardRef<
 
 Checkbox.displayName = 'Checkbox'
 
-export function FormCheckbox<T extends FieldValues>(
-  props: UseControllerProps<T> & { children?: ReactNode },
-) {
+export function FormCheckbox<T extends FieldValues>({
+  className,
+  ...props
+}: UseControllerProps<T> & { className?: string; children?: ReactNode }) {
   const { field } = useController(props)
 
   return (
@@ -73,7 +87,9 @@ export function FormCheckbox<T extends FieldValues>(
       name={field.name}
       checked={field.value}
       onChange={(e) => field.onChange(e)}
+      disabled={field.disabled}
       onBlur={field.onBlur}
+      className={className}
     >
       {props.children}
     </Checkbox>

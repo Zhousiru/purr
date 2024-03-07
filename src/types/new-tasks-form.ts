@@ -2,6 +2,7 @@ import { TranscribeOptions, TranslateOptions } from './tasks'
 
 export interface NewTasks {
   files: string[]
+  group: string
   transcriptionOption: Omit<
     TranscribeOptions,
     'sourcePath' | 'sourceMeta' | 'translateWith'

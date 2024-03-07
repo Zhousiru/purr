@@ -1,3 +1,4 @@
+import { NewTasks } from '@/types/new-tasks-form'
 import { Task } from '@/types/tasks'
 import { PrimitiveAtom } from 'jotai'
 import { store } from '../store'
@@ -14,4 +15,9 @@ export function initTaskResult<T extends Task>(
     ...prev,
     result,
   }))
+}
+
+export function addTrans(formData: NewTasks) {
+  if (formData.state.createTranscription) {
+  }
 }
