@@ -100,7 +100,7 @@ export function NewTaskModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="flex flex-col gap-2">
+      <div className="flex h-[360px] flex-col gap-2">
         {currentStep === 'file' && (
           <>
             <div className="text-lg">Select files</div>
@@ -175,7 +175,7 @@ export function NewTaskModal({
           </>
         )}
 
-        <div className="flex justify-end gap-1">
+        <div className="mt-auto flex justify-end gap-1">
           <Button
             icon={<IconX />}
             variant="ghost"

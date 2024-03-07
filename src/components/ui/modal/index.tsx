@@ -1,5 +1,6 @@
 'use client'
 
+import { cn } from '@/lib/utils/cn'
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment, ReactNode } from 'react'
 
@@ -7,11 +8,13 @@ export function Modal({
   isOpen,
   onClose,
   title,
+  fixedTop,
   children,
 }: {
   isOpen: boolean
   onClose: (value: false) => void
   title?: string
+  fixedTop?: string
   children: ReactNode
 }) {
   return (
@@ -31,7 +34,13 @@ export function Modal({
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
+            <div
+              className={cn(
+                'flex min-h-full flex-col items-center p-4',
+                !fixedTop && 'justify-center',
+              )}
+              style={{ paddingTop: fixedTop }}
+            >
               <Transition.Child
                 as={Fragment}
                 enter="ease-out duration-200"
