@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Modal } from '@/components/ui/modal'
 import { Textarea } from '@/components/ui/textarea'
 import { newTasksDefaultValues } from '@/constants/new-tasks-form'
+import { addTasksFromForm } from '@/lib/task-manager/utils'
 import { NewTasks } from '@/types/new-tasks-form'
 import {
   IconCheck,
@@ -64,18 +65,17 @@ export function NewTaskModal({
     currentStep === 'translation'
 
   function handleNextStep() {
-    if (nextDone) {
-      // TODO: Create task.
-      onClose(false)
-      return
-    }
-
     if (currentStep === 'file') {
       setCurrentStep('transcription')
     }
     if (currentStep === 'transcription') {
       setCurrentStep('translation')
     }
+  }
+
+  function handleAddTasks(data: NewTasks) {
+    addTasksFromForm(data)
+    onClose(false)
   }
 
   async function handleAddFiles() {
@@ -189,7 +189,7 @@ export function NewTaskModal({
           </Button>
           <Button
             icon={nextDone ? <IconCheck /> : <IconChevronRight />}
-            onClick={handleNextStep}
+            onClick={nextDone ? handleSubmit(handleAddTasks) : handleNextStep}
             disabled={!isCurrentValid}
           />
         </div>

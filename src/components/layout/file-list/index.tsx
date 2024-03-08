@@ -1,12 +1,9 @@
 'use client'
 
 import { cn } from '@/lib/utils/cn'
+import { getFilename } from '@/lib/utils/path'
 import { IconX } from '@tabler/icons-react'
 import { forwardRef } from 'react'
-
-function getFilename(path: string) {
-  return path.split(/\/|\\/).pop()
-}
 
 interface FileListProps {
   value: string[]
