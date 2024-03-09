@@ -1,3 +1,4 @@
+import { DurationResult } from '@/types/commands'
 import { ModelItem } from '@/types/whisper-server'
 import { invoke } from '@tauri-apps/api'
 import { InvokeArgs } from '@tauri-apps/api/tauri'
@@ -18,6 +19,7 @@ export interface Commands {
     void
   >
   killWhisperServer: CommandFunction<null, void>
+  getAudioDurations: CommandFunction<{ paths: string[] }, Array<DurationResult>>
 }
 
 export const cmd = new Proxy(

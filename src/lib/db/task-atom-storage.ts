@@ -29,20 +29,18 @@ function atomTaskList<T extends Task>(initialTaskList: Array<TaskAtom<T>>) {
 export function createTaskListAtomWithDb<T extends Task>(taskType: T['type']) {
   const taskListAtom = atomTaskList<T>([])
 
-  ;(async () => {
-    if (isServer()) {
-      return
-    }
-
-    const result = (await db!.tasks
-      .where('type')
-      .equals(taskType)
-      .toArray()) as T[]
-    store.set(
-      taskListAtom,
-      result.map((t) => atomTask<T>(t)),
-    )
-  })()
+  if (!isServer()) {
+    ;(async () => {
+      const result = (await db!.tasks
+        .where('type')
+        .equals(taskType)
+        .toArray()) as T[]
+      store.set(
+        taskListAtom,
+        result.map((t) => atomTask<T>(t)),
+      )
+    })()
+  }
 
   return taskListAtom
 }
@@ -50,13 +48,11 @@ export function createTaskListAtomWithDb<T extends Task>(taskType: T['type']) {
 export function createTaskAtomWithDb<T extends Task>(task: T) {
   const taskAtom = atomTask<T>(task)
 
-  ;(async () => {
-    if (isServer()) {
-      return
-    }
-
-    await db!.tasks.put(task)
-  })()
+  if (!isServer()) {
+    ;(async () => {
+      await db!.tasks.put(task)
+    })()
+  }
 
   return taskAtom
 }
@@ -75,11 +71,9 @@ export function removeFromTaskListAtomWithDb<T extends Task>(
 
   const task = store.get(taskAtom)
 
-  ;(async () => {
-    if (isServer()) {
-      return
-    }
-
-    await db!.tasks.delete([task.type, task.name])
-  })()
+  if (!isServer()) {
+    ;(async () => {
+      await db!.tasks.delete([task.type, task.name])
+    })()
+  }
 }

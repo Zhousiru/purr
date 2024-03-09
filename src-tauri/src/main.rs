@@ -1,11 +1,13 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod audio;
 mod error;
 mod event_name;
 mod utils;
 mod whisper_server;
 
+use crate::audio::commands::get_audio_durations;
 use std::sync::Mutex;
 use tauri::{Manager, State, WindowEvent};
 use whisper_server::commands::{kill_whisper_server, launch_whisper_server, list_models};
@@ -19,7 +21,8 @@ fn main() {
     .invoke_handler(tauri::generate_handler![
       list_models,
       launch_whisper_server,
-      kill_whisper_server
+      kill_whisper_server,
+      get_audio_durations
     ])
     .manage(WhisperServerDaemon(Default::default()))
     .on_window_event(move |event| match event.event() {

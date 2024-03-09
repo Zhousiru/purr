@@ -1,11 +1,12 @@
 import { transcribeTaskListAtom } from '@/atoms/tasks'
+import { DurationResult } from '@/types/commands'
 import { NewTasks } from '@/types/new-tasks-form'
 import { BasicTaskOptions, Task, TranscribeOptions } from '@/types/tasks'
 import { PrimitiveAtom } from 'jotai'
 import { addTask } from '.'
-import { TaskListAtom } from '../db/task-atom-storage'
+import { cmd } from '../commands'
 import { store } from '../store'
-import { getFilename } from '../utils/path'
+import { NameGenerator } from './name-generator'
 
 export function isRecoveredTask<T extends Task>(taskAtom: PrimitiveAtom<T>) {
   return store.get(taskAtom).result !== null
@@ -21,60 +22,53 @@ export function initTaskResult<T extends Task>(
   }))
 }
 
-export function generateTaskName<T extends Task>(
-  paths: string[],
-  taskListAtom: TaskListAtom<T>,
+export function extractDurationResults(
+  results: Array<DurationResult>,
+  path: string,
 ) {
-  const existed = new Map<string, number>()
-  const result = new Map<string, string>()
-
-  for (const taskAtom of store.get(taskListAtom)) {
-    const task = store.get(taskAtom)
-    const originalName = task.name.replace(/ \(\d*\)$/, '')
-    existed.set(originalName, (existed.get(originalName) ?? 0) + 1)
-  }
-
-  for (const path of paths) {
-    const filename = getFilename(path)
-
-    if (!existed.has(filename)) {
-      existed.set(filename, 1)
-      result.set(path, filename)
-      continue
-    }
-
-    const count = existed.get(filename)!
-    existed.set(filename, count + 1)
-    result.set(path, `${filename} (${count})`)
-  }
-
-  return result
+  const result = results.find((r) => r.path === path)
+  return result?.duration ?? null
 }
 
-export function addTasksFromForm(formData: NewTasks) {
+export async function addTasksFromForm(formData: NewTasks) {
   if (formData.state.createTranscription) {
-    const names = generateTaskName(formData.files, transcribeTaskListAtom)
+    const nameGenerator = new NameGenerator(transcribeTaskListAtom)
+
+    const durations = await cmd.getAudioDurations({ paths: formData.files })
 
     for (const file of formData.files) {
+      const duration = extractDurationResults(durations, file)
+      if (duration === null) {
+        continue
+      }
+
       const options: [BasicTaskOptions, TranscribeOptions] = [
         {
           group: formData.group,
-          name: names.get(file)!,
+          name: nameGenerator.generateName(file),
         },
         {
           sourcePath: file,
-          sourceMeta: { length: 0 }, // TODO: Get audio length.
+          sourceMeta: { duration },
           translateWith: formData.state.createTranslation
             ? formData.translationOption
             : null,
           ...formData.transcriptionOption,
         },
       ]
+
       // FIXME: Remove debug code.
-      console.log(names.get(file)!, ...options)
+      console.log(
+        nameGenerator.generateName(file),
+        '\n',
+        options[0],
+        '\n',
+        options[1],
+      )
       addTask('transcribe', ...options)
     }
 
+    nameGenerator.dispose()
     return
   }
 

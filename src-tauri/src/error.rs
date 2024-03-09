@@ -4,6 +4,9 @@ pub enum CommandError {
   Io(#[from] std::io::Error),
 
   #[error(transparent)]
+  Symphonia(#[from] symphonia::core::errors::Error),
+
+  #[error(transparent)]
   Other(#[from] anyhow::Error),
 }
 

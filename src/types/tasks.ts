@@ -8,7 +8,7 @@ export interface BasicTask {
 }
 
 export interface AudioMeta {
-  length: number
+  duration: number
 }
 
 export interface Transcription {

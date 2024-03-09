@@ -66,7 +66,7 @@ export const taskListAtom = atom((get) => {
   const groupFilter = get(guardedTaskGroupFilterAtom)
 
   if (groupFilter) {
-    return list.filter((a) => get(selectTaskGroupAtom(a)) === groupFilter)
+    list = list.filter((a) => get(selectTaskGroupAtom(a)) === groupFilter)
   }
 
   // `createdTimestamp` is designed to be unchangeable.
