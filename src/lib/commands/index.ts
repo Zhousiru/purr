@@ -1,7 +1,6 @@
 import { DurationResult } from '@/types/commands'
 import { ModelItem } from '@/types/whisper-server'
-import { invoke } from '@tauri-apps/api'
-import { InvokeArgs } from '@tauri-apps/api/tauri'
+import { invoke, InvokeArgs } from '@tauri-apps/api/tauri'
 
 export type CommandFunction<T, P> = T extends null
   ? () => Promise<P>
