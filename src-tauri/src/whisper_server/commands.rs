@@ -1,6 +1,10 @@
-use super::daemon::spawn_daemon;
+use super::{
+  daemon::spawn_daemon,
+  utils::{submit_task, NamedPath, TaskOptions},
+};
 use crate::{error::CommandResult, utils::dir_size, WhisperServerDaemon};
 use anyhow::anyhow;
+use rayon::prelude::*;
 use std::fs::read_dir;
 use tauri::{AppHandle, State};
 
@@ -59,4 +63,38 @@ pub async fn kill_whisper_server(daemon: State<'_, WhisperServerDaemon>) -> Comm
     }
     None => Err(anyhow!("whisper server is not running").into()),
   }
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct TaskSubmissionResult {
+  name: String,
+  path: String,
+  error: Option<String>,
+}
+
+#[tauri::command]
+pub async fn submit_transcription_task(
+  url: String,
+  named_paths: Vec<NamedPath>,
+  options: TaskOptions,
+) -> Vec<TaskSubmissionResult> {
+  let client = reqwest::blocking::Client::new();
+
+  named_paths
+    .par_iter()
+    .map(
+      |named_path| match submit_task(&client, &url, named_path, &options) {
+        Ok(()) => TaskSubmissionResult {
+          name: named_path.name.clone(),
+          path: named_path.path.clone(),
+          error: None,
+        },
+        Err(e) => TaskSubmissionResult {
+          name: named_path.name.clone(),
+          path: named_path.path.clone(),
+          error: Some(e.to_string()),
+        },
+      },
+    )
+    .collect()
 }

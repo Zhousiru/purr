@@ -7,6 +7,9 @@ pub enum CommandError {
   Symphonia(#[from] symphonia::core::errors::Error),
 
   #[error(transparent)]
+  Reqwest(#[from] reqwest::Error),
+
+  #[error(transparent)]
   Other(#[from] anyhow::Error),
 }
 
