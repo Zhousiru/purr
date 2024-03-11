@@ -3,7 +3,7 @@ import { Subject, filter } from 'rxjs'
 
 export class Monitor {
   eventSource: EventSource | null = null
-  eventSubject: Subject<MonitorEvent> = new Subject()
+  eventSubject: Subject<MonitorEvent> | null = null
 
   public connect(baseUrl: string) {
     if (
@@ -17,12 +17,13 @@ export class Monitor {
     this.eventSource = new EventSource(url.toString())
 
     this.eventSource.onmessage = this.onMessage
+    this.eventSource.onopen = this.onOpen
     this.eventSource.onerror = this.onError
   }
 
   public close() {
     this.eventSource?.close()
-    this.eventSubject.error('Whisper server connection closed.')
+    this.eventSubject?.error('Whisper server connection closed.')
   }
 
   public reconnect(baseUrl: string) {
@@ -32,15 +33,19 @@ export class Monitor {
 
   private onMessage = (event: MessageEvent<string>) => {
     const data = JSON.parse(event.data) as MonitorEvent
-    this.eventSubject.next(data)
+    this.eventSubject!.next(data)
+  }
+
+  private onOpen = () => {
+    this.eventSubject = new Subject()
   }
 
   private onError = () => {
-    this.eventSubject.error('Whisper server connection error.')
+    this.eventSubject!.error('Whisper server connection error.')
   }
 
   public async *watch(taskName: string) {
-    const observable = this.eventSubject.pipe(
+    const observable = this.eventSubject!.pipe(
       filter((event) => event.taskName === taskName),
     )
 
