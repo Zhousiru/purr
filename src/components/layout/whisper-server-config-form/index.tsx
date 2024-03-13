@@ -1,20 +1,15 @@
 'use client'
 
-import {
-  getMonitor,
-  isRunningAtom,
-  useWhisperServerConfig,
-  WhisperServerConfig,
-} from '@/atoms/whisper-server'
+import { isRunningAtom, useWhisperServerConfig } from '@/atoms/whisper-server'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { cmd } from '@/lib/commands'
 import { cn } from '@/lib/utils/cn'
-import { ModelItem } from '@/types/whisper-server'
+import { killWhisperServer, startWhisperServer } from '@/lib/whisper-server'
+import { ModelItem, WhisperServerConfig } from '@/types/whisper-server'
 import { IconFolderOpen, IconRefresh } from '@tabler/icons-react'
-import { path } from '@tauri-apps/api'
 import { open } from '@tauri-apps/api/dialog'
 import { useAtomValue } from 'jotai'
 import { useCallback, useEffect, useState } from 'react'
@@ -38,28 +33,12 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
 
   const [models, setModels] = useState<ModelItem[]>([])
 
-  async function handleLaunch(data: WhisperServerConfig) {
-    await cmd.launchWhisperServer({
-      program: await path.join(data.startupDir, 'python'),
-      args: [
-        await path.join(data.startupDir, 'src', 'main.py'),
-        '--host',
-        data.host,
-        '--port',
-        data.port.toString(),
-        '--device',
-        data.device,
-        '--type',
-        data.quantizationType,
-        '--model',
-        data.modelDir + '/' + data.model,
-      ],
-    })
+  function handleLaunch(data: WhisperServerConfig) {
+    startWhisperServer(data)
   }
 
-  async function handleKill() {
-    getMonitor().close()
-    await cmd.killWhisperServer()
+  function handleKill() {
+    killWhisperServer()
   }
 
   function handleSaveConfig(data: WhisperServerConfig) {
@@ -156,7 +135,7 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
       </Label>
 
       <div className="mt-auto flex justify-end">
-        <ConnectionBadge/>
+        <ConnectionBadge />
       </div>
 
       <div className="flex justify-end gap-1">

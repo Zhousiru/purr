@@ -9,7 +9,8 @@ mod whisper_server;
 
 use crate::audio::commands::get_audio_durations;
 use crate::whisper_server::commands::{
-  kill_whisper_server, launch_whisper_server, list_models, submit_transcription_task,
+  is_whisper_server_running, kill_whisper_server, launch_whisper_server, list_models,
+  submit_transcription_task,
 };
 use crate::whisper_server::daemon::Daemon;
 use std::sync::Mutex;
@@ -25,7 +26,8 @@ fn main() {
       launch_whisper_server,
       kill_whisper_server,
       get_audio_durations,
-      submit_transcription_task
+      submit_transcription_task,
+      is_whisper_server_running
     ])
     .manage(WhisperServerDaemon(Default::default()))
     .on_window_event(move |event| match event.event() {

@@ -27,6 +27,7 @@ export interface Commands {
     },
     TranscriptionSubmissionResult
   >
+  isWhisperServerRunning: CommandFunction<null, boolean>
 }
 
 export const cmd = new Proxy(

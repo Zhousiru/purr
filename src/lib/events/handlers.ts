@@ -1,5 +1,4 @@
 import {
-  TerminalLineType,
   getMonitor,
   getWhisperServerConfig,
   pushTerminalLine,
@@ -7,11 +6,11 @@ import {
   setIsReady,
   setIsRunning,
 } from '@/atoms/whisper-server'
+import { DaemonEventPayload } from '@/types/events'
 import { Event } from '@tauri-apps/api/event'
+import { daemonSubject } from './subjects'
 
-export function handleWhisperServerDaemon(
-  event: Event<{ type: TerminalLineType; data: string | undefined }>,
-) {
+export function handleWhisperServerDaemon(event: Event<DaemonEventPayload>) {
   const lineData = event.payload.data ?? ''
 
   switch (event.payload.type) {
@@ -34,4 +33,6 @@ export function handleWhisperServerDaemon(
   }
 
   pushTerminalLine(event.payload.type, lineData)
+
+  daemonSubject.next(event.payload)
 }

@@ -1,3 +1,20 @@
+export interface WhisperServerConfig {
+  startupDir: string
+  host: string
+  port: number
+  device: 'auto' | 'cpu' | 'cuda'
+  quantizationType: string
+  modelDir: string
+  model: string
+}
+
+export type DaemonEventType = 'launch' | 'exit' | 'stdout' | 'stderr'
+
+export interface TerminalLine {
+  type: DaemonEventType
+  data: string
+}
+
 export interface ModelItem {
   name: string
   size: number

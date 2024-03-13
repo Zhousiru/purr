@@ -54,6 +54,14 @@ pub async fn launch_whisper_server(
 }
 
 #[tauri::command]
+pub async fn is_whisper_server_running(
+  daemon: State<'_, WhisperServerDaemon>,
+) -> CommandResult<bool> {
+  let daemon = daemon.0.lock().unwrap();
+  Ok(daemon.is_some())
+}
+
+#[tauri::command]
 pub async fn kill_whisper_server(daemon: State<'_, WhisperServerDaemon>) -> CommandResult<()> {
   let daemon = daemon.0.lock().unwrap();
   match *daemon {
