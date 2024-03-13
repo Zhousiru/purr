@@ -18,8 +18,6 @@ import {
 export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
   taskAtom: PrimitiveAtom<TranscribeTask>,
 ) => {
-  // FIXME: Fake processor.
-
   let abort: null | (() => void) = null
 
   const promise = new Promise<void>(async (resolve, reject) => {

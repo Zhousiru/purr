@@ -44,7 +44,7 @@ function ProgressText({
       {status === 'done' && 'DONE'}
       {status === 'queued' && 'QUEUED'}
       {status === 'stopped' && 'STOPPED'}
-      {status === 'processing' && `${progress}%`}
+      {status === 'processing' && `${progress.toFixed(1)}%`}
     </div>
   )
 }
