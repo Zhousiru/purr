@@ -23,6 +23,11 @@ export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
   let abort: null | (() => void) = null
 
   const promise = new Promise<void>(async (resolve, reject) => {
+    abort = () => {
+      cancelWhisperServerTask(task.name)
+      reject()
+    }
+
     if (isRecoveredTask(taskAtom)) {
       // TODO: Support for recovering transcribing.
     }
@@ -42,8 +47,6 @@ export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
     })
 
     for await (const event of monitor.watch(task.name)) {
-      console.log(event)
-
       if (event.type === 'transcription') {
         const progress = calcProgress(
           event.data.end,
@@ -53,20 +56,35 @@ export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
         pushTaskTranscript(taskAtom, event.data)
       }
 
-      if (
-        event.type === 'status' &&
-        (event.data === 'canceled' || event.data === 'done')
-      ) {
-        break
+      if (event.type === 'language-detection') {
+        store.set(taskAtom, (prev) => ({
+          ...prev,
+          options: {
+            ...prev.options,
+            language: event.data,
+          },
+        }))
+      }
+
+      if (event.type === 'status') {
+        if (event.data === 'done') {
+          updateTaskProgress(taskAtom, 100)
+          resolve()
+          break
+        }
+
+        if (event.data === 'canceled') {
+          // `canceled` event is triggered by the `abort()`.
+          // So, we don't need to `reject()` here.
+          break
+        }
+
+        if (event.data === 'error') {
+          reject()
+          break
+        }
       }
     }
-
-    abort = () => {
-      cancelWhisperServerTask(task.name)
-      reject()
-    }
-
-    resolve()
   })
 
   return {

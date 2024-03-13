@@ -38,7 +38,7 @@ export interface MonitorEventBase {
 
 export interface MonitorEventStatus extends MonitorEventBase {
   type: 'status'
-  data: 'init' | 'start' | 'done' | 'canceled'
+  data: 'init' | 'start' | 'done' | 'canceled' | 'error'
 }
 
 export interface MonitorEventLanguageDetection extends MonitorEventBase {

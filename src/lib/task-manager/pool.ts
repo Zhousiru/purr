@@ -106,6 +106,8 @@ export class TaskPool<T extends Task> {
 
       if (store.get(slot.taskAtom).name === taskName) {
         inSlot = true
+        // Call `abort()` to reject the promise.
+        // And the `catch()` block will update the task status.
         slot.processor.abort()
         break
       }
