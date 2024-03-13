@@ -1,6 +1,6 @@
-import { DurationResult } from '@/types/commands'
+import { DurationResult, TranscriptionSubmissionResult } from '@/types/commands'
 import { ModelItem } from '@/types/whisper-server'
-import { invoke, InvokeArgs } from '@tauri-apps/api/tauri'
+import { InvokeArgs, invoke } from '@tauri-apps/api/tauri'
 
 export type CommandFunction<T, P> = T extends null
   ? () => Promise<P>
@@ -19,6 +19,14 @@ export interface Commands {
   >
   killWhisperServer: CommandFunction<null, void>
   getAudioDurations: CommandFunction<{ paths: string[] }, Array<DurationResult>>
+  submitTranscriptionTask: CommandFunction<
+    {
+      url: string
+      namedPaths: Array<{ name: string; path: string }>
+      options: { lang: string; prompt: string; vad: boolean }
+    },
+    TranscriptionSubmissionResult
+  >
 }
 
 export const cmd = new Proxy(

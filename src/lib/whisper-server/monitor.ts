@@ -1,9 +1,19 @@
 import { MonitorEvent } from '@/types/whisper-server'
 import { Subject, filter } from 'rxjs'
 
+export interface MonitorCallbacks {
+  onConnected: () => void
+  onDisconnected: () => void
+}
+
 export class Monitor {
   eventSource: EventSource | null = null
   eventSubject: Subject<MonitorEvent> | null = null
+  callbacks?: MonitorCallbacks
+
+  public bindCallbacks(callbacks: MonitorCallbacks) {
+    this.callbacks = callbacks
+  }
 
   public connect(baseUrl: string) {
     if (
@@ -22,8 +32,16 @@ export class Monitor {
   }
 
   public close() {
+    if (
+      !this.eventSource ||
+      this.eventSource.readyState === EventSource.CLOSED
+    ) {
+      return
+    }
+
     this.eventSource?.close()
     this.eventSubject?.error('Whisper server connection closed.')
+    this.callbacks?.onDisconnected()
   }
 
   public reconnect(baseUrl: string) {
@@ -38,10 +56,12 @@ export class Monitor {
 
   private onOpen = () => {
     this.eventSubject = new Subject()
+    this.callbacks?.onConnected()
   }
 
   private onError = () => {
     this.eventSubject!.error('Whisper server connection error.')
+    this.callbacks?.onDisconnected()
   }
 
   public async *watch(taskName: string) {

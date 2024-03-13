@@ -1,5 +1,7 @@
+import { getWhisperServerConfig } from '@/atoms/whisper-server'
 import { TranscribeTask, TranslateTask } from '@/types/tasks'
 import { PrimitiveAtom } from 'jotai'
+import { cmd } from '../commands'
 import { store } from '../store'
 import { TaskProcessor } from './pool'
 import { initTaskResult, isRecoveredTask } from './utils'
@@ -11,7 +13,7 @@ export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
 
   let abort: null | (() => void) = null
 
-  const promise = new Promise<void>((resolve, reject) => {
+  const promise = new Promise<void>(async (resolve, reject) => {
     if (isRecoveredTask(taskAtom)) {
       // TODO: Support for recovering transcribing.
     }
@@ -21,26 +23,25 @@ export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
       transcription: [],
     })
 
-    const intervalId = setInterval(() => {
-      store.set(taskAtom, (prev) => ({
-        ...prev,
-        result: {
-          progress: prev.result!.progress + 10,
-          transcription: [],
+    const task = store.get(taskAtom)
+    const serverConfig = getWhisperServerConfig()
+
+    const addResult = cmd.submitTranscriptionTask({
+      url: `http://${serverConfig.host}:${serverConfig.port}/add-task`,
+      namedPaths: [
+        {
+          name: task.name,
+          path: task.options.sourcePath,
         },
-      }))
+      ],
+      options: {
+        lang: task.options.language,
+        prompt: task.options.prompt,
+        vad: task.options.vadFilter,
+      },
+    })
 
-      if (store.get(taskAtom).result!.progress === 100) {
-        clearInterval(intervalId)
-        resolve()
-      }
-    }, 500)
-
-    abort = () => {
-      clearInterval(intervalId)
-      reject()
-      return
-    }
+    // TODO: Handle the result from the server.
   })
 
   return {

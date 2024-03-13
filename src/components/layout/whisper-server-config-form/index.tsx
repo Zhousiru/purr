@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  getMonitor,
   isRunningAtom,
   useWhisperServerConfig,
   WhisperServerConfig,
@@ -19,6 +20,7 @@ import { useAtomValue } from 'jotai'
 import { useCallback, useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ModelSwitch } from '../model-switch'
+import { ConnectionBadge } from './ConnectionBadge'
 
 export function WhisperServerConfigForm({ className }: { className?: string }) {
   const isRunning = useAtomValue(isRunningAtom)
@@ -56,6 +58,7 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
   }
 
   async function handleKill() {
+    getMonitor().close()
     await cmd.killWhisperServer()
   }
 
@@ -152,7 +155,11 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
         </div>
       </Label>
 
-      <div className="mt-auto flex justify-end gap-1">
+      <div className="mt-auto flex justify-end">
+        <ConnectionBadge/>
+      </div>
+
+      <div className="flex justify-end gap-1">
         {formState.isDirty && (
           <>
             <Button variant="outline" onClick={handleSubmit(handleSaveConfig)}>

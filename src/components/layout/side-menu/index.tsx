@@ -21,6 +21,7 @@ import {
   useMemo,
   useState,
 } from 'react'
+import { WhisperConnectionIndicator } from './WhisperConnectionIndicator'
 
 const Button = forwardRef<
   HTMLButtonElement,
@@ -75,7 +76,7 @@ export function SideMenu() {
                 className={cn(
                   'absolute inset-0 opacity-100 transition duration-500',
                   isWhisperRunning && !isWhisperReady && 'opacity-0',
-                  !isWhisperRunning && 'opacity-50',
+                  !isWhisperRunning && 'text-gray-400',
                 )}
               >
                 <IconEar />
@@ -89,6 +90,8 @@ export function SideMenu() {
               >
                 <IconEar className="animate-pulse" />
               </div>
+
+              <WhisperConnectionIndicator className="absolute bottom-0 right-0" />
             </div>
           ),
         },

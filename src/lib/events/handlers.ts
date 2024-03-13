@@ -1,5 +1,7 @@
 import {
   TerminalLineType,
+  getMonitor,
+  getWhisperServerConfig,
   pushTerminalLine,
   resetTerminalLines,
   setIsReady,
@@ -26,6 +28,9 @@ export function handleWhisperServerDaemon(
 
   if (/INFO:\s*Uvicorn running on/.test(lineData)) {
     setIsReady(true)
+
+    const config = getWhisperServerConfig()
+    getMonitor().reconnect(`http://${config.host}:${config.port}`)
   }
 
   pushTerminalLine(event.payload.type, lineData)

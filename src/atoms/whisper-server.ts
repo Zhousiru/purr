@@ -1,4 +1,5 @@
 import { store } from '@/lib/store'
+import { createMonitorAtom } from '@/lib/whisper-server/monitor-atom'
 import { atom, useAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
 
@@ -36,6 +37,7 @@ const configAtom = atomWithStorage<WhisperServerConfig>(
   },
 )
 
+export const getWhisperServerConfig = () => store.get(configAtom)
 export const useWhisperServerConfig = () => useAtom(configAtom)
 
 // TODO: Recover running status from backend.
@@ -50,3 +52,7 @@ export function pushTerminalLine(type: TerminalLineType, data: string) {
   store.set(terminalLinesAtom, (prev) => [...prev, { type, data }])
 }
 export const resetTerminalLines = () => store.set(terminalLinesAtom, [])
+
+export const monitorAtom = createMonitorAtom()
+export const getMonitorStatus = () => store.get(monitorAtom).status
+export const getMonitor = () => store.get(monitorAtom).monitor
