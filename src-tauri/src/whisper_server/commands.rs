@@ -1,12 +1,11 @@
 use super::{
   daemon::spawn_daemon,
-  utils::{submit_task, NamedPath, TaskOptions},
+  utils::{submit_task, TaskOptions},
 };
 use crate::{error::CommandResult, utils::dir_size, WhisperServerDaemon};
 use anyhow::anyhow;
-use rayon::prelude::*;
 use std::fs::read_dir;
-use tauri::{AppHandle, State};
+use tauri::{async_runtime::spawn_blocking, AppHandle, State};
 
 #[derive(Debug, serde::Serialize)]
 pub struct ModelItem {
@@ -40,13 +39,13 @@ pub async fn list_models(path: &str) -> CommandResult<Vec<ModelItem>> {
 pub async fn launch_whisper_server(
   app: AppHandle,
   daemon: State<'_, WhisperServerDaemon>,
-  program: String,
+  base_path: String,
   args: Vec<String>,
 ) -> CommandResult<()> {
   let mut daemon = daemon.0.lock().unwrap();
   match *daemon {
     None => {
-      *daemon = Some(spawn_daemon(program, args, app));
+      *daemon = Some(spawn_daemon(base_path, args, app));
       Ok(())
     }
     Some(_) => Err(anyhow!("whisper server is already running").into()),
@@ -83,26 +82,9 @@ pub struct TaskSubmissionResult {
 #[tauri::command]
 pub async fn submit_transcription_task(
   url: String,
-  named_paths: Vec<NamedPath>,
+  name: String,
+  path: String,
   options: TaskOptions,
-) -> Vec<TaskSubmissionResult> {
-  let client = reqwest::blocking::Client::new();
-
-  named_paths
-    .par_iter()
-    .map(
-      |named_path| match submit_task(&client, &url, named_path, &options) {
-        Ok(()) => TaskSubmissionResult {
-          name: named_path.name.clone(),
-          path: named_path.path.clone(),
-          error: None,
-        },
-        Err(e) => TaskSubmissionResult {
-          name: named_path.name.clone(),
-          path: named_path.path.clone(),
-          error: Some(e.to_string()),
-        },
-      },
-    )
-    .collect()
+) -> CommandResult<()> {
+  spawn_blocking(move || submit_task(&url, &name, &path, &options)).await?
 }

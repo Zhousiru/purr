@@ -1,5 +1,6 @@
 import { MonitorEvent } from '@/types/whisper-server'
 import { Subject, filter } from 'rxjs'
+import { waitUntilNextEvent } from '../events/utils'
 
 export interface MonitorCallbacks {
   onConnected: () => void
@@ -50,8 +51,13 @@ export class Monitor {
   }
 
   private onMessage = (event: MessageEvent<string>) => {
+    this.assertEventSubject()
+
     const data = JSON.parse(event.data) as MonitorEvent
-    this.eventSubject!.next(data)
+    this.eventSubject.next(data)
+
+    // FIXME: Remove debug code.
+    console.log('Monitor.onMessage', data)
   }
 
   private onOpen = () => {
@@ -60,12 +66,16 @@ export class Monitor {
   }
 
   private onError = () => {
-    this.eventSubject!.error('Whisper server connection error.')
+    this.assertEventSubject()
+
+    this.eventSubject.error('Whisper server connection error.')
     this.callbacks?.onDisconnected()
   }
 
   public async *watch(taskName: string) {
-    const observable = this.eventSubject!.pipe(
+    this.assertEventSubject()
+
+    const observable = this.eventSubject.pipe(
       filter((event) => event.taskName === taskName),
     )
 
@@ -95,6 +105,26 @@ export class Monitor {
       }
     } finally {
       sub.unsubscribe()
+    }
+  }
+
+  public waitUntilTaskInit(taskName: string) {
+    this.assertEventSubject()
+
+    return waitUntilNextEvent(
+      this.eventSubject,
+      (event) =>
+        event.taskName === taskName &&
+        event.type === 'status' &&
+        event.data === 'init',
+    )
+  }
+
+  private assertEventSubject(): asserts this is {
+    eventSubject: Subject<MonitorEvent>
+  } {
+    if (!this.eventSubject || this.eventSubject.closed) {
+      throw new Error('Monitor event subject is not available.')
     }
   }
 }

@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs'
 import { daemonSubject } from './subjects'
 
-function waitUntilNextEvent<T>(
+export function waitUntilNextEvent<T>(
   subject: Subject<T>,
   compare?: (payload: T) => boolean,
 ) {

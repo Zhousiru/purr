@@ -1,5 +1,29 @@
+use std::{
+  env,
+  path::{Path, PathBuf},
+};
+
 use crate::error::CommandResult;
 use anyhow::anyhow;
+
+pub fn get_path_env(base_path: &str) -> String {
+  let existed = env::var_os("PATH").unwrap();
+  let existed: Vec<PathBuf> = env::split_paths(&existed).collect();
+
+  let mut new = Vec::new();
+
+  // For Windows below.
+  new.push(PathBuf::from(base_path));
+  new.push(Path::new(base_path).join("Library").join("bin"));
+  new.push(Path::new(base_path).join("Scripts"));
+
+  // For Linux below.
+  new.push(Path::new(base_path).join("bin"));
+
+  new.extend(existed);
+
+  env::join_paths(new).unwrap().to_string_lossy().into()
+}
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct TaskOptions {
@@ -8,30 +32,20 @@ pub struct TaskOptions {
   pub vad: bool,
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct NamedPath {
-  pub name: String,
-  pub path: String,
-}
-
 #[derive(Debug, serde::Deserialize)]
 pub struct ApiResponse {
   status: String,
   msg: Option<String>,
 }
 
-pub fn submit_task(
-  client: &reqwest::blocking::Client,
-  url: &str,
-  named_path: &NamedPath,
-  options: &TaskOptions,
-) -> CommandResult<()> {
-  let form = reqwest::blocking::multipart::Form::new().file("file", &named_path.path)?;
+pub fn submit_task(url: &str, name: &str, path: &str, options: &TaskOptions) -> CommandResult<()> {
+  let client = reqwest::blocking::Client::new();
+  let form = reqwest::blocking::multipart::Form::new().file("file", path)?;
 
   let resp: ApiResponse = client
     .post(url)
     .query(&[
-      ("name", &named_path.name),
+      ("name", name),
       ("lang", &options.lang),
       ("prompt", &options.prompt),
       ("vad", &options.vad.to_string()),

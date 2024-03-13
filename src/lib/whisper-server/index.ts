@@ -1,8 +1,8 @@
-import { getMonitor } from '@/atoms/whisper-server'
-import { WhisperServerConfig } from '@/types/whisper-server'
-import { path } from '@tauri-apps/api'
+import { getMonitor, getWhisperServerConfig } from '@/atoms/whisper-server'
+import { ApiResponse, WhisperServerConfig } from '@/types/whisper-server'
 import { cmd } from '../commands'
 import { waitUntilExit } from '../events/utils'
+import { joinPath } from '../utils/path'
 
 export async function startWhisperServer(config: WhisperServerConfig) {
   if (await cmd.isWhisperServerRunning()) {
@@ -13,9 +13,9 @@ export async function startWhisperServer(config: WhisperServerConfig) {
   }
 
   await cmd.launchWhisperServer({
-    program: await path.join(config.startupDir, 'python'),
+    basePath: config.startupDir,
     args: [
-      await path.join(config.startupDir, 'src', 'main.py'),
+      joinPath(config.startupDir, 'src', 'main.py'),
       '--host',
       config.host,
       '--port',
@@ -25,7 +25,7 @@ export async function startWhisperServer(config: WhisperServerConfig) {
       '--type',
       config.quantizationType,
       '--model',
-      await path.join(config.modelDir, config.model),
+      joinPath(config.modelDir, config.model),
     ],
   })
 
@@ -35,4 +35,32 @@ export async function startWhisperServer(config: WhisperServerConfig) {
 export async function killWhisperServer() {
   getMonitor().close()
   await cmd.killWhisperServer()
+}
+
+export async function addWhisperServerTask(
+  name: string,
+  path: string,
+  options: { lang: string; prompt: string; vad: boolean },
+) {
+  const config = getWhisperServerConfig()
+
+  return cmd.submitTranscriptionTask({
+    url: `http://${config.host}:${config.port}/add-task`,
+    name,
+    path,
+    options,
+  })
+}
+
+export async function cancelWhisperServerTask(name: string) {
+  const config = getWhisperServerConfig()
+
+  const url = new URL(`http://${config.host}:${config.port}/cancel-task`)
+  url.searchParams.set('name', name)
+
+  const resp: ApiResponse = await (await fetch(url)).json()
+
+  if (resp.status === 'error') {
+    throw new Error(resp.msg)
+  }
 }

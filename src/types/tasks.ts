@@ -11,13 +11,13 @@ export interface AudioMeta {
   duration: number
 }
 
-export interface Transcription {
+export interface Transcript {
   start: number
   end: number
   text: string
 }
 
-export interface Translation extends Transcription {
+export interface Translation extends Transcript {
   translated: string
 }
 
@@ -32,7 +32,7 @@ export interface TranscribeOptions {
 
 export interface TranscribeResult {
   progress: number
-  transcription: Transcription[]
+  transcript: Transcript[]
 }
 
 export interface TranscribeTask extends BasicTask {
@@ -42,7 +42,7 @@ export interface TranscribeTask extends BasicTask {
 }
 
 export interface TranslateOptions {
-  transcription: Transcription[]
+  transcription: Transcript[]
   model: string
   prompt: string
   batchSize: number

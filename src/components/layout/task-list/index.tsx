@@ -1,6 +1,7 @@
 'use client'
 
 import { taskListAtom } from '@/atoms/tasks'
+import { getMonitor } from '@/atoms/whisper-server'
 import { Button } from '@/components/ui/button'
 import { addTask } from '@/lib/task-manager'
 import { Monitor } from '@/lib/whisper-server/monitor'
@@ -35,17 +36,11 @@ export function TaskList() {
   }
 
   function handleDebugOpenConnect() {
-    monitor.connect('http://localhost:8080')
+    getMonitor().connect('http://localhost:23330')
   }
 
   function handleDebugCloseConnect() {
-    monitor.close()
-  }
-
-  async function handleDebugOpenAg() {
-    for await (const event of monitor.watch('111')) {
-      console.log(event)
-    }
+    getMonitor().close()
   }
 
   return (
@@ -56,7 +51,6 @@ export function TaskList() {
         <Button onClick={handleDebugAddTranscribeTask}>Add transcribe</Button>
         <Button onClick={handleDebugOpenConnect}>Open connect</Button>
         <Button onClick={handleDebugCloseConnect}>Close connect</Button>
-        <Button onClick={handleDebugOpenAg}>Open async generator</Button>
       </div>
 
       {tasks.map((t) => (

@@ -1,10 +1,19 @@
-import { getWhisperServerConfig } from '@/atoms/whisper-server'
+import { getMonitor } from '@/atoms/whisper-server'
 import { TranscribeTask, TranslateTask } from '@/types/tasks'
 import { PrimitiveAtom } from 'jotai'
-import { cmd } from '../commands'
 import { store } from '../store'
+import {
+  addWhisperServerTask,
+  cancelWhisperServerTask,
+} from '../whisper-server'
 import { TaskProcessor } from './pool'
-import { initTaskResult, isRecoveredTask } from './utils'
+import {
+  calcProgress,
+  initTaskResult,
+  isRecoveredTask,
+  pushTaskTranscript,
+  updateTaskProgress,
+} from './utils'
 
 export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
   taskAtom: PrimitiveAtom<TranscribeTask>,
@@ -20,28 +29,44 @@ export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
 
     initTaskResult(taskAtom, {
       progress: 0,
-      transcription: [],
+      transcript: [],
     })
 
     const task = store.get(taskAtom)
-    const serverConfig = getWhisperServerConfig()
+    const monitor = getMonitor()
 
-    const addResult = cmd.submitTranscriptionTask({
-      url: `http://${serverConfig.host}:${serverConfig.port}/add-task`,
-      namedPaths: [
-        {
-          name: task.name,
-          path: task.options.sourcePath,
-        },
-      ],
-      options: {
-        lang: task.options.language,
-        prompt: task.options.prompt,
-        vad: task.options.vadFilter,
-      },
+    await addWhisperServerTask(task.name, task.options.sourcePath, {
+      lang: task.options.language,
+      prompt: task.options.prompt,
+      vad: task.options.vadFilter,
     })
 
-    // TODO: Handle the result from the server.
+    for await (const event of monitor.watch(task.name)) {
+      console.log(event)
+
+      if (event.type === 'transcription') {
+        const progress = calcProgress(
+          event.data.end,
+          task.options.sourceMeta.duration,
+        )
+        updateTaskProgress(taskAtom, progress)
+        pushTaskTranscript(taskAtom, event.data)
+      }
+
+      if (
+        event.type === 'status' &&
+        (event.data === 'canceled' || event.data === 'done')
+      ) {
+        break
+      }
+    }
+
+    abort = () => {
+      cancelWhisperServerTask(task.name)
+      reject()
+    }
+
+    resolve()
   })
 
   return {

@@ -1,5 +1,5 @@
 use super::events::WhisperServerEvent;
-use crate::{event_name, WhisperServerDaemon};
+use crate::{event_name, whisper_server::utils::get_path_env, WhisperServerDaemon};
 use shared_child::SharedChild;
 use std::{
   io::{BufRead, BufReader},
@@ -19,7 +19,7 @@ impl Daemon {
   }
 }
 
-pub fn spawn_daemon(program: String, args: Vec<String>, app: AppHandle) -> Daemon {
+pub fn spawn_daemon(base_path: String, args: Vec<String>, app: AppHandle) -> Daemon {
   let (tx, rx) = mpsc::channel();
   let tx_clone = tx.clone();
 
@@ -30,9 +30,10 @@ pub fn spawn_daemon(program: String, args: Vec<String>, app: AppHandle) -> Daemo
     )
     .unwrap();
 
-  let mut command = Command::new(program);
+  let mut command = Command::new("python");
 
   command
+    .env("PATH", get_path_env(&base_path))
     .args(args)
     .stdout(Stdio::piped())
     .stderr(Stdio::piped());

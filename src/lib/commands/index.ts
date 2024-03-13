@@ -1,4 +1,4 @@
-import { DurationResult, TranscriptionSubmissionResult } from '@/types/commands'
+import { DurationResult } from '@/types/commands'
 import { ModelItem } from '@/types/whisper-server'
 import { InvokeArgs, invoke } from '@tauri-apps/api/tauri'
 
@@ -14,7 +14,7 @@ export interface Commands {
     ModelItem[]
   >
   launchWhisperServer: CommandFunction<
-    { program: string; args: string[] },
+    { basePath: string; args: string[] },
     void
   >
   killWhisperServer: CommandFunction<null, void>
@@ -22,10 +22,11 @@ export interface Commands {
   submitTranscriptionTask: CommandFunction<
     {
       url: string
-      namedPaths: Array<{ name: string; path: string }>
+      name: string
+      path: string
       options: { lang: string; prompt: string; vad: boolean }
     },
-    TranscriptionSubmissionResult
+    void
   >
   isWhisperServerRunning: CommandFunction<null, boolean>
 }
