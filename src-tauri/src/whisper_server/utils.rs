@@ -3,8 +3,9 @@ use std::{
   path::{Path, PathBuf},
 };
 
-use crate::error::CommandResult;
 use anyhow::anyhow;
+
+use crate::error::CommandResult;
 
 pub fn get_path_env(base_path: &str) -> String {
   let existed = env::var_os("PATH").unwrap();

@@ -1,11 +1,13 @@
+use std::fs::read_dir;
+
+use anyhow::anyhow;
+use tauri::{async_runtime::spawn_blocking, AppHandle, State};
+
 use super::{
   daemon::spawn_daemon,
   utils::{submit_task, TaskOptions},
 };
 use crate::{error::CommandResult, utils::dir_size, WhisperServerDaemon};
-use anyhow::anyhow;
-use std::fs::read_dir;
-use tauri::{async_runtime::spawn_blocking, AppHandle, State};
 
 #[derive(Debug, serde::Serialize)]
 pub struct ModelItem {

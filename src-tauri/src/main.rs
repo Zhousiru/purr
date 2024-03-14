@@ -7,14 +7,20 @@ mod event_name;
 mod utils;
 mod whisper_server;
 
-use crate::audio::commands::get_audio_durations;
-use crate::whisper_server::commands::{
-  is_whisper_server_running, kill_whisper_server, launch_whisper_server, list_models,
-  submit_transcription_task,
-};
-use crate::whisper_server::daemon::Daemon;
 use std::sync::Mutex;
+
 use tauri::{Manager, State, WindowEvent};
+
+use crate::{
+  audio::commands::get_audio_durations,
+  whisper_server::{
+    commands::{
+      is_whisper_server_running, kill_whisper_server, launch_whisper_server, list_models,
+      submit_transcription_task,
+    },
+    daemon::Daemon,
+  },
+};
 
 #[derive(Default)]
 pub struct WhisperServerDaemon(Mutex<Option<Daemon>>);

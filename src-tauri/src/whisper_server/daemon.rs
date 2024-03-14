@@ -1,13 +1,15 @@
-use super::events::WhisperServerEvent;
-use crate::{event_name, whisper_server::utils::get_path_env, WhisperServerDaemon};
-use shared_child::SharedChild;
 use std::{
   io::{BufRead, BufReader},
   process::{Command, Stdio},
   sync::{mpsc, Arc},
   thread,
 };
+
+use shared_child::SharedChild;
 use tauri::{AppHandle, Manager};
+
+use super::events::WhisperServerEvent;
+use crate::{event_name, whisper_server::utils::get_path_env, WhisperServerDaemon};
 
 pub struct Daemon {
   kill_tx: mpsc::Sender<bool>,
