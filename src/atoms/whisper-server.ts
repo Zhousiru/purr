@@ -1,3 +1,4 @@
+import { whisperServerDefaultConfig } from '@/constants/whisper-server'
 import { store } from '@/lib/store'
 import { createMonitorAtom } from '@/lib/whisper-server/monitor-atom'
 import {
@@ -5,20 +6,12 @@ import {
   TerminalLine,
   WhisperServerConfig,
 } from '@/types/whisper-server'
-import { atom, useAtom } from 'jotai'
+import { atom, useAtom, useAtomValue } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
 
 const configAtom = atomWithStorage<WhisperServerConfig>(
   'whisper-server-config',
-  {
-    startupDir: '',
-    host: '127.0.0.1',
-    port: 23330,
-    device: 'auto',
-    quantizationType: 'default',
-    modelDir: '',
-    model: '',
-  },
+  whisperServerDefaultConfig,
   undefined,
   {
     getOnInit: true,
@@ -27,6 +20,7 @@ const configAtom = atomWithStorage<WhisperServerConfig>(
 
 export const getWhisperServerConfig = () => store.get(configAtom)
 export const useWhisperServerConfig = () => useAtom(configAtom)
+export const useWhisperServerConfigValue = () => useAtomValue(configAtom)
 
 // TODO: Recover running status from backend.
 export const isRunningAtom = atom(false)
@@ -42,5 +36,6 @@ export function pushTerminalLine(type: DaemonEventType, data: string) {
 export const resetTerminalLines = () => store.set(terminalLinesAtom, [])
 
 export const monitorAtom = createMonitorAtom()
+export const useMonitorStatusValue = () => useAtomValue(monitorAtom).status
 export const getMonitorStatus = () => store.get(monitorAtom).status
 export const getMonitor = () => store.get(monitorAtom).monitor

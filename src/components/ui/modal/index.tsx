@@ -9,18 +9,24 @@ export function Modal({
   onClose,
   title,
   fixedTop,
+  className,
   children,
 }: {
   isOpen: boolean
-  onClose: (value: false) => void
+  onClose?: (value: false) => void
   title?: string
   fixedTop?: string
+  className?: string
   children: ReactNode
 }) {
   return (
     <>
       <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={onClose}>
+        <Dialog
+          as="div"
+          className="relative z-50"
+          onClose={onClose ?? (() => null)}
+        >
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-200"
@@ -50,7 +56,12 @@ export function Modal({
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
+                <Dialog.Panel
+                  className={cn(
+                    'w-full max-w-md rounded-lg bg-white p-4 shadow-xl',
+                    className,
+                  )}
+                >
                   {title && (
                     <Dialog.Title className="mb-2 text-lg">
                       {title}

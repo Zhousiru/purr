@@ -101,7 +101,7 @@ export function NewTaskModal({
       <div className="flex min-h-[400px] flex-col gap-2">
         {currentStep === 'file' && (
           <>
-            <div className="text-lg">Select files</div>
+            <div className="text-lg">Select Files</div>
 
             <div className="flex gap-1">
               <Button

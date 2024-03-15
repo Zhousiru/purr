@@ -44,44 +44,49 @@ export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
       vad: task.options.vadFilter,
     })
 
-    for await (const event of monitor.watch(task.name)) {
-      if (event.type === 'transcription') {
-        const progress = calcProgress(
-          event.data.end,
-          task.options.sourceMeta.duration,
-        )
-        updateTaskProgress(taskAtom, progress)
-        pushTaskTranscript(taskAtom, event.data)
-      }
-
-      if (event.type === 'language-detection') {
-        store.set(taskAtom, (prev) => ({
-          ...prev,
-          options: {
-            ...prev.options,
-            language: event.data,
-          },
-        }))
-      }
-
-      if (event.type === 'status') {
-        if (event.data === 'done') {
-          updateTaskProgress(taskAtom, 100)
-          resolve()
-          break
+    try {
+      for await (const event of monitor.watch(task.name)) {
+        if (event.type === 'transcription') {
+          const progress = calcProgress(
+            event.data.end,
+            task.options.sourceMeta.duration,
+          )
+          updateTaskProgress(taskAtom, progress)
+          pushTaskTranscript(taskAtom, event.data)
         }
 
-        if (event.data === 'canceled') {
-          // `canceled` event is triggered by the `abort()`.
-          // So, we don't need to `reject()` here.
-          break
+        if (event.type === 'language-detection') {
+          store.set(taskAtom, (prev) => ({
+            ...prev,
+            options: {
+              ...prev.options,
+              language: event.data,
+            },
+          }))
         }
 
-        if (event.data === 'error') {
-          reject()
-          break
+        if (event.type === 'status') {
+          if (event.data === 'done') {
+            updateTaskProgress(taskAtom, 100)
+            resolve()
+            break
+          }
+
+          if (event.data === 'canceled') {
+            // `canceled` event is triggered by the `abort()`.
+            // So, we don't need to `reject()` here.
+            break
+          }
+
+          if (event.data === 'error') {
+            reject()
+            break
+          }
         }
       }
+    } catch (error) {
+      // Whisper server connection is closed unexpectedly.
+      reject()
     }
   })
 

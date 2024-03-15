@@ -1,7 +1,15 @@
 'use client'
 
-import { isReadyAtom, isRunningAtom } from '@/atoms/whisper-server'
+import {
+  getMonitorStatus,
+  isReadyAtom,
+  isRunningAtom,
+} from '@/atoms/whisper-server'
 import { NewTaskModal } from '@/components/modal/new-tasks'
+import { WhisperServerNeedConfigure } from '@/components/modal/whisper-server-need-configure'
+import { useWhisperNeedConfigureModal } from '@/components/modal/whisper-server-need-configure/use-whisper-need-configure-modal'
+import { WhisperServerSpinner } from '@/components/modal/whisper-server-spinner'
+import { useWhisperServerLauncher } from '@/components/modal/whisper-server-spinner/use-whisper-server-launcher'
 import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils/cn'
 import {
@@ -50,6 +58,24 @@ export function SideMenu() {
   const isWhisperReady = useAtomValue(isReadyAtom)
 
   const [newTaskModal, setNewTaskModal] = useState(false)
+
+  const { register: configureModalRegister, checkConfigured } =
+    useWhisperNeedConfigureModal()
+  const { register: spinnerModalRegister, launch: launchWhisperServer } =
+    useWhisperServerLauncher()
+
+  async function handleAddTask() {
+    if (!checkConfigured()) {
+      return
+    }
+    if (getMonitorStatus() !== 'connected') {
+      if (await launchWhisperServer()) {
+        setNewTaskModal(true)
+      }
+      return
+    }
+    setNewTaskModal(true)
+  }
 
   const menu: {
     top: MenuItem[]
@@ -136,7 +162,7 @@ export function SideMenu() {
         <div className="relative z-50 flex w-14 flex-shrink-0 flex-col bg-gray-900">
           <Button
             className="bg-blue-500 hover:bg-blue-600"
-            onClick={() => setNewTaskModal(true)}
+            onClick={handleAddTask}
           >
             <IconPlus />
           </Button>
@@ -174,6 +200,8 @@ export function SideMenu() {
       </TooltipGroup>
 
       <NewTaskModal isOpen={newTaskModal} onClose={setNewTaskModal} />
+      <WhisperServerNeedConfigure {...configureModalRegister} />
+      <WhisperServerSpinner {...spinnerModalRegister} />
     </>
   )
 }

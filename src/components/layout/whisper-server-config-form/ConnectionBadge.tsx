@@ -1,22 +1,18 @@
-import { monitorAtom } from '@/atoms/whisper-server'
+import { useMonitorStatusValue } from '@/atoms/whisper-server'
 import { Badge } from '@/components/ui/badge'
 import { Dot } from '@/components/ui/dot'
 import { cn } from '@/lib/utils/cn'
-import { useAtomValue } from 'jotai'
 
 export function ConnectionBadge() {
-  const monitor = useAtomValue(monitorAtom)
+  const status = useMonitorStatusValue()
 
   return (
     <Badge className="gap-1 border bg-transparent text-gray-600">
       <Dot
-        className={cn(
-          'transition',
-          monitor.status === 'connected' && 'bg-green-500',
-        )}
+        className={cn('transition', status === 'connected' && 'bg-green-500')}
       />
-      {monitor.status === 'connected' && 'Connected'}
-      {monitor.status === 'disconnected' && 'Disconnected'}
+      {status === 'connected' && 'Connected'}
+      {status === 'disconnected' && 'Disconnected'}
     </Badge>
   )
 }
