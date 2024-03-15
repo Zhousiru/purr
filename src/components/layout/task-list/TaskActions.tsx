@@ -1,3 +1,4 @@
+import { TaskInfoModal } from '@/components/modal/task-info'
 import { WhisperServerGuardModal } from '@/components/modal/whisper-server-guard'
 import { useWhisperServerGuard } from '@/components/modal/whisper-server-guard/use-whisper-server-guard'
 import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
@@ -5,13 +6,15 @@ import { removeTask, startTask, stopTask } from '@/lib/task-manager'
 import { cn } from '@/lib/utils/cn'
 import { Task } from '@/types/tasks'
 import {
+  IconInfoCircle,
   IconPencil,
   IconPlayerPlay,
   IconPlayerStop,
   IconTrash,
 } from '@tabler/icons-react'
-import { HTMLAttributes } from 'react'
+import { HTMLAttributes, useState } from 'react'
 import { GhostButton } from './GhostButton'
+import { useTaskAtomContext } from './TaskAtomContext'
 
 export function TaskActions({
   task,
@@ -19,7 +22,13 @@ export function TaskActions({
   className,
   ...props
 }: HTMLAttributes<HTMLDivElement> & { task: Task; isShow: boolean }) {
+  const [isTaskInfoOpen, setIsTaskInfoOpen] = useState(false)
   const { register: guardRegister, guard } = useWhisperServerGuard()
+  const taskAtom = useTaskAtomContext()
+
+  function handleViewTaskInfo() {
+    setIsTaskInfoOpen(true)
+  }
 
   function handleOpenInEditor() {
     // TODO: Open in editor.
@@ -48,6 +57,10 @@ export function TaskActions({
       {...props}
     >
       <TooltipGroup>
+        <Tooltip content="View task info">
+          <GhostButton icon={<IconInfoCircle />} onClick={handleViewTaskInfo} />
+        </Tooltip>
+
         <Tooltip content="Open in editor">
           <GhostButton icon={<IconPencil />} onClick={handleOpenInEditor} />
         </Tooltip>
@@ -72,6 +85,11 @@ export function TaskActions({
       </TooltipGroup>
 
       <WhisperServerGuardModal {...guardRegister} />
+      <TaskInfoModal
+        isOpen={isTaskInfoOpen}
+        onClose={setIsTaskInfoOpen}
+        taskAtom={taskAtom}
+      />
     </div>
   )
 }

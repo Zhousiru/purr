@@ -6,6 +6,7 @@ import { Task, TaskStatus } from '@/types/tasks'
 import { PrimitiveAtom, useAtomValue } from 'jotai'
 import { useState } from 'react'
 import { TaskActions } from './TaskActions'
+import { TaskAtomProvider } from './TaskAtomContext'
 
 function Progress({
   status,
@@ -57,34 +58,39 @@ export function TaskItem({ taskAtom }: { taskAtom: PrimitiveAtom<Task> }) {
   const showActions = isHover || isFocusActions
 
   return (
-    <div
-      className="flex flex-col overflow-hidden rounded border"
-      onMouseEnter={() => setIsHover(true)}
-      onMouseLeave={() => setIsHover(false)}
-    >
-      <div className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="text-lg font-bold">{task.name}</div>
-          <TaskActions
-            task={task}
-            isShow={showActions}
-            onFocus={() => setIsFocusActions(true)}
-            onBlur={() => setIsFocusActions(false)}
-          />
-        </div>
-        <div className="text-sm text-gray-400">{task.group}</div>
+    <TaskAtomProvider value={taskAtom}>
+      <div
+        className="flex flex-col overflow-hidden rounded border"
+        onMouseEnter={() => setIsHover(true)}
+        onMouseLeave={() => setIsHover(false)}
+      >
+        <div className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="text-lg font-bold">{task.name}</div>
+            <TaskActions
+              task={task}
+              isShow={showActions}
+              onFocus={() => setIsFocusActions(true)}
+              onBlur={() => setIsFocusActions(false)}
+            />
+          </div>
+          <div className="text-sm text-gray-400">{task.group}</div>
 
-        <div className="mt-2 flex items-end gap-2">
-          {task.type === 'transcribe' && <Badge>Transcribe</Badge>}
-          {task.type === 'translate' && <Badge>Translate</Badge>}
-          {task.type === 'transcribe' && task.options.translateWith && (
-            <Badge className="border bg-transparent">Then translate</Badge>
-          )}
-          <ProgressText status={task.status} progress={task.result?.progress} />
+          <div className="mt-2 flex items-end gap-2">
+            {task.type === 'transcribe' && <Badge>Transcribe</Badge>}
+            {task.type === 'translate' && <Badge>Translate</Badge>}
+            {task.type === 'transcribe' && task.options.translateWith && (
+              <Badge className="border bg-transparent">Then translate</Badge>
+            )}
+            <ProgressText
+              status={task.status}
+              progress={task.result?.progress}
+            />
+          </div>
         </div>
+
+        <Progress status={task.status} progress={task.result?.progress} />
       </div>
-
-      <Progress status={task.status} progress={task.result?.progress} />
-    </div>
+    </TaskAtomProvider>
   )
 }
