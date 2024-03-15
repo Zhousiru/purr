@@ -35,4 +35,6 @@ export function handleWhisperServerDaemon(event: Event<DaemonEventPayload>) {
   pushTerminalLine(event.payload.type, lineData)
 
   daemonSubject.next(event.payload)
+
+  console.log(`DaemonEvent.${event.payload.type}`, lineData)
 }

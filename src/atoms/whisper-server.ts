@@ -22,7 +22,6 @@ export const getWhisperServerConfig = () => store.get(configAtom)
 export const useWhisperServerConfig = () => useAtom(configAtom)
 export const useWhisperServerConfigValue = () => useAtomValue(configAtom)
 
-// TODO: Recover running status from backend.
 export const isRunningAtom = atom(false)
 export const setIsRunning = (value: boolean) => store.set(isRunningAtom, value)
 

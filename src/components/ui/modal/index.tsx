@@ -2,13 +2,14 @@
 
 import { cn } from '@/lib/utils/cn'
 import { Dialog, Transition } from '@headlessui/react'
-import { Fragment, ReactNode } from 'react'
+import { Fragment, ReactNode, useRef } from 'react'
 
 export function Modal({
   isOpen,
   onClose,
   title,
   fixedTop,
+  noAutoFocus,
   className,
   children,
 }: {
@@ -16,9 +17,12 @@ export function Modal({
   onClose?: (value: false) => void
   title?: string
   fixedTop?: string
+  noAutoFocus?: boolean
   className?: string
   children: ReactNode
 }) {
+  const defaultFocusRef = useRef<HTMLDivElement>(null)
+
   return (
     <>
       <Transition appear show={isOpen} as={Fragment}>
@@ -26,6 +30,8 @@ export function Modal({
           as="div"
           className="relative z-50"
           onClose={onClose ?? (() => null)}
+          // We set the `initialFocus` to `Dialog.Panel` element to avoid the focus trap warning.
+          initialFocus={noAutoFocus ? defaultFocusRef : undefined}
         >
           <Transition.Child
             as={Fragment}
@@ -61,6 +67,7 @@ export function Modal({
                     'w-full max-w-md rounded-lg bg-white p-4 shadow-xl',
                     className,
                   )}
+                  ref={defaultFocusRef}
                 >
                   {title && (
                     <Dialog.Title className="mb-2 text-lg">

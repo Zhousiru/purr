@@ -32,9 +32,10 @@ export function WhisperServerSpinner({
         isOpen={isOpen}
         onClose={handleUserClose}
         className={cn(!isFailed && 'w-fit')}
+        noAutoFocus
       >
         {!isFailed ? (
-          <div className="flex w-[250px] flex-col gap-2" tabIndex={0}>
+          <div className="flex w-[250px] flex-col gap-2">
             <div>
               <div className="flex items-center justify-center gap-1 text-gray-600">
                 <IconLoader2 size={18} className="animate-spin" />

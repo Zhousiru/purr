@@ -30,8 +30,16 @@ export function useWhisperServerLauncher() {
         }
       })
 
+      let isLaunched = false
+
       const daemonSub = daemonSubject.subscribe((payload) => {
-        if (payload.type === 'exit') {
+        if (payload.type === 'launch') {
+          // We detecte the launch event, then wait for the exit event.
+          // Because we may receive exit event from the legacy server.
+          isLaunched = true
+        }
+
+        if (isLaunched && payload.type === 'exit') {
           // Failed to launch.
           unsubMonitor()
           !daemonSub.closed && daemonSub.unsubscribe()
