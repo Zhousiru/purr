@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils/cn'
 import { IconLoader2, IconX } from '@tabler/icons-react'
 import { useRouter } from 'next/navigation'
 
-export function WhisperServerSpinner({
+export function WhisperServerSpinnerModal({
   isOpen,
   onClose,
   isFailed,

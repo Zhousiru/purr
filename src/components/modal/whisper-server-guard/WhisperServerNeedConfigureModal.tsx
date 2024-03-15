@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/modal'
 import { IconX } from '@tabler/icons-react'
 import { useRouter } from 'next/navigation'
 
-export function WhisperServerNeedConfigure({
+export function WhisperServerNeedConfigureModal({
   isOpen,
   onClose,
 }: {

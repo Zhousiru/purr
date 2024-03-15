@@ -1,15 +1,9 @@
 'use client'
 
-import {
-  getMonitorStatus,
-  isReadyAtom,
-  isRunningAtom,
-} from '@/atoms/whisper-server'
+import { isReadyAtom, isRunningAtom } from '@/atoms/whisper-server'
 import { NewTaskModal } from '@/components/modal/new-tasks'
-import { WhisperServerNeedConfigure } from '@/components/modal/whisper-server-need-configure'
-import { useWhisperNeedConfigureModal } from '@/components/modal/whisper-server-need-configure/use-whisper-need-configure-modal'
-import { WhisperServerSpinner } from '@/components/modal/whisper-server-spinner'
-import { useWhisperServerLauncher } from '@/components/modal/whisper-server-spinner/use-whisper-server-launcher'
+import { WhisperServerGuardModal } from '@/components/modal/whisper-server-guard'
+import { useWhisperServerGuard } from '@/components/modal/whisper-server-guard/use-whisper-server-guard'
 import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils/cn'
 import {
@@ -59,22 +53,10 @@ export function SideMenu() {
 
   const [newTaskModal, setNewTaskModal] = useState(false)
 
-  const { register: configureModalRegister, checkConfigured } =
-    useWhisperNeedConfigureModal()
-  const { register: spinnerModalRegister, launch: launchWhisperServer } =
-    useWhisperServerLauncher()
+  const { register: guardRegister, guard } = useWhisperServerGuard()
 
   async function handleAddTask() {
-    if (!checkConfigured()) {
-      return
-    }
-    if (getMonitorStatus() !== 'connected') {
-      if (await launchWhisperServer()) {
-        setNewTaskModal(true)
-      }
-      return
-    }
-    setNewTaskModal(true)
+    guard(() => setNewTaskModal(true))
   }
 
   const menu: {
@@ -200,8 +182,7 @@ export function SideMenu() {
       </TooltipGroup>
 
       <NewTaskModal isOpen={newTaskModal} onClose={setNewTaskModal} />
-      <WhisperServerNeedConfigure {...configureModalRegister} />
-      <WhisperServerSpinner {...spinnerModalRegister} />
+      <WhisperServerGuardModal {...guardRegister} />
     </>
   )
 }

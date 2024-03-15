@@ -1,3 +1,5 @@
+import { WhisperServerGuardModal } from '@/components/modal/whisper-server-guard'
+import { useWhisperServerGuard } from '@/components/modal/whisper-server-guard/use-whisper-server-guard'
 import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
 import { removeTask, startTask, stopTask } from '@/lib/task-manager'
 import { cn } from '@/lib/utils/cn'
@@ -17,6 +19,8 @@ export function TaskActions({
   className,
   ...props
 }: HTMLAttributes<HTMLDivElement> & { task: Task; isShow: boolean }) {
+  const { register: guardRegister, guard } = useWhisperServerGuard()
+
   function handleOpenInEditor() {
     // TODO: Open in editor.
     alert('Open in editor')
@@ -27,7 +31,7 @@ export function TaskActions({
   }
 
   function handleStart() {
-    startTask(task.type, task.name)
+    guard(() => startTask(task.type, task.name))
   }
 
   function handleRemove() {
@@ -66,6 +70,8 @@ export function TaskActions({
           </Tooltip>
         )}
       </TooltipGroup>
+
+      <WhisperServerGuardModal {...guardRegister} />
     </div>
   )
 }
