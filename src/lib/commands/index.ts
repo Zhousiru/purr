@@ -1,4 +1,4 @@
-import { DurationResult } from '@/types/commands'
+import { DurationResult, WaveformResult } from '@/types/commands'
 import { ModelItem } from '@/types/whisper-server'
 import { InvokeArgs, invoke } from '@tauri-apps/api/tauri'
 
@@ -29,7 +29,10 @@ export interface Commands {
     void
   >
   isWhisperServerRunning: CommandFunction<null, boolean>
-  getAudioWaveformData: CommandFunction<{ path: string }, number>
+  getAudioWaveformData: CommandFunction<
+    { path: string; pairPerSec: number },
+    Array<WaveformResult>
+  >
 }
 
 export const cmd = new Proxy(

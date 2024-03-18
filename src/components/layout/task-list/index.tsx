@@ -36,9 +36,10 @@ export function TaskList() {
   }
 
   async function handleDebugCallGetLoudness() {
-    alert(
+    console.log(
       await cmd.getAudioWaveformData({
-        path: '',
+        path: 'C:\\Users\\Syrhu\\Desktop\\test.wav',
+        pairPerSec: 75,
       }),
     )
   }

@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 use super::{utils::calc_audio_duration, waveform::get_audio_samples};
@@ -40,21 +38,33 @@ pub async fn get_audio_durations(paths: Vec<String>) -> Vec<DurationResult> {
     .collect()
 }
 
-#[tauri::command]
-pub async fn get_audio_waveform_data(path: String) -> CommandResult<String> {
-  let now = Instant::now();
-  let (samples, samples_per_sec) = get_audio_samples(&path)?;
+#[derive(Debug, serde::Serialize)]
+pub struct WaveformResult {
+  data: Option<Vec<Vec<f32>>>,
+  error: Option<String>,
+}
 
-  let result: Vec<Vec<Vec<f32>>> = samples
+#[tauri::command]
+pub async fn get_audio_waveform_data(
+  path: String,
+  pair_per_sec: usize,
+) -> CommandResult<Vec<WaveformResult>> {
+  let (samples, samples_per_sec) = get_audio_samples(&path)?;
+  let result: Vec<WaveformResult> = samples
     .par_iter()
-    .map(|channel| extract_sample_extrema(channel, samples_per_sec as usize, 75).unwrap())
+    .map(
+      |channel| match extract_sample_extrema(channel, samples_per_sec as usize, pair_per_sec) {
+        Ok(d) => WaveformResult {
+          data: Some(d),
+          error: None,
+        },
+        Err(e) => WaveformResult {
+          data: None,
+          error: Some(e.to_string()),
+        },
+      },
+    )
     .collect();
 
-  let elapsed = now.elapsed().as_millis();
-  Ok(format!(
-    "{} samples and {} seconds extrema generated in {}ms.",
-    samples[0].len(),
-    result[0].len(),
-    elapsed
-  ))
+  Ok(result)
 }
