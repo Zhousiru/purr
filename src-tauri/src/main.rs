@@ -12,7 +12,7 @@ use std::sync::Mutex;
 use tauri::{Manager, State, WindowEvent};
 
 use crate::{
-  audio::commands::get_audio_durations,
+  audio::commands::{get_audio_durations, get_audio_waveform_data},
   whisper_server::{
     commands::{
       is_whisper_server_running, kill_whisper_server, launch_whisper_server, list_models,
@@ -33,7 +33,8 @@ fn main() {
       kill_whisper_server,
       get_audio_durations,
       submit_transcription_task,
-      is_whisper_server_running
+      is_whisper_server_running,
+      get_audio_waveform_data
     ])
     .manage(WhisperServerDaemon(Default::default()))
     .on_window_event(move |event| match event.event() {

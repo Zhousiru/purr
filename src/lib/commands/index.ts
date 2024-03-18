@@ -29,6 +29,7 @@ export interface Commands {
     void
   >
   isWhisperServerRunning: CommandFunction<null, boolean>
+  getAudioWaveformData: CommandFunction<{ path: string }, number>
 }
 
 export const cmd = new Proxy(
