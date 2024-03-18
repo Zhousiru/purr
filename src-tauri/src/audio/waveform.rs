@@ -78,14 +78,14 @@ pub fn extract_sample_extrema(
   samples: &Vec<f32>,
   samples_per_sec: usize,
   pair_per_sec: usize,
-) -> CommandResult<Vec<Vec<f32>>> {
+) -> CommandResult<Vec<f32>> {
   let samples_per_pair = samples_per_sec / pair_per_sec;
   let secs = samples.len() / samples_per_sec;
 
   // We process samples in seconds to avoid error accumulation.
-  let mut result: Vec<Vec<f32>> = (0..secs)
+  let mut result: Vec<f32> = (0..secs)
     .into_par_iter()
-    .map(|sec| {
+    .flat_map(|sec| {
       let sec_start = sec * samples_per_sec;
 
       let mut chunk_result = Vec::new();
@@ -122,7 +122,7 @@ pub fn extract_sample_extrema(
       chunk_result.push(min);
     }
 
-    result.push(chunk_result);
+    result.extend(chunk_result);
   }
 
   Ok(result)

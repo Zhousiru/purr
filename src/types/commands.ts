@@ -5,6 +5,6 @@ export interface DurationResult {
 }
 
 export interface WaveformResult {
-  data: Array<number[]> | null
+  data: number[] | null
   error: string | null
 }

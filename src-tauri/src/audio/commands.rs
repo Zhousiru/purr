@@ -40,7 +40,7 @@ pub async fn get_audio_durations(paths: Vec<String>) -> Vec<DurationResult> {
 
 #[derive(Debug, serde::Serialize)]
 pub struct WaveformResult {
-  data: Option<Vec<Vec<f32>>>,
+  data: Option<Vec<f32>>,
   error: Option<String>,
 }
 

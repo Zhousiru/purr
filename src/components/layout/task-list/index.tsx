@@ -2,7 +2,6 @@
 
 import { taskListAtom } from '@/atoms/tasks'
 import { Button } from '@/components/ui/button'
-import { cmd } from '@/lib/commands'
 import { addTask } from '@/lib/task-manager'
 import { Monitor } from '@/lib/whisper-server/monitor'
 import { TranscribeOptions, TranslateOptions } from '@/types/tasks'
@@ -35,22 +34,12 @@ export function TaskList() {
     )
   }
 
-  async function handleDebugCallGetLoudness() {
-    console.log(
-      await cmd.getAudioWaveformData({
-        path: 'C:\\Users\\Syrhu\\Desktop\\test.wav',
-        pairPerSec: 75,
-      }),
-    )
-  }
-
   return (
     <div className="flex flex-col gap-2 p-2">
       {/* FIXME: Debug buttons. */}
       <div className="fixed bottom-4 right-4 z-40 flex gap-1">
         <Button onClick={handleDebugAddTranslateTask}>Add translate</Button>
         <Button onClick={handleDebugAddTranscribeTask}>Add transcribe</Button>
-        <Button onClick={handleDebugCallGetLoudness}>Get loudness</Button>
       </div>
 
       {tasks.map((t) => (
