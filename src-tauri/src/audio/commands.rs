@@ -47,9 +47,12 @@ pub struct WaveformResult {
 #[tauri::command]
 pub async fn get_audio_waveform_data(
   path: String,
+  start_sec: usize,
+  end_sec: Option<usize>,
   pair_per_sec: usize,
 ) -> CommandResult<Vec<WaveformResult>> {
-  let (samples, samples_per_sec) = get_audio_samples(&path)?;
+  let (samples, samples_per_sec) = get_audio_samples(&path, start_sec, end_sec)?;
+
   let result: Vec<WaveformResult> = samples
     .par_iter()
     .map(

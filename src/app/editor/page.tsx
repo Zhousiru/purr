@@ -13,6 +13,8 @@ export default function Page() {
   async function handleDebugGetWaveform() {
     const result = await cmd.getAudioWaveformData({
       path: String.raw`C:\Users\Syrhu\Desktop\foxfox.wav`,
+      startSec: 460,
+      endSec: 540,
       pairPerSec: 15,
     })
     const typed = result.map((x) => {

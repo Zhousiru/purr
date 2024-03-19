@@ -3,19 +3,23 @@ use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use symphonia::core::{
   audio::{AudioBuffer, Signal},
   errors::Error,
+  formats::{SeekMode, SeekTo},
 };
 
 use super::utils::{get_audio_decoder, get_audio_reader};
 use crate::error::CommandResult;
 
-pub fn get_audio_samples(path: &str) -> CommandResult<(Vec<Vec<f32>>, u32)> {
+pub fn get_audio_samples(
+  path: &str,
+  start_sec: usize,
+  end_sec: Option<usize>,
+) -> CommandResult<(Vec<Vec<f32>>, u32)> {
   let mut reader = get_audio_reader(path)?;
   let track = reader.default_track().ok_or(anyhow!("no default track"))?;
-
   let track_id = track.id;
   let codec_params = &track.codec_params;
 
-  let mut decoder = get_audio_decoder(&codec_params)?;
+  let mut decoder = get_audio_decoder(codec_params)?;
 
   let channel_count = codec_params
     .channels
@@ -25,6 +29,20 @@ pub fn get_audio_samples(path: &str) -> CommandResult<(Vec<Vec<f32>>, u32)> {
     .time_base
     .ok_or(anyhow!("no time_base in the default track"))?
     .denom;
+
+  reader.seek(
+    SeekMode::Accurate,
+    SeekTo::TimeStamp {
+      ts: samples_per_sec as u64 * start_sec as u64,
+      track_id,
+    },
+  )?;
+
+  let start_ts = start_sec as u64 * samples_per_sec as u64;
+  let end_ts = match end_sec {
+    Some(s) => s as u64 * samples_per_sec as u64,
+    None => u64::MAX,
+  };
 
   let mut samples: Vec<Vec<f32>> = Vec::new();
 
@@ -58,9 +76,23 @@ pub fn get_audio_samples(path: &str) -> CommandResult<(Vec<Vec<f32>>, u32)> {
 
     decoded.convert(&mut buffer);
 
+    let packet_start_ts = packet.ts;
+    let mut start_index = 0;
+    let mut end_index = buffer.frames();
+    if packet_start_ts < start_ts {
+      start_index = (start_ts - packet_start_ts) as usize;
+    }
+    if packet_start_ts + buffer.frames() as u64 > end_ts {
+      end_index = (end_ts - packet_start_ts) as usize;
+    }
+
     for i in 0..channel_count {
       let channel_samples = buffer.chan(i);
-      samples[i].extend(channel_samples)
+      samples[i].extend(&channel_samples[start_index..end_index]);
+    }
+
+    if end_index != buffer.frames() {
+      break;
     }
   }
 

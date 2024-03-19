@@ -30,7 +30,12 @@ export interface Commands {
   >
   isWhisperServerRunning: CommandFunction<null, boolean>
   getAudioWaveformData: CommandFunction<
-    { path: string; pairPerSec: number },
+    {
+      path: string
+      startSec: number
+      endSec: number | null
+      pairPerSec: number
+    },
     Array<WaveformResult>
   >
 }
