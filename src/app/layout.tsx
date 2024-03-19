@@ -10,7 +10,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="text-gray-900 selection:bg-slate-500/25">
+      <body className="max-h-[100vh] overflow-hidden text-gray-900 selection:bg-slate-500/25">
         <RegisterEvents />
 
         <JotaiProvider>
