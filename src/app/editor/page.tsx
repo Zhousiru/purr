@@ -1,30 +1,27 @@
 'use client'
 
 import { ClientOnly } from '@/components/common/client-only'
-import { Waveform } from '@/components/common/waveform'
+import { WaveformCanvas } from '@/components/common/waveform-canvas'
 import { PageHeader } from '@/components/layout/page-header'
 import { Button } from '@/components/ui/button'
-import { cmd } from '@/lib/commands'
 import { useState } from 'react'
 
+const paths = [
+  null,
+  String.raw`C:\Users\Syrhu\Desktop\foxfox.wav`,
+  String.raw`C:\Users\Syrhu\Desktop\mili.flac`,
+]
+
 export default function Page() {
-  const [data, setData] = useState<Array<Float32Array> | null>(null)
+  const [path, setPath] = useState(0)
+  const [merge, setMerge] = useState(false)
 
-  async function handleDebugGetWaveform() {
-    const result = await cmd.getAudioWaveformData({
-      path: String.raw`C:\Users\Syrhu\Desktop\foxfox.wav`,
-      startSec: 460,
-      endSec: 540,
-      pairPerSec: 15,
-    })
-    const typed = result.map((x) => {
-      if (!x.error) {
-        return new Float32Array(x.data!)
-      }
-      throw new Error(x.error)
-    })
+  async function handleDebugToggleFile() {
+    setPath((prev) => (prev + 1) % 3)
+  }
 
-    setData(typed)
+  async function handleDebugToggleMerge() {
+    setMerge((prev) => !prev)
   }
 
   return (
@@ -33,12 +30,17 @@ export default function Page() {
       <div className="flex flex-grow divide-x">
         <div className="w-[80px] bg-gray-100"></div>
         <div className="flex w-[350px] bg-gray-100">
-          <ClientOnly>{data && <Waveform data={data[0]} />}</ClientOnly>
+          <ClientOnly>
+            {paths[path] && (
+              <WaveformCanvas path={paths[path]!} mergeChannels={merge} />
+            )}
+          </ClientOnly>
         </div>
       </div>
 
-      <div className="absolute bottom-2 right-2">
-        <Button onClick={handleDebugGetWaveform}>Get waveform</Button>
+      <div className="absolute bottom-2 right-2 flex gap-1">
+        <Button onClick={handleDebugToggleFile}>Toggle file</Button>
+        <Button onClick={handleDebugToggleMerge}>Toggle merge</Button>
       </div>
     </div>
   )
