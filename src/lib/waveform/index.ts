@@ -12,12 +12,17 @@ interface WaveformOptions {
   }
 }
 
+interface WaveformHooks {
+  onSizeUpdate: (w: number, h: number) => void
+}
+
 export class Waveform {
   private containerRef: HTMLDivElement
   private canvasRef: HTMLCanvasElement
   private canvasCtx: CanvasRenderingContext2D
 
   private options: WaveformOptions
+  private hooks: WaveformHooks
 
   private audioPath: string | null = null
   private audioDuration: number | null = null
@@ -29,10 +34,12 @@ export class Waveform {
     containerRef: HTMLDivElement,
     canvasRef: HTMLCanvasElement,
     options: WaveformOptions,
+    hooks: WaveformHooks,
   ) {
     this.containerRef = containerRef
     this.canvasRef = canvasRef
     this.options = options
+    this.hooks = hooks
 
     const ctx = this.canvasRef.getContext('2d')
     if (!ctx) throw new Error('Canvas 2D context not supported.')
@@ -70,7 +77,7 @@ export class Waveform {
     this.drawnBlocks.clear()
   }
 
-  public async tryDisplayBlock(blockId: number) {
+  private async tryDisplayBlock(blockId: number) {
     if (!this.waveformBlocks) {
       return
     }
@@ -212,7 +219,7 @@ export class Waveform {
     return result[0].duration!
   }
 
-  public updateSize() {
+  private updateSize() {
     const dpr = window.devicePixelRatio
 
     const containerWidth = this.containerRef.clientWidth
@@ -225,15 +232,17 @@ export class Waveform {
 
     this.canvasRef.style.width = width + 'px'
     this.canvasRef.style.height = height / dpr + 'px'
+
+    this.hooks.onSizeUpdate(width, height / dpr)
   }
 
-  resizeObserver = new ResizeObserver(() => {
+  private resizeObserver = new ResizeObserver(() => {
     // Since the width of container is fixed.
     // We call `displayVisibleBlocks` only.
     this.displayVisibleBlocks()
   })
 
-  displayVisibleBlocks = async () => {
+  private displayVisibleBlocks = async () => {
     if (!this.waveformBlocks) {
       return
     }
