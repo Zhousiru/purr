@@ -17,6 +17,10 @@
       },
       "path": {
         "all": true
+      },
+      "protocol": {
+        "asset": true,
+        "assetScope": ["**"]
       }
     },
     "bundle": {
@@ -53,7 +57,7 @@
       }
     },
     "security": {
-      "csp": null
+      "csp": "default-src 'self' asset: https://asset.localhost"
     },
     "updater": {
       "active": false

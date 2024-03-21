@@ -5,6 +5,7 @@ import { WaveformCanvas } from '@/components/common/waveform-canvas'
 import { PageHeader } from '@/components/layout/page-header'
 import { TimelineContent } from '@/components/layout/timeline-content'
 import { Button } from '@/components/ui/button'
+import { player } from '@/lib/player'
 import { useState } from 'react'
 
 const paths = [
@@ -13,8 +14,8 @@ const paths = [
 ]
 
 export default function Page() {
-  const [path, setPath] = useState(0)
-  const [merge, setMerge] = useState(false)
+  const [path, setPath] = useState(1)
+  const [merge, setMerge] = useState(true)
 
   async function handleDebugToggleFile() {
     setPath((prev) => (prev + 1) % 2)
@@ -22,6 +23,11 @@ export default function Page() {
 
   async function handleDebugToggleMerge() {
     setMerge((prev) => !prev)
+  }
+
+  async function handleDebugPlay() {
+    await player.load(paths[1])
+    await player.play()
   }
 
   return (
@@ -44,6 +50,9 @@ export default function Page() {
       <div className="absolute bottom-2 right-2 flex gap-1">
         <Button onClick={handleDebugToggleFile}>Toggle file</Button>
         <Button onClick={handleDebugToggleMerge}>Toggle merge</Button>
+        <Button onClick={handleDebugPlay}>Play</Button>
+        {/* <Button onClick={handleDebugDisposePlayer}>Dispose player</Button> */}
+        {/* <Button onClick={handleDebugGetTime}>Get time</Button> */}
       </div>
     </div>
   )

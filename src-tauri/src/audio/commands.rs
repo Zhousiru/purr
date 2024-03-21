@@ -6,7 +6,7 @@ use crate::{audio::waveform::extract_sample_extrema, error::CommandResult};
 #[derive(Debug, serde::Serialize)]
 pub struct DurationResult {
   path: String,
-  duration: Option<u64>,
+  duration: Option<f64>,
   error: Option<String>,
 }
 
@@ -20,7 +20,7 @@ pub async fn get_audio_durations(paths: Vec<String>) -> Vec<DurationResult> {
 
       match calc_audio_duration(path) {
         Ok(time) => {
-          duration = Some(time.seconds + time.frac.round() as u64);
+          duration = Some(time.seconds as f64 + time.frac);
           error = None;
         }
         Err(e) => {

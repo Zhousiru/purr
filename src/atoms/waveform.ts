@@ -1,10 +1,15 @@
+import { marginBlock } from '@/constants/waveform'
 import { store } from '@/lib/store'
 import { atom, useAtomValue } from 'jotai'
 
-const waveformHeightAtom = atom<number>(0)
+const waveformCanvasHeightAtom = atom<number>(0)
+export const setWaveformCanvasHeight = (height: number) =>
+  store.set(waveformCanvasHeightAtom, height)
+
+const waveformHeightAtom = atom<number>(
+  (get) => get(waveformCanvasHeightAtom) + marginBlock * 2,
+)
 export const useWaveformHeightValue = () => useAtomValue(waveformHeightAtom)
-export const setWaveformHeight = (height: number) =>
-  store.set(waveformHeightAtom, height)
 
 type WaveformScrollTriggers = 'waveform' | 'timeline'
 
@@ -25,3 +30,9 @@ export const subWaveformScroll = (
     }
     fn(value[1])
   })
+
+const currentAudioDurationAtom = atom<number>(0)
+export const setCurrentAudioDuration = (duration: number) =>
+  store.set(currentAudioDurationAtom, duration)
+export const useCurrentAudioDurationValue = () =>
+  useAtomValue(currentAudioDurationAtom)

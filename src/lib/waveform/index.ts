@@ -1,6 +1,7 @@
 import { cmd } from '../commands'
 
 interface WaveformOptions {
+  widthScale: number
   resolution: number
   mergeChannels: boolean
   blockDuration: number
@@ -13,6 +14,7 @@ interface WaveformOptions {
 }
 
 interface WaveformHooks {
+  onLoaded: (duration: number) => void
   onSizeUpdate: (w: number, h: number) => void
 }
 
@@ -58,12 +60,17 @@ export class Waveform {
 
     this.audioPath = path
     this.audioDuration = await this.getDuration()
+
+    console.log('Waveform.Duration', this.audioDuration)
+
     const blockCount = Math.ceil(
       this.audioDuration / this.options.blockDuration,
     )
     this.waveformBlocks = Array(blockCount).fill([])
     this.updateSize()
     this.displayVisibleBlocks()
+
+    this.hooks.onLoaded(this.audioDuration)
   }
 
   public dispose() {
@@ -181,8 +188,12 @@ export class Waveform {
         min = Math.min(...data.map((c) => c[2 * y + 1]))
       }
 
-      let maxX = Math.floor(xCenter + (max * width) / 2)
-      let minX = Math.floor(xCenter + (min * width) / 2)
+      let maxX = Math.floor(
+        xCenter + ((max * width) / 2) * this.options.widthScale,
+      )
+      let minX = Math.floor(
+        xCenter + ((min * width) / 2) * this.options.widthScale,
+      )
 
       // Make it prettier...
       if (maxX - minX <= 1) {
