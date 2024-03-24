@@ -2,10 +2,10 @@
 
 import {
   setCurrentAudioDuration,
+  setEditorScroll,
   setWaveformCanvasHeight,
-  setWaveformScroll,
-  subWaveformScroll,
-} from '@/atoms/waveform'
+  subEditorScroll,
+} from '@/atoms/editor'
 import {
   blockDuration,
   fillColor,
@@ -107,7 +107,7 @@ export const WaveformCanvas = forwardRef<
   const isControlledScroll = useRef(false)
   useEffect(
     () =>
-      subWaveformScroll('waveform', (top) => {
+      subEditorScroll('waveform', (top) => {
         isControlledScroll.current = true
         containerRef.current!.scrollTop = top
         requestAnimationFrame(() => {
@@ -120,7 +120,7 @@ export const WaveformCanvas = forwardRef<
     if (isControlledScroll.current) {
       return
     }
-    setWaveformScroll('waveform', containerRef.current!.scrollTop)
+    setEditorScroll('waveform', containerRef.current!.scrollTop)
   }
 
   return (

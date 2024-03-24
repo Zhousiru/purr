@@ -1,8 +1,8 @@
 import {
-  setWaveformScroll,
-  subWaveformScroll,
+  setEditorScroll,
+  subEditorScroll,
   useWaveformHeightValue,
-} from '@/atoms/waveform'
+} from '@/atoms/editor'
 import { useEffect, useRef } from 'react'
 
 export function TimelineContent() {
@@ -12,7 +12,7 @@ export function TimelineContent() {
   const isControlledScroll = useRef(false)
   useEffect(
     () =>
-      subWaveformScroll('timeline', (top) => {
+      subEditorScroll('timeline', (top) => {
         isControlledScroll.current = true
         containerRef.current!.scrollTop = top
         requestAnimationFrame(() => {
@@ -25,7 +25,7 @@ export function TimelineContent() {
     if (isControlledScroll.current) {
       return
     }
-    setWaveformScroll('timeline', containerRef.current!.scrollTop)
+    setEditorScroll('timeline', containerRef.current!.scrollTop)
   }
 
   return (

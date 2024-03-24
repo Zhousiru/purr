@@ -11,20 +11,17 @@ const waveformHeightAtom = atom<number>(
 )
 export const useWaveformHeightValue = () => useAtomValue(waveformHeightAtom)
 
-type WaveformScrollTriggers = 'waveform' | 'timeline'
+type EditorScrollTriggers = 'waveform' | 'timeline' | null
 
-const waveformScrollAtom = atom<[WaveformScrollTriggers, number]>([
-  'timeline',
-  0,
-])
-export const setWaveformScroll = (setBy: WaveformScrollTriggers, top: number) =>
-  store.set(waveformScrollAtom, [setBy, top])
-export const subWaveformScroll = (
-  except: WaveformScrollTriggers,
+const editorScrollAtom = atom<[EditorScrollTriggers, number]>(['timeline', 0])
+export const setEditorScroll = (setBy: EditorScrollTriggers, top: number) =>
+  store.set(editorScrollAtom, [setBy, top])
+export const subEditorScroll = (
+  except: EditorScrollTriggers,
   fn: (top: number) => void,
 ) =>
-  store.sub(waveformScrollAtom, () => {
-    const value = store.get(waveformScrollAtom)
+  store.sub(editorScrollAtom, () => {
+    const value = store.get(editorScrollAtom)
     if (value[0] === except) {
       return
     }
