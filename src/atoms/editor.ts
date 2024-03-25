@@ -1,6 +1,6 @@
 import { marginBlock } from '@/constants/waveform'
 import { store } from '@/lib/store'
-import { atom, useAtomValue } from 'jotai'
+import { atom, useAtom, useAtomValue } from 'jotai'
 
 const waveformCanvasHeightAtom = atom<number>(0)
 export const setWaveformCanvasHeight = (height: number) =>
@@ -33,3 +33,9 @@ export const setCurrentAudioDuration = (duration: number) =>
   store.set(currentAudioDurationAtom, duration)
 export const useCurrentAudioDurationValue = () =>
   useAtomValue(currentAudioDurationAtom)
+
+const addMarkContext = atom<{
+  startHeight: number
+} | null>(null)
+export const useAddMarkContext = () => useAtom(addMarkContext)
+export const useAddMarkContextValue = () => useAtomValue(addMarkContext)

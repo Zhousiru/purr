@@ -5,6 +5,7 @@ import {
   setEditorScroll,
   setWaveformCanvasHeight,
   subEditorScroll,
+  useAddMarkContextValue,
 } from '@/atoms/editor'
 import {
   blockDuration,
@@ -93,11 +94,13 @@ export const WaveformCanvas = forwardRef<
     return () => observer.disconnect()
   })
 
-  // Position the hover indicator.
+  // Handle mouse moving events.
   const handleMouseEnter = () => hoverLayerRef.current!.setIsHover(true)
   const handleMouseLeave = () => hoverLayerRef.current!.setIsHover(false)
-  const handleMouseMove: MouseEventHandler<HTMLDivElement> = (e) =>
+  const handleMouseMove: MouseEventHandler<HTMLDivElement> = (e) => {
+    // Position the hover indicator.
     hoverLayerRef.current!.updateMouse(e.clientX, e.clientY)
+  }
 
   // Sync `scrollTop`.
   const isControlledScroll = useRef(false)
@@ -122,6 +125,8 @@ export const WaveformCanvas = forwardRef<
     hoverLayerRef.current!.updateOffset(containerRef.current!.scrollTop)
   }
 
+  const addMarkContext = useAddMarkContextValue()
+
   return (
     <div
       ref={mergeRefs([containerRef, ref])}
@@ -131,16 +136,19 @@ export const WaveformCanvas = forwardRef<
       onMouseLeave={handleMouseLeave}
       onMouseMove={handleMouseMove}
     >
-      <canvas
-        ref={canvasRef}
-        style={{ marginBlock }}
-        className="mix-blend-multiply"
-      />
+      <canvas ref={canvasRef} style={{ marginBlock }} />
 
       <div
         ref={currentIndicatorRef}
-        className="absolute inset-x-0 z-40 border-t border-blue-500"
+        className="absolute inset-x-0 z-30 border-t border-blue-500"
       />
+
+      {addMarkContext && (
+        <div
+          className="absolute inset-x-0 z-40 border-t border-amber-500"
+          style={{ top: addMarkContext.startHeight }}
+        />
+      )}
 
       <HoverLayer ref={hoverLayerRef} />
     </div>

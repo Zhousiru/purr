@@ -1,8 +1,11 @@
+import { useAddMarkContext } from '@/atoms/editor'
+import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
 import { player } from '@/lib/player'
 import { cn } from '@/lib/utils/cn'
-import { IconPlayerPlayFilled } from '@tabler/icons-react'
+import { IconCheck, IconPlayerPlay, IconPlus } from '@tabler/icons-react'
 import {
   Dispatch,
+  MouseEvent,
   MouseEventHandler,
   SetStateAction,
   forwardRef,
@@ -28,6 +31,8 @@ export const HoverLayer = forwardRef<HoverLayerRef>(
 
     const [showIndicator, setShowIndicator] = useState(false)
 
+    const [addMarkContext, setAddMarkContext] = useAddMarkContext()
+
     useImperativeHandle(
       ref,
       () => ({
@@ -49,14 +54,35 @@ export const HoverLayer = forwardRef<HoverLayerRef>(
       [],
     )
 
-    const handleSeek: MouseEventHandler<HTMLButtonElement> = (ev) => {
-      const height =
-        ev.clientY -
+    function calcHeight(e: MouseEvent) {
+      return (
+        e.clientY -
         containerRef.current!.getBoundingClientRect().top +
         offsetRef.current
+      )
+    }
 
-      player.seek(seekTime(height))
+    const handleSeek: MouseEventHandler<HTMLButtonElement> = (e) => {
+      player.seek(seekTime(calcHeight(e)))
       player.play()
+    }
+
+    // Handle adding mark.
+    const handleAddMark: MouseEventHandler<HTMLButtonElement> = (e) => {
+      if (!addMarkContext) {
+        setAddMarkContext({
+          startHeight: calcHeight(e),
+        })
+
+        return
+      }
+
+      setAddMarkContext(null)
+      alert(
+        `Start at: ${seekTime(addMarkContext.startHeight)}\nEnd at: ${seekTime(calcHeight(e))}`,
+      )
+
+      // TODO: Show mark in the `WaveformCanvas`.
     }
 
     return (
@@ -65,16 +91,53 @@ export const HoverLayer = forwardRef<HoverLayerRef>(
           ref={indicatorRef}
           className={cn('absolute inset-x-0', !showIndicator && 'opacity-0')}
         >
-          <div className="border-t border-dashed border-blue-500" />
-          <button
+          <div
             className={cn(
-              'absolute right-6 -translate-y-1/2 rounded-md bg-blue-500 px-2 py-1',
-              showIndicator && 'pointer-events-auto',
+              'border-t border-dashed border-gray-900',
+              addMarkContext && 'border-amber-500',
             )}
-            onClick={handleSeek}
+          />
+
+          <div
+            className={cn(
+              'absolute right-2 flex h-5 -translate-y-1/2 overflow-hidden rounded border border-transparent bg-gray-900 shadow-md',
+              showIndicator && 'pointer-events-auto',
+              addMarkContext && 'bg-amber-500',
+            )}
           >
-            <IconPlayerPlayFilled size={12} className="text-white" />
-          </button>
+            <TooltipGroup>
+              <Tooltip content="Play" placement="top">
+                <button
+                  className={cn(
+                    'flex items-center justify-center px-1',
+                    addMarkContext && 'bg-white',
+                  )}
+                  onClick={handleSeek}
+                >
+                  <IconPlayerPlay
+                    size={12}
+                    className={cn(!addMarkContext && 'text-white')}
+                  />
+                </button>
+              </Tooltip>
+
+              <Tooltip content="Add" placement="top">
+                <button
+                  className={cn(
+                    'flex items-center justify-center px-1',
+                    !addMarkContext && 'bg-white',
+                  )}
+                  onClick={handleAddMark}
+                >
+                  {addMarkContext ? (
+                    <IconCheck size={12} className="text-white" />
+                  ) : (
+                    <IconPlus size={12} className="text-gray-600" />
+                  )}
+                </button>
+              </Tooltip>
+            </TooltipGroup>
+          </div>
         </div>
       </div>
     )
