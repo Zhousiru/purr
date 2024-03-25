@@ -239,7 +239,7 @@ export class Waveform {
     const height = this.audioDuration! * this.options.resolution
 
     this.canvasRef.width = Math.ceil(width * dpr)
-    this.canvasRef.height = Math.ceil(height)
+    this.canvasRef.height = height
 
     this.canvasRef.style.width = width + 'px'
     this.canvasRef.style.height = height / dpr + 'px'
