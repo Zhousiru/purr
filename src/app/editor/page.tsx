@@ -11,10 +11,12 @@ import { useState } from 'react'
 const paths = [
   String.raw`C:\Users\Syrhu\Desktop\foxfox.wav`,
   String.raw`C:\Users\Syrhu\Desktop\mili.flac`,
+  String.raw`C:\Users\Syrhu\Desktop\mican.flac`,
+  String.raw`C:\Users\Syrhu\Desktop\emi.flac`,
 ]
 
 export default function Page() {
-  const [path, setPath] = useState(1)
+  const [path, setPath] = useState(3)
   const [merge, setMerge] = useState(true)
 
   async function handleDebugToggleFile() {
@@ -26,7 +28,7 @@ export default function Page() {
   }
 
   async function handleDebugPlay() {
-    await player.load(paths[1])
+    await player.load(paths[path])
     await player.play()
   }
 

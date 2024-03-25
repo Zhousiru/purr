@@ -15,18 +15,11 @@ import {
   widthScale,
 } from '@/constants/waveform'
 import { player } from '@/lib/player'
-import { cn } from '@/lib/utils/cn'
 import { mergeRefs } from '@/lib/utils/merge-refs'
 import { Waveform } from '@/lib/waveform'
-import { IconPlayerPlayFilled } from '@tabler/icons-react'
-import {
-  MouseEventHandler,
-  forwardRef,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
-import { seekHeight, seekTime } from './utils'
+import { MouseEventHandler, forwardRef, useEffect, useRef } from 'react'
+import { HoverLayer, HoverLayerRef } from './HoverLayer'
+import { seekHeight } from './utils'
 
 export const WaveformCanvas = forwardRef<
   HTMLDivElement,
@@ -35,9 +28,11 @@ export const WaveformCanvas = forwardRef<
     mergeChannels: boolean
   }
 >(function WaveformCanvas({ path, mergeChannels }, ref) {
+  // Bind `Waveform`.
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const waveformRef = useRef<Waveform | null>(null)
+
   useEffect(() => {
     waveformRef.current = new Waveform(
       containerRef.current!,
@@ -84,16 +79,14 @@ export const WaveformCanvas = forwardRef<
     return () => unsub()
   }, [])
 
-  // Position the fixed layer.
-  // We place hover indicator in a fixed layer to avoid lag while scrolling.
-  const hoverContainerRef = useRef<HTMLDivElement>(null)
+  // Position the fixed hover layer.
+  // We use the fixed hover layer to avoid lag while scrolling.
+  const hoverLayerRef = useRef<HoverLayerRef>(null)
   useEffect(() => {
     const observer = new ResizeObserver(() => {
-      const rect = containerRef.current!.getBoundingClientRect()
-      hoverContainerRef.current!.style.top = rect.top + 'px'
-      hoverContainerRef.current!.style.left = rect.left + 'px'
-      hoverContainerRef.current!.style.width = rect.width + 'px'
-      hoverContainerRef.current!.style.height = rect.height + 'px'
+      hoverLayerRef.current!.updateBounding(
+        containerRef.current!.getBoundingClientRect(),
+      )
     })
     observer.observe(containerRef.current!)
 
@@ -101,25 +94,10 @@ export const WaveformCanvas = forwardRef<
   })
 
   // Position the hover indicator.
-  const hoverIndicatorRef = useRef<HTMLDivElement>(null)
-  const [showHoverIndicator, setShowHoverIndicator] = useState(false)
-  const handleMouseEnter = () => setShowHoverIndicator(true)
-  const handleMouseLeave = () => setShowHoverIndicator(false)
-  const handleMouseMove: MouseEventHandler<HTMLDivElement> = (ev) => {
-    const height =
-      ev.clientY - containerRef.current!.getBoundingClientRect().top
-    hoverIndicatorRef.current!.style.top = height + 'px'
-  }
-
-  const handleSeek: MouseEventHandler<HTMLButtonElement> = (ev) => {
-    const height =
-      ev.clientY -
-      containerRef.current!.getBoundingClientRect().top +
-      containerRef.current!.scrollTop
-
-    player.seek(seekTime(height))
-    player.play()
-  }
+  const handleMouseEnter = () => hoverLayerRef.current!.setIsHover(true)
+  const handleMouseLeave = () => hoverLayerRef.current!.setIsHover(false)
+  const handleMouseMove: MouseEventHandler<HTMLDivElement> = (e) =>
+    hoverLayerRef.current!.updateMouse(e.clientX, e.clientY)
 
   // Sync `scrollTop`.
   const isControlledScroll = useRef(false)
@@ -139,6 +117,9 @@ export const WaveformCanvas = forwardRef<
       return
     }
     setEditorScroll('waveform', containerRef.current!.scrollTop)
+
+    // Update the offset of the hover layer.
+    hoverLayerRef.current!.updateOffset(containerRef.current!.scrollTop)
   }
 
   return (
@@ -161,26 +142,7 @@ export const WaveformCanvas = forwardRef<
         className="absolute inset-x-0 z-40 border-t border-blue-500"
       />
 
-      <div ref={hoverContainerRef} className="pointer-events-none fixed z-50">
-        <div
-          ref={hoverIndicatorRef}
-          className={cn(
-            'absolute inset-x-0',
-            !showHoverIndicator && 'opacity-0',
-          )}
-        >
-          <div className="border-t border-dashed border-blue-500" />
-          <button
-            className={cn(
-              'absolute right-6 -translate-y-1/2 rounded-md bg-blue-500 px-2 py-1',
-              showHoverIndicator && 'pointer-events-auto',
-            )}
-            onClick={handleSeek}
-          >
-            <IconPlayerPlayFilled size={12} className="text-white" />
-          </button>
-        </div>
-      </div>
+      <HoverLayer ref={hoverLayerRef} />
     </div>
   )
 })
