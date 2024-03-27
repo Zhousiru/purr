@@ -77,6 +77,11 @@ pub fn get_audio_samples(
     decoded.convert(&mut buffer);
 
     let packet_start_ts = packet.ts;
+
+    if packet_start_ts + buffer.frames() as u64 <= start_ts {
+      continue;
+    }
+
     let mut start_index = 0;
     let mut end_index = buffer.frames();
     if packet_start_ts < start_ts {
