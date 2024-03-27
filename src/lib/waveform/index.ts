@@ -77,7 +77,7 @@ export class Waveform {
     console.log('Waveform.Dispose', this.audioPath)
 
     this.containerRef.removeEventListener('scroll', this.displayVisibleBlocks)
-    this.resizeObserver.unobserve(this.containerRef)
+    this.resizeObserver.disconnect()
     this.audioPath = null
     this.audioDuration = null
     this.waveformBlocks = null

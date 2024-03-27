@@ -35,7 +35,7 @@ export default function Page() {
   return (
     <div className="flex h-screen flex-col">
       <PageHeader>Editor</PageHeader>
-      <div className="flex flex-grow">
+      <div className="relative flex flex-grow">
         <div className="flex w-[350px] border-r bg-gray-50">
           <div className="relative flex-grow">
             <ClientOnly>
@@ -44,9 +44,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="relative flex flex-grow">
-          <TimelineContent />
-        </div>
+        <TimelineContent leftOffset={350} />
       </div>
 
       <div className="absolute bottom-2 right-2 flex gap-1">

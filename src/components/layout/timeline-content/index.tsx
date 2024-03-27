@@ -5,7 +5,7 @@ import {
 } from '@/atoms/editor'
 import { useEffect, useRef } from 'react'
 
-export function TimelineContent() {
+export function TimelineContent({ leftOffset }: { leftOffset: number }) {
   const waveformHeight = useWaveformHeightValue()
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -30,11 +30,38 @@ export function TimelineContent() {
 
   return (
     <div
-      className="absolute inset-0 overflow-y-scroll"
+      className="pointer-events-none absolute inset-0 overflow-y-scroll"
       ref={containerRef}
       onScroll={handleContainerScroll}
     >
-      <div style={{ height: waveformHeight }}>233</div>
+      {/* Waveform overlay. */}
+      <div
+        className="absolute left-0"
+        style={{ height: waveformHeight, width: leftOffset }}
+      >
+        <div
+          className="absolute inset-x-0 border-y border-amber-500 bg-amber-500/5"
+          style={{
+            top: 300,
+            height: 200,
+          }}
+        />
+      </div>
+
+      <div
+        className="pointer-events-auto absolute right-0"
+        style={{ height: waveformHeight, left: leftOffset }}
+      >
+        <div
+          className="absolute inset-x-0 border-y border-amber-500 bg-amber-500/5 p-2"
+          style={{
+            top: 300,
+            height: 200,
+          }}
+        >
+          test
+        </div>
+      </div>
     </div>
   )
 }
