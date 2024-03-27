@@ -3,6 +3,7 @@ import { isServer } from '../utils/is-server'
 
 class Player {
   private audioElement: HTMLAudioElement
+  public currentSource: string | null = null
 
   constructor() {
     this.audioElement = new Audio()
@@ -11,7 +12,8 @@ class Player {
 
   public async load(path: string) {
     return new Promise<void>((resolve, reject) => {
-      this.audioElement.src = convertFileSrc(path)
+      this.currentSource = path
+      this.audioElement.src = convertFileSrc(this.currentSource)
 
       this.audioElement.oncanplay = () => {
         this.audioElement.oncanplay = null
@@ -31,6 +33,12 @@ class Player {
     await this.audioElement.play()
 
     console.log('Player.PlayStart')
+  }
+
+  async pause() {
+    this.audioElement.pause()
+
+    console.log('Player.Pause')
   }
 
   public seek(time: number) {

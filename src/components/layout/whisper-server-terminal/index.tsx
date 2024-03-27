@@ -40,7 +40,7 @@ export function WhisperServerTerminal() {
         <div>
           {lines.map((line, index) => (
             <Line
-              key={index}
+              key={`${index}${line.type}${line.data}`}
               secondary={['launch', 'exit'].includes(line.type)}
             >
               {['stdout', 'stderr'].includes(line.type) && line.data}

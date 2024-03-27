@@ -1,6 +1,30 @@
+'use client'
+
 import { marginBlock } from '@/constants/waveform'
+import { TaskAtom } from '@/lib/db/task-atom-storage'
 import { store } from '@/lib/store'
+import { Task } from '@/types/tasks'
 import { atom, useAtom, useAtomValue } from 'jotai'
+
+const currentEditingTaskAtom = atom<TaskAtom<Task> | null>(null)
+export const setCurrentEditingTaskAtom = (taskAtom: TaskAtom<Task> | null) =>
+  store.set(currentEditingTaskAtom, taskAtom)
+export const useCurrentEditingTaskAtomValue = () =>
+  useAtomValue(currentEditingTaskAtom)
+export const useCurrentEditingTask = () => {
+  const taskAtom = useCurrentEditingTaskAtomValue()
+  if (!taskAtom) {
+    throw new Error('Current editing task atom cannot be `null`.')
+  }
+  return useAtom(taskAtom)
+}
+export const useCurrentEditingTaskValue = () => {
+  const taskAtom = useCurrentEditingTaskAtomValue()
+  if (!taskAtom) {
+    throw new Error('Current editing task atom cannot be `null`.')
+  }
+  return useAtomValue(taskAtom)
+}
 
 const waveformCanvasHeightAtom = atom<number>(0)
 export const setWaveformCanvasHeight = (height: number) =>

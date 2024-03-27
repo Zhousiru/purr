@@ -115,6 +115,8 @@ export class Waveform {
       endSec,
     })
 
+    console.log(result)
+
     for (const channelResult of result) {
       if (channelResult.error) {
         throw channelResult.error
@@ -218,6 +220,8 @@ export class Waveform {
     }
 
     this.canvasCtx.putImageData(imageData, putX, putY)
+
+    console.log(imageData)
   }
 
   private async getDuration() {

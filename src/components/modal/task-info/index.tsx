@@ -64,6 +64,9 @@ export function TaskInfoModal({
         <InfoItem title="Status">{upperFirst(task.status)}</InfoItem>
         <InfoItem title="Creation time">{task.creationTimestamp}</InfoItem>
         <InfoItem title="Type">{upperFirst(task.type)}</InfoItem>
+        <InfoItem title="Related task">
+          {task.relatedTaskName ?? <span className="italic">None</span>}
+        </InfoItem>
 
         {task.type === 'transcribe' && (
           <>

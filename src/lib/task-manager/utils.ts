@@ -110,6 +110,7 @@ export async function addTasksFromForm(formData: NewTasks) {
         {
           group: formData.group,
           name: nameGenerator.generateName(file),
+          relatedTaskName: null,
         },
         {
           sourcePath: file,

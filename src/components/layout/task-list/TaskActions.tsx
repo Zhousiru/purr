@@ -1,3 +1,4 @@
+import { setCurrentEditingTaskAtom } from '@/atoms/editor'
 import { TaskInfoModal } from '@/components/modal/task-info'
 import { WhisperServerGuardModal } from '@/components/modal/whisper-server-guard'
 import { useWhisperServerGuard } from '@/components/modal/whisper-server-guard/use-whisper-server-guard'
@@ -12,6 +13,7 @@ import {
   IconPlayerStop,
   IconTrash,
 } from '@tabler/icons-react'
+import { useRouter } from 'next/navigation'
 import { HTMLAttributes, useState } from 'react'
 import { GhostButton } from './GhostButton'
 import { useTaskAtomContext } from './TaskAtomContext'
@@ -22,6 +24,7 @@ export function TaskActions({
   className,
   ...props
 }: HTMLAttributes<HTMLDivElement> & { task: Task; isShow: boolean }) {
+  const router = useRouter()
   const [isTaskInfoOpen, setIsTaskInfoOpen] = useState(false)
   const { register: guardRegister, guard } = useWhisperServerGuard()
   const taskAtom = useTaskAtomContext()
@@ -31,8 +34,8 @@ export function TaskActions({
   }
 
   function handleOpenInEditor() {
-    // TODO: Open in editor.
-    alert('Open in editor')
+    setCurrentEditingTaskAtom(taskAtom)
+    router.push('/editor')
   }
 
   function handleStop() {

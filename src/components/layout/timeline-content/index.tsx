@@ -1,11 +1,15 @@
 import {
   setEditorScroll,
   subEditorScroll,
+  useCurrentEditingTask,
   useWaveformHeightValue,
 } from '@/atoms/editor'
 import { useEffect, useRef } from 'react'
+import { TimelineMarks } from './TimelineMarks'
 
 export function TimelineContent({ leftOffset }: { leftOffset: number }) {
+  const [task, setTask] = useCurrentEditingTask()
+
   const waveformHeight = useWaveformHeightValue()
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -39,28 +43,24 @@ export function TimelineContent({ leftOffset }: { leftOffset: number }) {
         className="absolute left-0"
         style={{ height: waveformHeight, width: leftOffset }}
       >
-        <div
-          className="absolute inset-x-0 border-y border-amber-500 bg-amber-500/5"
-          style={{
-            top: 300,
-            height: 200,
-          }}
-        />
+        {task.type === 'transcribe' && (
+          <TimelineMarks.Overlay data={task.result?.transcript ?? []} />
+        )}
+        {task.type === 'translate' && (
+          <TimelineMarks.Overlay data={task.result?.translation ?? []} />
+        )}
       </div>
 
       <div
         className="pointer-events-auto absolute right-0"
         style={{ height: waveformHeight, left: leftOffset }}
       >
-        <div
-          className="absolute inset-x-0 border-y border-amber-500 bg-amber-500/5 p-2"
-          style={{
-            top: 300,
-            height: 200,
-          }}
-        >
-          test
-        </div>
+        {task.type === 'transcribe' && (
+          <TimelineMarks.Content data={task.result?.transcript ?? []} />
+        )}
+        {task.type === 'translate' && (
+          <TimelineMarks.Content data={task.result?.translation ?? []} />
+        )}
       </div>
     </div>
   )

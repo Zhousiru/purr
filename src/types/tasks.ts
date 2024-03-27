@@ -4,6 +4,7 @@ export interface BasicTask {
   name: string
   group: string
   status: TaskStatus
+  relatedTaskName: string | null
   creationTimestamp: number
 }
 
