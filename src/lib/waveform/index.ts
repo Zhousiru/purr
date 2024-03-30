@@ -15,7 +15,6 @@ interface WaveformOptions {
 
 interface WaveformHooks {
   onLoaded: (duration: number) => void
-  onSizeUpdate: (w: number, h: number) => void
   onContainerVisibleAreaUpdate: (startY: number, endY: number) => void
 }
 
@@ -291,8 +290,6 @@ export class Waveform {
       (this.audioDuration! * this.options.resolution) / window.devicePixelRatio
 
     this.canvasContainerRef.style.height = height + 'px'
-
-    this.hooks.onSizeUpdate(this.canvasContainerRef.clientWidth, height)
   }
 
   private resizeObserver = new ResizeObserver(() => {

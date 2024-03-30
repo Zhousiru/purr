@@ -33,7 +33,7 @@ export interface TranscribeOptions {
 
 export interface TranscribeResult {
   progress: number
-  transcript: Transcript[]
+  data: Transcript[]
 }
 
 export interface TranscribeTask extends BasicTask {
@@ -51,7 +51,7 @@ export interface TranslateOptions {
 
 export interface TranslateResult {
   progress: number
-  translation: Translation[]
+  data: Translation[]
 }
 
 export interface TranslateTask extends BasicTask {

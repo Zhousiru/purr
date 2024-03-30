@@ -62,7 +62,7 @@ export function pushTaskTranscript(
     }
     return {
       ...prev!,
-      transcript: [...prev!.transcript, data],
+      data: [...prev!.data, data],
     }
   })
 }
@@ -77,7 +77,7 @@ export function pushTaskTranslation(
     }
     return {
       ...prev,
-      translation: [...prev.translation, data],
+      data: [...prev.data, data],
     }
   })
 }

@@ -5,3 +5,7 @@ export function isTranslation(
 ): obj is Translation {
   return !!(obj as Translation).translated
 }
+
+export function getTextCardHeight(line: 1 | 2) {
+  return line === 1 ? 80 : 108
+}

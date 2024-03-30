@@ -1,6 +1,3 @@
-'use client'
-
-import { marginBlock } from '@/constants/waveform'
 import { TaskAtom } from '@/lib/db/task-atom-storage'
 import { store } from '@/lib/store'
 import { Task } from '@/types/tasks'
@@ -26,15 +23,6 @@ export const useCurrentEditingTaskValue = () => {
   }
   return useAtomValue(taskAtom)
 }
-
-const waveformCanvasHeightAtom = atom<number>(0)
-export const setWaveformCanvasHeight = (height: number) =>
-  store.set(waveformCanvasHeightAtom, height)
-
-const waveformHeightAtom = atom<number>(
-  (get) => get(waveformCanvasHeightAtom) + marginBlock * 2,
-)
-export const useWaveformHeightValue = () => useAtomValue(waveformHeightAtom)
 
 const waveformScrollAtom = atom<number>(0)
 export const setWaveformScroll = (top: number) =>

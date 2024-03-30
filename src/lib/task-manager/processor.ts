@@ -32,7 +32,7 @@ export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
 
     initTaskResult(taskAtom, {
       progress: 0,
-      transcript: [],
+      data: [],
     })
 
     const task = store.get(taskAtom)
@@ -107,7 +107,7 @@ export const translateProcessor: TaskProcessor<TranslateTask> = (
     if (!isRecoveredTask(taskAtom)) {
       initTaskResult(taskAtom, {
         progress: 0,
-        translation: [],
+        data: [],
       })
     }
 
@@ -116,7 +116,7 @@ export const translateProcessor: TaskProcessor<TranslateTask> = (
         ...prev,
         result: {
           progress: prev.result!.progress + 10,
-          translation: [],
+          data: [],
         },
       }))
 

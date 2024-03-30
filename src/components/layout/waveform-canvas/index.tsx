@@ -2,7 +2,6 @@
 
 import {
   setCurrentAudioDuration,
-  setWaveformCanvasHeight,
   setWaveformScroll,
   subWaveformScroll,
   useAddMarkContextValue,
@@ -14,7 +13,7 @@ import {
   preload,
   resolution,
   widthScale,
-} from '@/constants/waveform'
+} from '@/constants/editor'
 import { player } from '@/lib/player'
 import { mergeRefs } from '@/lib/utils/merge-refs'
 import { Waveform } from '@/lib/waveform'
@@ -59,9 +58,6 @@ export const WaveformCanvas = forwardRef<
       {
         onLoaded(duration) {
           setCurrentAudioDuration(duration)
-        },
-        onSizeUpdate(_, h) {
-          setWaveformCanvasHeight(h)
         },
         onContainerVisibleAreaUpdate(startY, endY) {
           // Update visible area of virtual marks.

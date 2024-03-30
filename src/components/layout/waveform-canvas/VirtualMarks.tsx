@@ -1,5 +1,5 @@
 import { useCurrentEditingTaskValue } from '@/atoms/editor'
-import { virtualMarksOverscan } from '@/constants/waveform'
+import { virtualMarksOverscan } from '@/constants/editor'
 import { forwardRef, useImperativeHandle, useState } from 'react'
 import { seekHeight } from './utils'
 
@@ -31,11 +31,9 @@ export const VirtualMarks = forwardRef<VirtualMarksRef>(function VirtualMarks(
     [],
   )
 
-  const totalMarks = (
-    (task.type === 'transcribe'
-      ? task.result?.transcript
-      : task.result?.translation) ?? []
-  ).map((d, index) => [index, seekHeight(d.start), seekHeight(d.end)] as const)
+  const totalMarks = (task.result?.data ?? []).map(
+    (d, index) => [index, seekHeight(d.start), seekHeight(d.end)] as const,
+  )
 
   const startWithOverscan = visibleArea.start - virtualMarksOverscan
   const endWithOverscan = visibleArea.end + virtualMarksOverscan
