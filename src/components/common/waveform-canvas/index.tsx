@@ -116,13 +116,13 @@ export const WaveformCanvas = forwardRef<
     [],
   )
   function handleContainerScroll() {
+    // Update the offset of the hover layer.
+    hoverLayerRef.current!.updateOffset(containerRef.current!.scrollTop)
+
     if (isControlledScroll.current) {
       return
     }
     setEditorScroll('waveform', containerRef.current!.scrollTop)
-
-    // Update the offset of the hover layer.
-    hoverLayerRef.current!.updateOffset(containerRef.current!.scrollTop)
   }
 
   const addMarkContext = useAddMarkContextValue()
