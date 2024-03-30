@@ -5,6 +5,6 @@ export const fillColor = {
   g: 114,
   b: 128,
 }
-export const preload = 15
-export const blockDuration = 10
+export const preload = 10
+export const blockDuration = 20
 export const widthScale = 0.8

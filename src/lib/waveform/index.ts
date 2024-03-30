@@ -19,36 +19,35 @@ interface WaveformHooks {
 }
 
 export class Waveform {
-  private containerRef: HTMLDivElement
-  private canvasRef: HTMLCanvasElement
-  private canvasCtx: CanvasRenderingContext2D
+  private scrollContainerRef: HTMLDivElement
+  private canvasContainerRef: HTMLDivElement
 
   private options: WaveformOptions
   private hooks: WaveformHooks
 
   private audioPath: string | null = null
   private audioDuration: number | null = null
+  private canvasRefs: Array<HTMLCanvasElement | null> | null = null
   private waveformBlocks: Array<Float32Array[]> | null = null
 
-  private drawnBlocks = new Set<number>()
+  private attachedBlocks = new Set<number>()
 
   constructor(
-    containerRef: HTMLDivElement,
-    canvasRef: HTMLCanvasElement,
+    scrollContainerRef: HTMLDivElement,
+    canvasContainerRef: HTMLDivElement,
     options: WaveformOptions,
     hooks: WaveformHooks,
   ) {
-    this.containerRef = containerRef
-    this.canvasRef = canvasRef
+    this.scrollContainerRef = scrollContainerRef
+    this.canvasContainerRef = canvasContainerRef
     this.options = options
     this.hooks = hooks
 
-    const ctx = this.canvasRef.getContext('2d')
-    if (!ctx) throw new Error('Canvas 2D context not supported.')
-    this.canvasCtx = ctx
-
-    this.containerRef.addEventListener('scroll', this.displayVisibleBlocks)
-    this.resizeObserver.observe(this.containerRef)
+    this.scrollContainerRef.addEventListener(
+      'scroll',
+      this.displayVisibleBlocks,
+    )
+    this.resizeObserver.observe(this.scrollContainerRef)
   }
 
   public async load(path: string) {
@@ -63,9 +62,15 @@ export class Waveform {
 
     console.log('Waveform.Duration', this.audioDuration)
 
+    // Check if current waveform has been disposed.
+    if (!this.audioPath) {
+      return
+    }
+
     const blockCount = Math.ceil(
       this.audioDuration / this.options.blockDuration,
     )
+    this.canvasRefs = Array(blockCount).fill(null)
     this.waveformBlocks = Array(blockCount).fill([])
     this.updateSize()
     this.displayVisibleBlocks()
@@ -76,27 +81,43 @@ export class Waveform {
   public dispose() {
     console.log('Waveform.Dispose', this.audioPath)
 
-    this.containerRef.removeEventListener('scroll', this.displayVisibleBlocks)
+    this.canvasContainerRef.replaceChildren()
+    this.scrollContainerRef.removeEventListener(
+      'scroll',
+      this.displayVisibleBlocks,
+    )
     this.resizeObserver.disconnect()
     this.audioPath = null
     this.audioDuration = null
+    this.canvasRefs = null
     this.waveformBlocks = null
-    this.drawnBlocks.clear()
+    this.attachedBlocks.clear()
   }
 
   private async tryDisplayBlock(blockId: number) {
-    if (!this.waveformBlocks) {
+    if (!this.waveformBlocks || !this.canvasRefs) {
       return
     }
 
-    if (this.drawnBlocks.has(blockId)) {
+    if (this.attachedBlocks.has(blockId)) {
       return
     }
-    this.drawnBlocks.add(blockId)
+    this.attachedBlocks.add(blockId)
 
     if (this.waveformBlocks[blockId].length === 0) {
       await this.requestBlock(blockId)
     }
+
+    if (!this.attachedBlocks.has(blockId)) {
+      // Check if current block still need to be drawn.
+      return
+    }
+
+    if (!this.canvasRefs[blockId]) {
+      this.createBlockCanvas(blockId)
+    }
+    this.canvasContainerRef.appendChild(this.canvasRefs[blockId]!)
+
     this.drawBlock(blockId)
   }
 
@@ -115,8 +136,6 @@ export class Waveform {
       endSec,
     })
 
-    console.log(result)
-
     for (const channelResult of result) {
       if (channelResult.error) {
         throw channelResult.error
@@ -130,39 +149,65 @@ export class Waveform {
     this.waveformBlocks[blockId] = result.map((r) => new Float32Array(r.data!))
   }
 
+  private createBlockCanvas(blockId: number) {
+    if (!this.canvasRefs) {
+      return
+    }
+
+    const blockCanvas = document.createElement('canvas')
+    this.canvasRefs[blockId] = blockCanvas
+
+    const blockStartY =
+      this.options.blockDuration * this.options.resolution * blockId
+
+    blockCanvas.style.position = 'absolute'
+    blockCanvas.style.top = blockStartY / window.devicePixelRatio + 'px'
+    blockCanvas.style.width = this.canvasContainerRef.clientWidth + 'px'
+    blockCanvas.style.height =
+      (this.options.blockDuration * this.options.resolution) /
+        window.devicePixelRatio +
+      'px'
+
+    blockCanvas.width = Math.round(
+      this.canvasContainerRef.clientWidth * window.devicePixelRatio,
+    )
+    blockCanvas.height = this.options.blockDuration * this.options.resolution
+  }
+
   private drawBlock(blockId: number) {
-    if (!this.waveformBlocks) {
+    if (!this.waveformBlocks || !this.canvasRefs) {
       return
     }
 
     const block = this.waveformBlocks[blockId]
-    const blockStartY =
-      this.options.blockDuration * this.options.resolution * blockId
-
     if (block.length === 0) {
       return
     }
 
+    const blockCanvas = this.canvasRefs[blockId]
+    if (!blockCanvas) {
+      throw new Error('Please create block first.')
+    }
+
+    const canvasCtx = blockCanvas.getContext('2d')
+    if (!canvasCtx) throw new Error('Failed to get `2d` context.')
+
     console.log('Waveform.DrawBlock', blockId)
 
     if (this.options.mergeChannels) {
-      this.drawChannel(this.canvasRef.width, block, 0, blockStartY)
+      this.draw(canvasCtx, blockCanvas.width, block, 0, 0)
       return
     }
 
-    const channelWidth = Math.floor(this.canvasRef.width / block.length)
+    const channelWidth = Math.floor(blockCanvas.width / block.length)
 
     for (const [index, channelData] of block.entries()) {
-      this.drawChannel(
-        channelWidth,
-        [channelData],
-        index * channelWidth,
-        blockStartY,
-      )
+      this.draw(canvasCtx, channelWidth, [channelData], index * channelWidth, 0)
     }
   }
 
-  private drawChannel(
+  private draw(
+    canvasCtx: CanvasRenderingContext2D,
     channelWidth: number,
     data: Float32Array[],
     putX: number,
@@ -172,7 +217,7 @@ export class Waveform {
       return
     }
 
-    const imageData = this.canvasCtx.createImageData(
+    const imageData = canvasCtx.createImageData(
       channelWidth,
       data[0].length / 2,
     )
@@ -219,9 +264,7 @@ export class Waveform {
       }
     }
 
-    this.canvasCtx.putImageData(imageData, putX, putY)
-
-    console.log(imageData)
+    canvasCtx.putImageData(imageData, putX, putY)
   }
 
   private async getDuration() {
@@ -235,20 +278,12 @@ export class Waveform {
   }
 
   private updateSize() {
-    const dpr = window.devicePixelRatio
+    const height =
+      (this.audioDuration! * this.options.resolution) / window.devicePixelRatio
 
-    const containerWidth = this.containerRef.clientWidth
+    this.canvasContainerRef.style.height = height + 'px'
 
-    const width = containerWidth
-    const height = this.audioDuration! * this.options.resolution
-
-    this.canvasRef.width = Math.ceil(width * dpr)
-    this.canvasRef.height = height
-
-    this.canvasRef.style.width = width + 'px'
-    this.canvasRef.style.height = height / dpr + 'px'
-
-    this.hooks.onSizeUpdate(width, height / dpr)
+    this.hooks.onSizeUpdate(this.canvasContainerRef.clientWidth, height)
   }
 
   private resizeObserver = new ResizeObserver(() => {
@@ -258,12 +293,11 @@ export class Waveform {
   })
 
   private displayVisibleBlocks = async () => {
-    if (!this.waveformBlocks) {
+    if (!this.waveformBlocks || !this.canvasRefs) {
       return
     }
 
     const visibility = this.calcVisibility()
-
     if (!visibility) {
       return
     }
@@ -296,6 +330,16 @@ export class Waveform {
       visibleEndBlockId + this.options.preload,
     )
 
+    // Remove canvases out of view.
+    for (let i = 0; i < startBlockId; i++) {
+      this.attachedBlocks.delete(i)
+      this.canvasRefs[i]?.remove()
+    }
+    for (let i = endBlockId; i < this.canvasRefs.length; i++) {
+      this.attachedBlocks.delete(i)
+      this.canvasRefs[i]?.remove()
+    }
+
     const promises = []
     for (let i = startBlockId; i < endBlockId; i++) {
       promises.push(this.tryDisplayBlock(i))
@@ -308,12 +352,13 @@ export class Waveform {
     start: number
     end: number
   } | null {
-    const containerVisibleStart = this.containerRef.scrollTop
+    const containerVisibleStart = this.scrollContainerRef.scrollTop
     const containerVisibleEnd =
-      containerVisibleStart + this.containerRef.clientHeight
+      containerVisibleStart + this.scrollContainerRef.clientHeight
 
-    const canvasStart = this.canvasRef.offsetTop
-    const canvasEnd = this.canvasRef.offsetTop + this.canvasRef.clientHeight
+    const canvasStart = this.canvasContainerRef.offsetTop
+    const canvasEnd =
+      this.canvasContainerRef.offsetTop + this.canvasContainerRef.clientHeight
 
     const canvasVisibleStart = Math.max(containerVisibleStart, canvasStart)
     const canvasVisibleEnd = Math.min(containerVisibleEnd, canvasEnd)

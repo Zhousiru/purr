@@ -31,13 +31,13 @@ export const WaveformCanvas = forwardRef<
 >(function WaveformCanvas({ path, mergeChannels }, ref) {
   // Bind `Waveform`.
   const containerRef = useRef<HTMLDivElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasContainerRef = useRef<HTMLDivElement>(null)
   const waveformRef = useRef<Waveform | null>(null)
 
   useEffect(() => {
     waveformRef.current = new Waveform(
       containerRef.current!,
-      canvasRef.current!,
+      canvasContainerRef.current!,
       {
         blockDuration,
         mergeChannels,
@@ -136,7 +136,11 @@ export const WaveformCanvas = forwardRef<
       onMouseLeave={handleMouseLeave}
       onMouseMove={handleMouseMove}
     >
-      <canvas ref={canvasRef} style={{ marginBlock }} />
+      <div
+        ref={canvasContainerRef}
+        className="relative overflow-hidden"
+        style={{ marginBlock: marginBlock }}
+      />
 
       <div
         ref={currentIndicatorRef}
