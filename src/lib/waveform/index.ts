@@ -201,8 +201,16 @@ export class Waveform {
 
     const channelWidth = Math.floor(blockCanvas.width / block.length)
 
-    for (const [index, channelData] of block.entries()) {
-      this.draw(canvasCtx, channelWidth, [channelData], index * channelWidth, 0)
+    for (let i = block.length - 1; i >= 0; i--) {
+      const channelData = block[i]
+      const reversed = block.length - 1 - i
+      this.draw(
+        canvasCtx,
+        channelWidth,
+        [channelData],
+        reversed * channelWidth,
+        0,
+      )
     }
   }
 
