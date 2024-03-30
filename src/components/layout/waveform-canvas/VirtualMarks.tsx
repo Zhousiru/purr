@@ -1,5 +1,6 @@
 import { useCurrentEditingTaskValue } from '@/atoms/editor'
 import { virtualMarksOverscan } from '@/constants/editor'
+import { textScrollTo } from '@/subjects/editor'
 import { forwardRef, useImperativeHandle, useState } from 'react'
 import { seekHeight } from './utils'
 
@@ -46,6 +47,7 @@ export const VirtualMarks = forwardRef<VirtualMarksRef>(function VirtualMarks(
 
   function handleSeekText(index: number) {
     console.log('VirtualMarks.Seek', index)
+    textScrollTo.next(index)
   }
 
   return (

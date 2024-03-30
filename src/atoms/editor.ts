@@ -53,3 +53,9 @@ const addMarkContext = atom<{
 } | null>(null)
 export const useAddMarkContext = () => useAtom(addMarkContext)
 export const useAddMarkContextValue = () => useAtomValue(addMarkContext)
+
+const currentHighlightIndex = atom<number>(-1)
+export const setCurrentHighlightIndex = (index: number) =>
+  store.set(currentHighlightIndex, index)
+export const useCurrentHighlightIndexValue = () =>
+  useAtomValue(currentHighlightIndex)

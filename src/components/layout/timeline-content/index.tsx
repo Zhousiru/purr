@@ -1,12 +1,10 @@
-import {
-  setContentScroll,
-  subContentScroll,
-  useCurrentEditingTask,
-} from '@/atoms/editor'
+import { useCurrentEditingTask } from '@/atoms/editor'
 import { virtualTextOverscan } from '@/constants/editor'
+import { cn } from '@/lib/utils/cn'
+import { textScrollTo } from '@/subjects/editor'
 import { TranslateResult } from '@/types/tasks'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { TextCard } from './TextCard'
 import { getTextCardHeight } from './utils'
 
@@ -20,26 +18,25 @@ export function TimelineContent() {
 
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const isControlledScroll = useRef(false)
-  useEffect(
-    () =>
-      subContentScroll((top) => {
-        isControlledScroll.current = true
-        containerRef.current!.scrollTop = top
-        requestAnimationFrame(() => {
-          isControlledScroll.current = false
-        })
-      }),
-    [],
-  )
-  function handleContainerScroll() {
-    if (!isControlledScroll.current) {
-      setContentScroll(containerRef.current!.scrollTop)
-    }
-  }
+  // const isControlledScroll = useRef(false)
+  // useEffect(
+  //   () =>
+  //     subContentScroll((top) => {
+  //       isControlledScroll.current = true
+  //       containerRef.current!.scrollTop = top
+  //       requestAnimationFrame(() => {
+  //         isControlledScroll.current = false
+  //       })
+  //     }),
+  //   [],
+  // )
+  // function handleContainerScroll() {
+  //   if (!isControlledScroll.current) {
+  //     setContentScroll(containerRef.current!.scrollTop)
+  //   }
+  // }
 
   const line = task.type === 'transcribe' ? 1 : 2
-
   const rowVirtualizer = useVirtualizer({
     count: result.data.length,
     getScrollElement: () => containerRef.current,
@@ -50,11 +47,24 @@ export function TimelineContent() {
     overscan: virtualTextOverscan,
   })
 
+  const [highlightIndex, setHighlightIndex] = useState(-1)
+  useEffect(() => {
+    const sub = textScrollTo.subscribe((index) => {
+      rowVirtualizer.scrollToIndex(index, { behavior: 'smooth' })
+      setHighlightIndex(index)
+      setTimeout(() => {
+        setHighlightIndex(-1)
+      }, 1000)
+    })
+
+    return () => sub.unsubscribe()
+  }, [rowVirtualizer])
+
   return (
     <div
       className="absolute inset-0 overflow-y-scroll"
       ref={containerRef}
-      onScroll={handleContainerScroll}
+      // onScroll={handleContainerScroll}
     >
       <div
         className="relative overflow-hidden"
@@ -68,7 +78,10 @@ export function TimelineContent() {
             start={result.data[item.index].start}
             end={result.data[item.index].end}
             line={line}
-            className="absolute inset-x-4"
+            className={cn(
+              'absolute inset-x-4 transition',
+              highlightIndex === item.index && 'ring-2 ring-amber-500',
+            )}
             style={{
               top: item.start,
             }}
