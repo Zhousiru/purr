@@ -5,6 +5,7 @@ import { TaskAtom } from '@/lib/db/task-atom-storage'
 import { store } from '@/lib/store'
 import { Task } from '@/types/tasks'
 import { atom, useAtom, useAtomValue } from 'jotai'
+import { PrimitiveAtom } from 'jotai/vanilla'
 
 const currentEditingTaskAtom = atom<TaskAtom<Task> | null>(null)
 export const setCurrentEditingTaskAtom = (taskAtom: TaskAtom<Task> | null) =>
@@ -35,22 +36,23 @@ const waveformHeightAtom = atom<number>(
 )
 export const useWaveformHeightValue = () => useAtomValue(waveformHeightAtom)
 
-type EditorScrollTriggers = 'waveform' | 'timeline' | null
+const waveformScrollAtom = atom<number>(0)
+export const setWaveformScroll = (top: number) =>
+  store.set(waveformScrollAtom, top)
 
-const editorScrollAtom = atom<[EditorScrollTriggers, number]>(['timeline', 0])
-export const setEditorScroll = (setBy: EditorScrollTriggers, top: number) =>
-  store.set(editorScrollAtom, [setBy, top])
-export const subEditorScroll = (
-  except: EditorScrollTriggers,
-  fn: (top: number) => void,
-) =>
-  store.sub(editorScrollAtom, () => {
-    const value = store.get(editorScrollAtom)
-    if (value[0] === except) {
-      return
-    }
-    fn(value[1])
+const contentScrollAtom = atom<number>(0)
+export const setContentScroll = (top: number) =>
+  store.set(contentScrollAtom, top)
+
+const subScroll = (atom: PrimitiveAtom<number>, fn: (top: number) => void) =>
+  store.sub(atom, () => {
+    const value = store.get(atom)
+    fn(value)
   })
+export const subWaveformScroll = (fn: (top: number) => void) =>
+  subScroll(waveformScrollAtom, fn)
+export const subContentScroll = (fn: (top: number) => void) =>
+  subScroll(contentScrollAtom, fn)
 
 const currentAudioDurationAtom = atom<number>(0)
 export const setCurrentAudioDuration = (duration: number) =>

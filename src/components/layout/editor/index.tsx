@@ -1,8 +1,8 @@
 import { useCurrentEditingTaskValue } from '@/atoms/editor'
-import { WaveformCanvas } from '@/components/common/waveform-canvas'
+import { WaveformCanvas } from '@/components/layout/waveform-canvas'
 import { player } from '@/lib/player'
+import { formatSec } from '@/lib/utils/time'
 import { useEffect } from 'react'
-import { TimelineContent } from '../timeline-content'
 
 export function Editor() {
   const task = useCurrentEditingTaskValue()
@@ -22,6 +22,21 @@ export function Editor() {
     }
   }, [task.options.sourcePath])
 
+  // Toggle playing by `Space`.
+  useEffect(() => {
+    const handleTogglePlay = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault()
+        e.stopPropagation()
+        player.togglePlay()
+      }
+    }
+
+    document.addEventListener('keydown', handleTogglePlay)
+
+    return () => document.removeEventListener('keydown', handleTogglePlay)
+  }, [])
+
   // TODO: Improve the display of transcripts.
 
   return (
@@ -36,7 +51,21 @@ export function Editor() {
           </div>
         </div>
 
-        <TimelineContent leftOffset={350} />
+        <div className="relative flex-grow">
+          <div className="absolute inset-0 flex flex-col gap-4 overflow-y-auto p-4">
+            {task.result?.transcript.map((d) => (
+              <div
+                key={`${d.start}${d.end}${d.text}`}
+                className="rounded-lg bg-gray-100 p-4 text-lg"
+              >
+                <div className="font-mono text-sm opacity-50">
+                  {formatSec(d.start)} – {formatSec(d.end)}
+                </div>
+                {d.text}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </>
   )

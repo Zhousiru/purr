@@ -16,6 +16,7 @@ interface WaveformOptions {
 interface WaveformHooks {
   onLoaded: (duration: number) => void
   onSizeUpdate: (w: number, h: number) => void
+  onContainerVisibleAreaUpdate: (startY: number, endY: number) => void
 }
 
 export class Waveform {
@@ -363,6 +364,11 @@ export class Waveform {
     const containerVisibleStart = this.scrollContainerRef.scrollTop
     const containerVisibleEnd =
       containerVisibleStart + this.scrollContainerRef.clientHeight
+
+    this.hooks.onContainerVisibleAreaUpdate(
+      containerVisibleStart,
+      containerVisibleEnd,
+    )
 
     const canvasStart = this.canvasContainerRef.offsetTop
     const canvasEnd =

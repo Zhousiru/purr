@@ -8,3 +8,5 @@ export const fillColor = {
 export const preload = 10
 export const blockDuration = 20
 export const widthScale = 0.8
+
+export const virtualMarksOverscan = 200

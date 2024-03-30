@@ -35,10 +35,18 @@ class Player {
     console.log('Player.PlayStart')
   }
 
-  async pause() {
+  public pause() {
     this.audioElement.pause()
 
     console.log('Player.Pause')
+  }
+
+  public async togglePlay() {
+    if (this.audioElement.paused) {
+      await this.play()
+    } else {
+      this.pause()
+    }
   }
 
   public seek(time: number) {

@@ -2,9 +2,9 @@
 
 import {
   setCurrentAudioDuration,
-  setEditorScroll,
   setWaveformCanvasHeight,
-  subEditorScroll,
+  setWaveformScroll,
+  subWaveformScroll,
   useAddMarkContextValue,
 } from '@/atoms/editor'
 import {
@@ -18,8 +18,15 @@ import {
 import { player } from '@/lib/player'
 import { mergeRefs } from '@/lib/utils/merge-refs'
 import { Waveform } from '@/lib/waveform'
-import { MouseEventHandler, forwardRef, useEffect, useRef } from 'react'
+import {
+  MouseEventHandler,
+  ReactNode,
+  forwardRef,
+  useEffect,
+  useRef,
+} from 'react'
 import { HoverLayer, HoverLayerRef } from './HoverLayer'
+import { VirtualMarks, VirtualMarksRef } from './VirtualMarks'
 import { seekHeight } from './utils'
 
 export const WaveformCanvas = forwardRef<
@@ -27,12 +34,15 @@ export const WaveformCanvas = forwardRef<
   {
     path: string
     mergeChannels: boolean
+    children?: ReactNode
   }
->(function WaveformCanvas({ path, mergeChannels }, ref) {
+>(function WaveformCanvas({ path, mergeChannels, children }, ref) {
   // Bind `Waveform`.
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasContainerRef = useRef<HTMLDivElement>(null)
   const waveformRef = useRef<Waveform | null>(null)
+
+  const virtualMarksRef = useRef<VirtualMarksRef>(null)
 
   useEffect(() => {
     waveformRef.current = new Waveform(
@@ -52,6 +62,10 @@ export const WaveformCanvas = forwardRef<
         },
         onSizeUpdate(_, h) {
           setWaveformCanvasHeight(h)
+        },
+        onContainerVisibleAreaUpdate(startY, endY) {
+          // Update visible area of virtual marks.
+          virtualMarksRef.current!.updateVisibleArea(startY, endY)
         },
       },
     )
@@ -106,7 +120,7 @@ export const WaveformCanvas = forwardRef<
   const isControlledScroll = useRef(false)
   useEffect(
     () =>
-      subEditorScroll('waveform', (top) => {
+      subWaveformScroll((top) => {
         isControlledScroll.current = true
         containerRef.current!.scrollTop = top
         requestAnimationFrame(() => {
@@ -116,13 +130,12 @@ export const WaveformCanvas = forwardRef<
     [],
   )
   function handleContainerScroll() {
+    if (!isControlledScroll.current) {
+      setWaveformScroll(containerRef.current!.scrollTop)
+    }
+
     // Update the offset of the hover layer.
     hoverLayerRef.current!.updateOffset(containerRef.current!.scrollTop)
-
-    if (isControlledScroll.current) {
-      return
-    }
-    setEditorScroll('waveform', containerRef.current!.scrollTop)
   }
 
   const addMarkContext = useAddMarkContextValue()
@@ -141,6 +154,9 @@ export const WaveformCanvas = forwardRef<
         className="relative overflow-hidden"
         style={{ marginBlock: marginBlock }}
       />
+
+      {children}
+      <VirtualMarks ref={virtualMarksRef} />
 
       <div
         ref={currentIndicatorRef}

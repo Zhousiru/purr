@@ -81,12 +81,13 @@ export const HoverLayer = forwardRef<HoverLayerRef>(
       alert(
         `Start at: ${seekTime(addMarkContext.startHeight)}\nEnd at: ${seekTime(calcHeight(e))}`,
       )
-
-      // TODO: Show mark in the `WaveformCanvas`.
     }
 
     return (
-      <div ref={containerRef} className="pointer-events-none fixed z-50">
+      <div
+        ref={containerRef}
+        className="pointer-events-none fixed z-50 overflow-hidden"
+      >
         <div
           ref={indicatorRef}
           className={cn('absolute inset-x-0', !showIndicator && 'opacity-0')}
