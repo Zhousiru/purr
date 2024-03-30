@@ -56,9 +56,6 @@
         "timestampUrl": ""
       }
     },
-    "security": {
-      "csp": "default-src 'self' asset: https://asset.localhost"
-    },
     "updater": {
       "active": false
     },
