@@ -1,9 +1,14 @@
 import { useCurrentEditingTask } from '@/atoms/editor'
-import { virtualTextOverscan } from '@/constants/editor'
+import {
+  virtualTextGap,
+  virtualTextOverscan,
+  virtualTextPaddingBlock,
+} from '@/constants/editor'
 import { cn } from '@/lib/utils/cn'
-import { textScrollTo } from '@/subjects/editor'
+import { markHighlight, textHighlight } from '@/subjects/editor'
 import { TranslateResult } from '@/types/tasks'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import { produce } from 'immer'
 import { useEffect, useRef, useState } from 'react'
 import { TextCard } from './TextCard'
 import { getTextCardHeight } from './utils'
@@ -36,29 +41,85 @@ export function TimelineContent() {
   //   }
   // }
 
+  // Virtualize text cards.
   const line = task.type === 'transcribe' ? 1 : 2
+  const cardHeight = getTextCardHeight(line)
+
   const rowVirtualizer = useVirtualizer({
     count: result.data.length,
     getScrollElement: () => containerRef.current,
-    estimateSize: () => getTextCardHeight(line),
-    gap: 16,
-    paddingStart: 16,
-    paddingEnd: 16,
+    estimateSize: () => cardHeight,
+    gap: virtualTextGap,
+    paddingStart: virtualTextPaddingBlock,
+    paddingEnd: virtualTextPaddingBlock,
     overscan: virtualTextOverscan,
   })
 
+  // Handle highlight event.
   const [highlightIndex, setHighlightIndex] = useState(-1)
   useEffect(() => {
-    const sub = textScrollTo.subscribe((index) => {
-      rowVirtualizer.scrollToIndex(index, { behavior: 'smooth' })
+    let timer: ReturnType<typeof setTimeout> | null = null
+
+    const sub = textHighlight.subscribe(({ index, to }) => {
+      const height =
+        index * (cardHeight + virtualTextGap) + virtualTextPaddingBlock
+      rowVirtualizer.scrollToOffset(height - to, { behavior: 'smooth' })
+
       setHighlightIndex(index)
-      setTimeout(() => {
+
+      if (timer) {
+        clearTimeout(timer)
+      }
+      timer = setTimeout(() => {
         setHighlightIndex(-1)
+        timer = null
       }, 1000)
     })
 
     return () => sub.unsubscribe()
-  }, [rowVirtualizer])
+  }, [cardHeight, rowVirtualizer])
+
+  // Active text card.
+  const [activeIndex, setActiveIndex] = useState(3)
+  function handleCardFocus(index: number) {
+    setActiveIndex(index)
+    const height =
+      index * (cardHeight + virtualTextGap) + virtualTextPaddingBlock
+
+    markHighlight.next({ index, to: height - containerRef.current!.scrollTop })
+  }
+  function handleCardBlur(index: number) {
+    setActiveIndex(-1)
+    markHighlight.next({ index: -1, to: -1 })
+  }
+
+  // Edit text card content.
+  function updateText(
+    index: number,
+    type: 'text' | 'translated',
+    newText: string,
+  ) {
+    setTask((prev) =>
+      produce(prev, (draft) => {
+        if (!draft.result) {
+          throw new Error('Task does not have result yet.')
+        }
+
+        if (draft.type === 'transcribe') {
+          if (type === 'translated') {
+            throw new Error('Cannot edit `translated` of a `transcribe` task.')
+          }
+          draft.result.data[index].text = newText
+        } else {
+          if (type === 'text') {
+            draft.result.data[index].text = newText
+          } else {
+            draft.result.data[index].translated = newText
+          }
+        }
+      }),
+    )
+  }
 
   return (
     <div
@@ -74,23 +135,37 @@ export function TimelineContent() {
       >
         {rowVirtualizer.getVirtualItems().map((item) => (
           <TextCard
-            key={`${result.data[item.index].start}${result.data[item.index].end}${result.data[item.index].text}`}
+            key={`${item.key}${result.data[item.index].start}${result.data[item.index].end}`}
             start={result.data[item.index].start}
             end={result.data[item.index].end}
-            line={line}
             className={cn(
               'absolute inset-x-4 transition',
-              highlightIndex === item.index && 'ring-2 ring-amber-500',
+              activeIndex !== -1 && activeIndex !== item.index && 'opacity-50',
+              activeIndex === item.index && 'ring-2 ring-amber-500',
+              highlightIndex === item.index && 'bg-amber-100',
             )}
             style={{
               top: item.start,
+              height: cardHeight,
             }}
+            onFocus={() => handleCardFocus(item.index)}
+            onBlur={() => handleCardBlur(item.index)}
           >
-            <div>{result.data[item.index].text}</div>
+            <input
+              type="text"
+              value={result.data[item.index].text}
+              onChange={(e) => updateText(item.index, 'text', e.target.value)}
+              className="w-full overflow-hidden text-ellipsis whitespace-nowrap border-amber-500 bg-transparent outline-none focus:border-b"
+            />
             {task.type === 'translate' && (
-              <div>
-                {(result as TranslateResult).data[item.index].translated}
-              </div>
+              <input
+                type="text"
+                value={(result as TranslateResult).data[item.index].translated}
+                onChange={(e) =>
+                  updateText(item.index, 'translated', e.target.value)
+                }
+                className="w-full overflow-hidden text-ellipsis whitespace-nowrap border-amber-500 bg-transparent outline-none focus:border-b"
+              />
             )}
           </TextCard>
         ))}

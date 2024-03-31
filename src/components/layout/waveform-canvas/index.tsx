@@ -1,11 +1,6 @@
 'use client'
 
-import {
-  setCurrentAudioDuration,
-  setWaveformScroll,
-  subWaveformScroll,
-  useAddMarkContextValue,
-} from '@/atoms/editor'
+import { setCurrentAudioDuration, useAddMarkContextValue } from '@/atoms/editor'
 import {
   blockDuration,
   fillColor,
@@ -17,6 +12,7 @@ import {
 import { player } from '@/lib/player'
 import { mergeRefs } from '@/lib/utils/merge-refs'
 import { Waveform } from '@/lib/waveform'
+import { waveformScroll } from '@/subjects/editor'
 import {
   MouseEventHandler,
   ReactNode,
@@ -113,26 +109,35 @@ export const WaveformCanvas = forwardRef<
   }
 
   // Sync `scrollTop`.
-  const isControlledScroll = useRef(false)
-  useEffect(
-    () =>
-      subWaveformScroll((top) => {
-        isControlledScroll.current = true
-        containerRef.current!.scrollTop = top
-        requestAnimationFrame(() => {
-          isControlledScroll.current = false
-        })
-      }),
-    [],
-  )
+  // const isControlledScroll = useRef(false)
+  // useEffect(
+  //   () =>
+  //     subWaveformScroll((top) => {
+  //       isControlledScroll.current = true
+  //       containerRef.current!.scrollTop = top
+  //       requestAnimationFrame(() => {
+  //         isControlledScroll.current = false
+  //       })
+  //     }),
+  //   [],
+  // )
   function handleContainerScroll() {
-    if (!isControlledScroll.current) {
-      setWaveformScroll(containerRef.current!.scrollTop)
-    }
+    // if (!isControlledScroll.current) {
+    //   setWaveformScroll(containerRef.current!.scrollTop)
+    // }
 
     // Update the offset of the hover layer.
     hoverLayerRef.current!.updateOffset(containerRef.current!.scrollTop)
   }
+
+  // Handle scroll event.
+  useEffect(() => {
+    const sub = waveformScroll.subscribe((top) => {
+      containerRef.current!.scrollTo({ top, behavior: 'smooth' })
+    })
+
+    return () => sub.unsubscribe()
+  }, [])
 
   const addMarkContext = useAddMarkContextValue()
 

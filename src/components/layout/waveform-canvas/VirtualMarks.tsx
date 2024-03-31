@@ -1,7 +1,8 @@
 import { useCurrentEditingTaskValue } from '@/atoms/editor'
 import { virtualMarksOverscan } from '@/constants/editor'
-import { textScrollTo } from '@/subjects/editor'
-import { forwardRef, useImperativeHandle, useState } from 'react'
+import { cn } from '@/lib/utils/cn'
+import { markHighlight, textHighlight, waveformScroll } from '@/subjects/editor'
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import { seekHeight } from './utils'
 
 export interface VirtualMarksRef {
@@ -46,16 +47,36 @@ export const VirtualMarks = forwardRef<VirtualMarksRef>(function VirtualMarks(
   )
 
   function handleSeekText(index: number) {
-    console.log('VirtualMarks.Seek', index)
-    textScrollTo.next(index)
+    textHighlight.next({ index, to: totalMarks[index][1] - visibleArea.start })
   }
+
+  const [highlightIndex, setHighlightIndex] = useState(-1)
+  useEffect(() => {
+    const sub = markHighlight.subscribe(({ index, to }) => {
+      if (index === -1) {
+        // Unhighlight only.
+        setHighlightIndex(-1)
+        return
+      }
+
+      const markStart = totalMarks[index][1]
+      waveformScroll.next(markStart - to)
+      setHighlightIndex(index)
+    })
+
+    return () => sub.unsubscribe()
+  }, [totalMarks])
 
   return (
     <>
       {visibleMarks.map(([index, start, end]) => (
         <div
           key={`${index}${start}${end}`}
-          className="absolute inset-x-0 cursor-pointer border-y border-amber-500 bg-amber-500/5 hover:bg-amber-500/10"
+          className={cn(
+            'absolute inset-x-0 cursor-pointer border-y border-amber-500 bg-amber-500/5 transition hover:bg-amber-500/10',
+            highlightIndex !== -1 && highlightIndex !== index && 'opacity-25',
+            highlightIndex === index && 'bg-amber-500/10',
+          )}
           role="button"
           onClick={() => handleSeekText(index)}
           style={{

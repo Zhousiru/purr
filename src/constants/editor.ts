@@ -15,3 +15,5 @@ export const virtualMarksOverscan = 200
 
 // Content.
 export const virtualTextOverscan = 5
+export const virtualTextPaddingBlock = 16
+export const virtualTextGap = 16

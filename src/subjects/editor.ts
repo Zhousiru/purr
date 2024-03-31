@@ -1,3 +1,13 @@
 import { Subject } from 'rxjs'
 
-export const textScrollTo = new Subject<number>()
+export const textHighlight = new Subject<{
+  index: number
+  to: number
+}>()
+
+export const markHighlight = new Subject<{
+  index: number
+  to: number
+}>()
+
+export const waveformScroll = new Subject<number>()
