@@ -80,7 +80,7 @@ export function TimelineContent() {
   }, [cardHeight, rowVirtualizer])
 
   // Active text card.
-  const [activeIndex, setActiveIndex] = useState(3)
+  const [activeIndex, setActiveIndex] = useState(-1)
   function handleCardFocus(index: number) {
     setActiveIndex(index)
     const height =
