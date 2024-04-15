@@ -23,24 +23,6 @@ export function TimelineContent() {
 
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // const isControlledScroll = useRef(false)
-  // useEffect(
-  //   () =>
-  //     subContentScroll((top) => {
-  //       isControlledScroll.current = true
-  //       containerRef.current!.scrollTop = top
-  //       requestAnimationFrame(() => {
-  //         isControlledScroll.current = false
-  //       })
-  //     }),
-  //   [],
-  // )
-  // function handleContainerScroll() {
-  //   if (!isControlledScroll.current) {
-  //     setContentScroll(containerRef.current!.scrollTop)
-  //   }
-  // }
-
   // Virtualize text cards.
   const line = task.type === 'transcribe' ? 1 : 2
   const cardHeight = getTextCardHeight(line)
@@ -80,6 +62,30 @@ export function TimelineContent() {
 
     return () => sub.unsubscribe()
   }, [cardHeight, rowVirtualizer])
+
+  // Handle accessible keyboard event.
+  useEffect(() => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.code === 'Escape') {
+        if (!containerRef.current!.contains(document.activeElement)) {
+          console.log('exit')
+          return
+        }
+
+        e.preventDefault()
+        e.stopPropagation()
+
+        const focused = document.activeElement
+        if (focused instanceof HTMLElement) {
+          focused.blur()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeydown)
+
+    return () => document.removeEventListener('keydown', handleKeydown)
+  })
 
   // Active text card.
   const [activeIndex, setActiveIndex] = useState(-1)
@@ -133,11 +139,7 @@ export function TimelineContent() {
   }
 
   return (
-    <div
-      className="absolute inset-0 overflow-y-scroll"
-      ref={containerRef}
-      // onScroll={handleContainerScroll}
-    >
+    <div className="absolute inset-0 overflow-y-scroll" ref={containerRef}>
       <div
         className="relative overflow-hidden"
         style={{
