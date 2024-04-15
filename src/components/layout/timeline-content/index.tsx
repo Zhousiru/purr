@@ -67,15 +67,14 @@ export function TimelineContent() {
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.code === 'Escape') {
-        if (!containerRef.current!.contains(document.activeElement)) {
-          console.log('exit')
+        const focused = document.activeElement
+        if (!containerRef.current!.contains(focused)) {
           return
         }
 
         e.preventDefault()
         e.stopPropagation()
 
-        const focused = document.activeElement
         if (focused instanceof HTMLElement) {
           focused.blur()
         }

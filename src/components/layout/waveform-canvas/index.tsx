@@ -108,24 +108,7 @@ export const WaveformCanvas = forwardRef<
     hoverLayerRef.current!.updateMouse(e.clientX, e.clientY)
   }
 
-  // Sync `scrollTop`.
-  // const isControlledScroll = useRef(false)
-  // useEffect(
-  //   () =>
-  //     subWaveformScroll((top) => {
-  //       isControlledScroll.current = true
-  //       containerRef.current!.scrollTop = top
-  //       requestAnimationFrame(() => {
-  //         isControlledScroll.current = false
-  //       })
-  //     }),
-  //   [],
-  // )
   function handleContainerScroll() {
-    // if (!isControlledScroll.current) {
-    //   setWaveformScroll(containerRef.current!.scrollTop)
-    // }
-
     // Update the offset of the hover layer.
     hoverLayerRef.current!.updateOffset(containerRef.current!.scrollTop)
   }
