@@ -61,9 +61,11 @@ export function TimelineContent() {
     let timer: ReturnType<typeof setTimeout> | null = null
 
     const sub = textHighlight.subscribe(({ index, to }) => {
-      const height =
-        index * (cardHeight + virtualTextGap) + virtualTextPaddingBlock
-      rowVirtualizer.scrollToOffset(height - to, { behavior: 'smooth' })
+      const centerHeight =
+        index * (cardHeight + virtualTextGap) +
+        virtualTextPaddingBlock +
+        cardHeight / 2
+      rowVirtualizer.scrollToOffset(centerHeight - to, { behavior: 'smooth' })
 
       setHighlightIndex(index)
 
@@ -83,10 +85,19 @@ export function TimelineContent() {
   const [activeIndex, setActiveIndex] = useState(-1)
   function handleCardFocus(index: number) {
     setActiveIndex(index)
+
     const height =
       index * (cardHeight + virtualTextGap) + virtualTextPaddingBlock
+    const centerHeight = height + cardHeight / 2
+    const centerOffset = containerRef.current!.offsetHeight / 2
+    const top = centerHeight - centerOffset
 
-    markHighlight.next({ index, to: height - containerRef.current!.scrollTop })
+    containerRef.current!.scrollTo({ top, behavior: 'smooth' })
+
+    markHighlight.next({
+      index,
+      to: centerHeight - containerRef.current!.scrollTop,
+    })
   }
   function handleCardBlur(index: number) {
     setActiveIndex(-1)

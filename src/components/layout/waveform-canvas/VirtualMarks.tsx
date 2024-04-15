@@ -1,5 +1,5 @@
 import { useCurrentEditingTaskValue } from '@/atoms/editor'
-import { virtualMarksOverscan } from '@/constants/editor'
+import { virtualMarksOverscanHeight } from '@/constants/editor'
 import { cn } from '@/lib/utils/cn'
 import { markHighlight, textHighlight, waveformScroll } from '@/subjects/editor'
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
@@ -37,8 +37,8 @@ export const VirtualMarks = forwardRef<VirtualMarksRef>(function VirtualMarks(
     (d, index) => [index, seekHeight(d.start), seekHeight(d.end)] as const,
   )
 
-  const startWithOverscan = visibleArea.start - virtualMarksOverscan
-  const endWithOverscan = visibleArea.end + virtualMarksOverscan
+  const startWithOverscan = visibleArea.start - virtualMarksOverscanHeight
+  const endWithOverscan = visibleArea.end + virtualMarksOverscanHeight
 
   const visibleMarks = totalMarks.filter(
     ([_, start, end]) =>
@@ -47,7 +47,9 @@ export const VirtualMarks = forwardRef<VirtualMarksRef>(function VirtualMarks(
   )
 
   function handleSeekText(index: number) {
-    textHighlight.next({ index, to: totalMarks[index][1] - visibleArea.start })
+    const [_, start, end] = totalMarks[index]
+    const centerHeight = (end - start) / 2 + start
+    textHighlight.next({ index, to: centerHeight - visibleArea.start })
   }
 
   const [highlightIndex, setHighlightIndex] = useState(-1)
@@ -59,13 +61,20 @@ export const VirtualMarks = forwardRef<VirtualMarksRef>(function VirtualMarks(
         return
       }
 
-      const markStart = totalMarks[index][1]
-      waveformScroll.next(markStart - to)
+      const [_, start, end] = totalMarks[index]
+      const height = end - start
+      const centerHeight = start + height / 2
+      const centerOffset = (visibleArea.end - visibleArea.start) / 2
+      const top = centerHeight - centerOffset
+
+      console.log('seekText')
+
+      waveformScroll.next(top)
       setHighlightIndex(index)
     })
 
     return () => sub.unsubscribe()
-  }, [totalMarks])
+  }, [totalMarks, visibleArea.end, visibleArea.start])
 
   return (
     <>
