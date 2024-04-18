@@ -114,6 +114,8 @@ export const HoverLayer = forwardRef<HoverLayerRef>(
                     addMarkContext && 'bg-white',
                   )}
                   onClick={handleSeek}
+                  // Prevent focus when not show.
+                  tabIndex={showIndicator ? 0 : -1}
                 >
                   <IconPlayerPlay
                     size={12}
@@ -129,6 +131,7 @@ export const HoverLayer = forwardRef<HoverLayerRef>(
                     !addMarkContext && 'bg-white',
                   )}
                   onClick={handleAddMark}
+                  tabIndex={showIndicator ? 0 : -1}
                 >
                   {addMarkContext ? (
                     <IconCheck size={12} className="text-white" />
