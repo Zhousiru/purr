@@ -2,6 +2,7 @@ import { useCurrentEditingTaskValue } from '@/atoms/editor'
 import { WaveformCanvas } from '@/components/layout/editor/waveform-canvas'
 import { player } from '@/lib/player'
 import { useEffect } from 'react'
+import { FloatController } from './float-controller'
 import { TimelineContent } from './timeline-content'
 
 export function Editor() {
@@ -53,6 +54,7 @@ export function Editor() {
 
         <div className="relative flex-grow">
           <TimelineContent />
+          <FloatController />
         </div>
       </div>
     </>
