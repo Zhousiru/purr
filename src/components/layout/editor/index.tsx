@@ -1,8 +1,8 @@
 import { useCurrentEditingTaskValue } from '@/atoms/editor'
-import { WaveformCanvas } from '@/components/layout/waveform-canvas'
+import { WaveformCanvas } from '@/components/layout/editor/waveform-canvas'
 import { player } from '@/lib/player'
 import { useEffect } from 'react'
-import { TimelineContent } from '../timeline-content'
+import { TimelineContent } from './timeline-content'
 
 export function Editor() {
   const task = useCurrentEditingTaskValue()
