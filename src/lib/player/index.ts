@@ -1,13 +1,24 @@
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { isServer } from '../utils/is-server'
 
+interface PlayerCallbacks {
+  onPlay: () => void
+  onPause: () => void
+}
+
 class Player {
   private audioElement: HTMLAudioElement
   public currentSource: string | null = null
 
+  public callbacks: PlayerCallbacks | null = null
+
   constructor() {
     this.audioElement = new Audio()
     this.audioElement.crossOrigin = ''
+  }
+
+  public bindCallbacks(callbacks: PlayerCallbacks) {
+    this.callbacks = callbacks
   }
 
   public async load(path: string) {
@@ -31,12 +42,14 @@ class Player {
 
   public async play() {
     await this.audioElement.play()
+    this.callbacks?.onPlay()
 
     console.log('Player.PlayStart')
   }
 
   public pause() {
     this.audioElement.pause()
+    this.callbacks?.onPause()
 
     console.log('Player.Pause')
   }

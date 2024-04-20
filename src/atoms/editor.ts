@@ -1,4 +1,5 @@
 import { TaskAtom } from '@/lib/db/task-atom-storage'
+import { createIsPlayingAtom } from '@/lib/player/atoms'
 import { store } from '@/lib/store'
 import { Task } from '@/types/tasks'
 import { atom, useAtom, useAtomValue } from 'jotai'
@@ -24,6 +25,9 @@ export const useCurrentEditingTaskValue = () => {
   }
   return useAtomValue(taskAtom)
 }
+
+const isPlayingAtom = createIsPlayingAtom()
+export const useIsPlayingValue = () => useAtomValue(isPlayingAtom)
 
 const findTranscribeTask = (get: Getter) => {
   const taskAtom = get(currentEditingTaskAtom)

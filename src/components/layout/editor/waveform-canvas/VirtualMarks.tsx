@@ -67,7 +67,7 @@ export const VirtualMarks = forwardRef<VirtualMarksRef>(function VirtualMarks(
       const centerOffset = (visibleArea.end - visibleArea.start) / 2
       const top = centerHeight - centerOffset
 
-      console.log('seekText')
+      console.log('VirtualMarks.SeekText', index)
 
       waveformScroll.next(top)
       setHighlightIndex(index)
