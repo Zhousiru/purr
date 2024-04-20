@@ -109,7 +109,7 @@ export const WaveformCanvas = forwardRef<
 
   // Handle scroll event.
   useEffect(() => {
-    const sub = waveformScroll.subscribe((top) => {
+    const sub = waveformScroll.subscribe(({ top }) => {
       containerRef.current!.scrollTo({ top, behavior: 'smooth' })
     })
 

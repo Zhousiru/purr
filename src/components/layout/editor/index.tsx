@@ -6,6 +6,7 @@ import { WaveformCanvas } from '@/components/layout/editor/waveform-canvas'
 import { player } from '@/lib/player'
 import { useEffect } from 'react'
 import { FloatController } from './float-controller'
+import { FollowModeDispatcher } from './follow-mode-dispatcher'
 import { TimelineContent } from './timeline-content'
 
 export function Editor() {
@@ -57,6 +58,8 @@ export function Editor() {
           <FloatController />
         </div>
       </div>
+
+      <FollowModeDispatcher />
     </>
   )
 }

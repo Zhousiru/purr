@@ -1,4 +1,5 @@
 import {
+  getWaveformViewportHeight,
   useCurrentEditingTaskValue,
   useWaveformViewportHeightValue,
   useWaveformVisibleAreaValue,
@@ -44,17 +45,17 @@ export function VirtualMarks() {
       const [_, start, end] = totalMarks[index]
       const height = end - start
       const centerHeight = start + height / 2
-      const centerOffset = waveformHeight / 2
+      const centerOffset = getWaveformViewportHeight() / 2
       const top = centerHeight - centerOffset
 
       console.log('VirtualMarks.SeekText', index)
 
-      waveformScroll.next(top)
+      waveformScroll.next({ top })
       setHighlightIndex(index)
     })
 
     return () => sub.unsubscribe()
-  }, [totalMarks, visibleArea.endY, visibleArea.startY, waveformHeight])
+  }, [totalMarks])
 
   return (
     <>

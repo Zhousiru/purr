@@ -17,3 +17,6 @@ export const virtualMarksOverscanHeight = 200
 export const virtualTextOverscan = 5
 export const virtualTextPaddingBlock = 16
 export const virtualTextGap = 16
+
+// Always keep the current indicator at [StartY + `followModeWaveformReserve`, EndY - `followModeWaveformReserve`].
+export const followModeWaveformReserve = 100
