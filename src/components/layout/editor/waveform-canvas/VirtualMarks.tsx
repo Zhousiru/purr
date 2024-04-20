@@ -54,7 +54,7 @@ export const VirtualMarks = forwardRef<VirtualMarksRef>(function VirtualMarks(
 
   const [highlightIndex, setHighlightIndex] = useState(-1)
   useEffect(() => {
-    const sub = markHighlight.subscribe(({ index, to }) => {
+    const sub = markHighlight.subscribe(({ index }) => {
       if (index === -1) {
         // Unhighlight only.
         setHighlightIndex(-1)

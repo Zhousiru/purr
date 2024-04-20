@@ -15,6 +15,7 @@ class Player {
   constructor() {
     this.audioElement = new Audio()
     this.audioElement.crossOrigin = ''
+    this.audioElement.addEventListener('ended', () => this.pause())
   }
 
   public bindCallbacks(callbacks: PlayerCallbacks) {

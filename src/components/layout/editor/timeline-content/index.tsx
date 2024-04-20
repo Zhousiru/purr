@@ -101,12 +101,11 @@ export function TimelineContent() {
 
     markHighlight.next({
       index,
-      to: centerHeight - containerRef.current!.scrollTop,
     })
   }
-  function handleCardBlur(index: number) {
+  function handleCardBlur() {
     setActiveIndex(-1)
-    markHighlight.next({ index: -1, to: -1 })
+    markHighlight.next({ index: -1 })
   }
 
   // Edit text card content.
@@ -161,7 +160,7 @@ export function TimelineContent() {
               height: cardHeight,
             }}
             onFocus={() => handleCardFocus(item.index)}
-            onBlur={() => handleCardBlur(item.index)}
+            onBlur={() => handleCardBlur()}
           >
             <input
               type="text"

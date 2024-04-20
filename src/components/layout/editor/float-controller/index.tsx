@@ -1,18 +1,23 @@
 import {
   useCurrentEditingAudioDurationValue,
+  useIsFollowMode,
   useIsPlayingValue,
 } from '@/atoms/editor'
+import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
 import { player } from '@/lib/player'
+import { cn } from '@/lib/utils/cn'
 import { formatSec } from '@/lib/utils/time'
 import {
   IconPlayerPauseFilled,
   IconPlayerPlayFilled,
+  IconViewfinder,
 } from '@tabler/icons-react'
 import { MouseEventHandler, useEffect, useRef, useState } from 'react'
 import { Button } from './Button'
 
 export function FloatController() {
   const isPlaying = useIsPlayingValue()
+  const [isFollowMode, setIsFollowMode] = useIsFollowMode()
 
   const totalDuration = useCurrentEditingAudioDurationValue()
   const [currentTime, setCurrentTime] = useState(0)
@@ -130,13 +135,35 @@ export function FloatController() {
           </div>
         </div>
 
-        <div className="flex justify-center">
-          <Button
-            onClick={() => player.togglePlay()}
-            icon={
-              isPlaying ? <IconPlayerPauseFilled /> : <IconPlayerPlayFilled />
-            }
-          />
+        <div className="relative flex h-10 items-center px-1">
+          <TooltipGroup>
+            <div className="pointer-events-none absolute inset-0 flex justify-center [&>*]:pointer-events-auto">
+              <Tooltip content={isPlaying ? 'Pause' : 'Play'}>
+                <Button
+                  onClick={() => player.togglePlay()}
+                  icon={
+                    isPlaying ? (
+                      <IconPlayerPauseFilled />
+                    ) : (
+                      <IconPlayerPlayFilled />
+                    )
+                  }
+                />
+              </Tooltip>
+            </div>
+            <Tooltip content="Follow mode">
+              <Button
+                onClick={() => setIsFollowMode((prev) => !prev)}
+                icon={
+                  <IconViewfinder
+                    className={cn('transition', !isFollowMode && 'opacity-50')}
+                    size={16}
+                  />
+                }
+                small
+              />
+            </Tooltip>
+          </TooltipGroup>
         </div>
       </div>
     </div>

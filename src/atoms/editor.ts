@@ -73,3 +73,7 @@ export const setCurrentHighlightIndex = (index: number) =>
   store.set(currentHighlightIndex, index)
 export const useCurrentHighlightIndexValue = () =>
   useAtomValue(currentHighlightIndex)
+
+const isFollowModeAtom = atom(false)
+export const useIsFollowMode = () => useAtom(isFollowModeAtom)
+export const useIsFollowModeValue = () => useAtomValue(isFollowModeAtom)

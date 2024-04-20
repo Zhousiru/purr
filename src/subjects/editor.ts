@@ -7,7 +7,6 @@ export const textHighlight = new Subject<{
 
 export const markHighlight = new Subject<{
   index: number
-  to: number
 }>()
 
 export const waveformScroll = new Subject<number>()
