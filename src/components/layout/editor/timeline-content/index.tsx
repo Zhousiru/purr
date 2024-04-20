@@ -42,12 +42,17 @@ export function TimelineContent() {
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null
 
-    const sub = textHighlight.subscribe(({ index, to }) => {
-      const centerHeight =
-        index * (cardHeight + virtualTextGap) +
-        virtualTextPaddingBlock +
-        cardHeight / 2
-      rowVirtualizer.scrollToOffset(centerHeight - to, { behavior: 'smooth' })
+    const sub = textHighlight.subscribe(({ index }) => {
+      if (
+        rowVirtualizer.getOffsetForIndex(index, 'auto')[0] !==
+        rowVirtualizer.scrollOffset
+      ) {
+        // Outside the viewport.
+        const targetOffset =
+          rowVirtualizer.getOffsetForIndex(index, 'start')[0] -
+          virtualTextPaddingBlock
+        rowVirtualizer.scrollToOffset(targetOffset, { behavior: 'smooth' })
+      }
 
       setHighlightIndex(index)
 

@@ -29,9 +29,7 @@ export function VirtualMarks() {
   )
 
   function handleSeekText(index: number) {
-    const [_, start, end] = totalMarks[index]
-    const centerHeight = (end - start) / 2 + start
-    textHighlight.next({ index, to: centerHeight - visibleArea.startY })
+    textHighlight.next({ index })
   }
 
   const [highlightIndex, setHighlightIndex] = useState(-1)
