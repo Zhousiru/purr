@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils/cn'
-import { TablerIconsProps } from '@tabler/icons-react'
+import { IconProps } from '@tabler/icons-react'
 import {
   ButtonHTMLAttributes,
   ReactElement,
@@ -12,7 +12,7 @@ const Button = forwardRef<
   ButtonHTMLAttributes<HTMLButtonElement> & {
     variant?: 'solid' | 'outline' | 'ghost' | 'destructive'
     loading?: boolean
-    icon?: ReactElement<TablerIconsProps>
+    icon?: ReactElement<IconProps>
     reverseIcon?: boolean
   }
 >(

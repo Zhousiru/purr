@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils/cn'
-import { TablerIconsProps } from '@tabler/icons-react'
+import { IconProps } from '@tabler/icons-react'
 import {
   ButtonHTMLAttributes,
   ReactElement,
@@ -10,7 +10,7 @@ import {
 export const GhostButton = forwardRef<
   HTMLButtonElement,
   Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
-    icon: ReactElement<TablerIconsProps>
+    icon: ReactElement<IconProps>
   }
 >(function GhostButton({ icon, className, ...props }, ref) {
   const clonedIcon = icon && cloneElement(icon, { size: 16 })
