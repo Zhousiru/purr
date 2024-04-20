@@ -26,6 +26,21 @@ export const useCurrentEditingTaskValue = () => {
   return useAtomValue(taskAtom)
 }
 
+const waveformViewportHeight = atom(-1)
+export const setWaveformViewportHeight = (height: number) =>
+  store.set(waveformViewportHeight, height)
+export const useWaveformViewportHeightValue = () =>
+  useAtomValue(waveformViewportHeight)
+
+const waveformVisibleArea = atom({
+  startY: -1,
+  endY: -1,
+})
+export const useWaveformVisibleAreaValue = () =>
+  useAtomValue(waveformVisibleArea)
+export const setWaveformVisibleArea = (startY: number, endY: number) =>
+  store.set(waveformVisibleArea, { startY, endY })
+
 const isPlayingAtom = createIsPlayingAtom()
 export const useIsPlayingValue = () => useAtomValue(isPlayingAtom)
 

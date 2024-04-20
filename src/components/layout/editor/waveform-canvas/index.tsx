@@ -1,6 +1,10 @@
 'use client'
 
-import { useAddMarkContextValue } from '@/atoms/editor'
+import {
+  setWaveformViewportHeight,
+  setWaveformVisibleArea,
+  useAddMarkContextValue,
+} from '@/atoms/editor'
 import {
   blockDuration,
   fillColor,
@@ -13,15 +17,9 @@ import { player } from '@/lib/player'
 import { mergeRefs } from '@/lib/utils/merge-refs'
 import { Waveform } from '@/lib/waveform'
 import { waveformScroll } from '@/subjects/editor'
-import {
-  MouseEventHandler,
-  ReactNode,
-  forwardRef,
-  useEffect,
-  useRef,
-} from 'react'
+import { MouseEventHandler, forwardRef, useEffect, useRef } from 'react'
 import { HoverLayer, HoverLayerRef } from './HoverLayer'
-import { VirtualMarks, VirtualMarksRef } from './VirtualMarks'
+import { VirtualMarks } from './VirtualMarks'
 import { seekHeight } from './utils'
 
 export const WaveformCanvas = forwardRef<
@@ -30,15 +28,12 @@ export const WaveformCanvas = forwardRef<
     path: string
     duration: number
     mergeChannels: boolean
-    children?: ReactNode
   }
->(function WaveformCanvas({ path, duration, mergeChannels, children }, ref) {
+>(function WaveformCanvas({ path, duration, mergeChannels }, ref) {
   // Bind `Waveform`.
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasContainerRef = useRef<HTMLDivElement>(null)
   const waveformRef = useRef<Waveform | null>(null)
-
-  const virtualMarksRef = useRef<VirtualMarksRef>(null)
 
   useEffect(() => {
     waveformRef.current = new Waveform(
@@ -56,8 +51,7 @@ export const WaveformCanvas = forwardRef<
       },
       {
         onContainerVisibleAreaUpdate(startY, endY) {
-          // Update visible area of virtual marks.
-          virtualMarksRef.current!.updateVisibleArea(startY, endY)
+          setWaveformVisibleArea(startY, endY)
         },
       },
     )
@@ -86,12 +80,14 @@ export const WaveformCanvas = forwardRef<
 
   // Position the fixed hover layer.
   // We use the fixed hover layer to avoid lag while scrolling.
+  // And update waveform viewport height.
   const hoverLayerRef = useRef<HoverLayerRef>(null)
   useEffect(() => {
     const observer = new ResizeObserver(() => {
       hoverLayerRef.current!.updateBounding(
         containerRef.current!.getBoundingClientRect(),
       )
+      setWaveformViewportHeight(containerRef.current!.offsetHeight)
     })
     observer.observe(containerRef.current!)
 
@@ -137,8 +133,7 @@ export const WaveformCanvas = forwardRef<
         style={{ marginBlock: marginBlock }}
       />
 
-      {children}
-      <VirtualMarks ref={virtualMarksRef} />
+      <VirtualMarks />
 
       <div
         ref={currentIndicatorRef}

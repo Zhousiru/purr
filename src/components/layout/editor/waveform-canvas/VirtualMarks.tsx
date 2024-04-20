@@ -1,44 +1,26 @@
-import { useCurrentEditingTaskValue } from '@/atoms/editor'
+import {
+  useCurrentEditingTaskValue,
+  useWaveformViewportHeightValue,
+  useWaveformVisibleAreaValue,
+} from '@/atoms/editor'
 import { virtualMarksOverscanHeight } from '@/constants/editor'
 import { cn } from '@/lib/utils/cn'
 import { markHighlight, textHighlight, waveformScroll } from '@/subjects/editor'
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { seekHeight } from './utils'
 
-export interface VirtualMarksRef {
-  updateVisibleArea: (start: number, end: number) => void
-}
-
-export const VirtualMarks = forwardRef<VirtualMarksRef>(function VirtualMarks(
-  {},
-  ref,
-) {
+export function VirtualMarks() {
   const task = useCurrentEditingTaskValue()
 
-  const [visibleArea, setVisibleArea] = useState<{
-    start: number
-    end: number
-  }>({
-    start: 0,
-    end: 0,
-  })
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      updateVisibleArea(start: number, end: number) {
-        setVisibleArea({ start, end })
-      },
-    }),
-    [],
-  )
+  const visibleArea = useWaveformVisibleAreaValue()
+  const waveformHeight = useWaveformViewportHeightValue()
 
   const totalMarks = (task.result?.data ?? []).map(
     (d, index) => [index, seekHeight(d.start), seekHeight(d.end)] as const,
   )
 
-  const startWithOverscan = visibleArea.start - virtualMarksOverscanHeight
-  const endWithOverscan = visibleArea.end + virtualMarksOverscanHeight
+  const startWithOverscan = visibleArea.startY - virtualMarksOverscanHeight
+  const endWithOverscan = visibleArea.endY + virtualMarksOverscanHeight
 
   const visibleMarks = totalMarks.filter(
     ([_, start, end]) =>
@@ -49,7 +31,7 @@ export const VirtualMarks = forwardRef<VirtualMarksRef>(function VirtualMarks(
   function handleSeekText(index: number) {
     const [_, start, end] = totalMarks[index]
     const centerHeight = (end - start) / 2 + start
-    textHighlight.next({ index, to: centerHeight - visibleArea.start })
+    textHighlight.next({ index, to: centerHeight - visibleArea.startY })
   }
 
   const [highlightIndex, setHighlightIndex] = useState(-1)
@@ -64,7 +46,7 @@ export const VirtualMarks = forwardRef<VirtualMarksRef>(function VirtualMarks(
       const [_, start, end] = totalMarks[index]
       const height = end - start
       const centerHeight = start + height / 2
-      const centerOffset = (visibleArea.end - visibleArea.start) / 2
+      const centerOffset = waveformHeight / 2
       const top = centerHeight - centerOffset
 
       console.log('VirtualMarks.SeekText', index)
@@ -74,7 +56,7 @@ export const VirtualMarks = forwardRef<VirtualMarksRef>(function VirtualMarks(
     })
 
     return () => sub.unsubscribe()
-  }, [totalMarks, visibleArea.end, visibleArea.start])
+  }, [totalMarks, visibleArea.endY, visibleArea.startY, waveformHeight])
 
   return (
     <>
@@ -96,4 +78,4 @@ export const VirtualMarks = forwardRef<VirtualMarksRef>(function VirtualMarks(
       ))}
     </>
   )
-})
+}
