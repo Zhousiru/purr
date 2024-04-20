@@ -1,4 +1,7 @@
-import { useCurrentEditingTaskValue } from '@/atoms/editor'
+import {
+  useCurrentEditingAudioDurationValue,
+  useCurrentEditingAudioPathValue,
+} from '@/atoms/editor'
 import { WaveformCanvas } from '@/components/layout/editor/waveform-canvas'
 import { player } from '@/lib/player'
 import { useEffect } from 'react'
@@ -6,22 +9,18 @@ import { FloatController } from './float-controller'
 import { TimelineContent } from './timeline-content'
 
 export function Editor() {
-  const task = useCurrentEditingTaskValue()
-
-  if (task.type === 'translate') {
-    // TODO: Translation task.
-    throw new Error('Not implemented.')
-  }
+  const audioPath = useCurrentEditingAudioPathValue()
+  const audioDuration = useCurrentEditingAudioDurationValue()
 
   useEffect(() => {
-    if (player.currentSource !== task.options.sourcePath) {
-      player.load(task.options.sourcePath)
+    if (player.currentSource !== audioPath) {
+      player.load(audioPath)
     }
 
     return () => {
       player.pause()
     }
-  }, [task.options.sourcePath])
+  }, [audioPath])
 
   // Toggle playing by `Space`.
   useEffect(() => {
@@ -46,7 +45,8 @@ export function Editor() {
         <div className="flex w-[350px] border-r bg-gray-50">
           <div className="relative flex-grow">
             <WaveformCanvas
-              path={task.options.sourcePath}
+              path={audioPath}
+              duration={audioDuration}
               mergeChannels={false}
             />
           </div>

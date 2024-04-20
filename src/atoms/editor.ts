@@ -2,7 +2,8 @@ import { TaskAtom } from '@/lib/db/task-atom-storage'
 import { store } from '@/lib/store'
 import { Task } from '@/types/tasks'
 import { atom, useAtom, useAtomValue } from 'jotai'
-import { PrimitiveAtom } from 'jotai/vanilla'
+import { Getter } from 'jotai/vanilla'
+import { transcribeTaskListAtom } from './tasks'
 
 const currentEditingTaskAtom = atom<TaskAtom<Task> | null>(null)
 export const setCurrentEditingTaskAtom = (taskAtom: TaskAtom<Task> | null) =>
@@ -24,29 +25,38 @@ export const useCurrentEditingTaskValue = () => {
   return useAtomValue(taskAtom)
 }
 
-const waveformScrollAtom = atom<number>(0)
-export const setWaveformScroll = (top: number) =>
-  store.set(waveformScrollAtom, top)
+const findTranscribeTask = (get: Getter) => {
+  const taskAtom = get(currentEditingTaskAtom)
+  if (!taskAtom) {
+    throw new Error('Current editing task atom cannot be `null`.')
+  }
+  const task = get(taskAtom)
 
-const contentScrollAtom = atom<number>(0)
-export const setContentScroll = (top: number) =>
-  store.set(contentScrollAtom, top)
+  if (task.type === 'transcribe') {
+    return task
+  }
 
-const subScroll = (atom: PrimitiveAtom<number>, fn: (top: number) => void) =>
-  store.sub(atom, () => {
-    const value = store.get(atom)
-    fn(value)
-  })
-export const subWaveformScroll = (fn: (top: number) => void) =>
-  subScroll(waveformScrollAtom, fn)
-export const subContentScroll = (fn: (top: number) => void) =>
-  subScroll(contentScrollAtom, fn)
+  const relatedTaskAtom = get(transcribeTaskListAtom).find(
+    (taskAtom) => store.get(taskAtom).name === task.relatedTaskName,
+  )
+  if (!relatedTaskAtom) {
+    throw new Error('Invalid `relatedTaskName`.')
+  }
 
-const currentAudioDurationAtom = atom<number>(0)
-export const setCurrentAudioDuration = (duration: number) =>
-  store.set(currentAudioDurationAtom, duration)
-export const useCurrentAudioDurationValue = () =>
-  useAtomValue(currentAudioDurationAtom)
+  return get(relatedTaskAtom)
+}
+
+const currentEditingAudioPathAtom = atom(
+  (get) => findTranscribeTask(get).options.sourcePath,
+)
+export const useCurrentEditingAudioPathValue = () =>
+  useAtomValue(currentEditingAudioPathAtom)
+
+const currentEditingAudioDurationAtom = atom(
+  (get) => findTranscribeTask(get).options.sourceMeta.duration,
+)
+export const useCurrentEditingAudioDurationValue = () =>
+  useAtomValue(currentEditingAudioDurationAtom)
 
 const addMarkContext = atom<{
   startHeight: number

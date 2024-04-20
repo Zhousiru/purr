@@ -1,11 +1,11 @@
-import { useCurrentAudioDurationValue } from '@/atoms/editor'
+import { useCurrentEditingAudioDurationValue } from '@/atoms/editor'
 import { player } from '@/lib/player'
 import { formatSec } from '@/lib/utils/time'
 import { IconPlayerPlayFilled } from '@tabler/icons-react'
 import { MouseEventHandler, useEffect, useRef, useState } from 'react'
 
 export function FloatController() {
-  const totalDuration = useCurrentAudioDurationValue()
+  const totalDuration = useCurrentEditingAudioDurationValue()
   const [currentTime, setCurrentTime] = useState(0)
   const remainDuration = totalDuration - currentTime
   const formatedTotalDuration = formatSec(totalDuration, false)

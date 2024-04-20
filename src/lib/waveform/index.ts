@@ -14,7 +14,6 @@ interface WaveformOptions {
 }
 
 interface WaveformHooks {
-  onLoaded: (duration: number) => void
   onContainerVisibleAreaUpdate: (startY: number, endY: number) => void
 }
 
@@ -35,6 +34,8 @@ export class Waveform {
   constructor(
     scrollContainerRef: HTMLDivElement,
     canvasContainerRef: HTMLDivElement,
+    path: string,
+    duration: number,
     options: WaveformOptions,
     hooks: WaveformHooks,
   ) {
@@ -48,34 +49,19 @@ export class Waveform {
       this.displayVisibleBlocks,
     )
     this.resizeObserver.observe(this.scrollContainerRef)
-  }
-
-  public async load(path: string) {
-    if (this.audioPath !== null) {
-      throw new Error('Waveform already loaded.')
-    }
-
-    console.log('Waveform.Load', path)
 
     this.audioPath = path
-    this.audioDuration = await this.getDuration()
-
-    console.log('Waveform.Duration', this.audioDuration)
-
-    // Check if current waveform has been disposed.
-    if (!this.audioPath) {
-      return
-    }
+    this.audioDuration = duration
 
     const blockCount = Math.ceil(
       this.audioDuration / this.options.blockDuration,
     )
+
     this.canvasRefs = Array(blockCount).fill(null)
     this.waveformBlocks = Array(blockCount).fill([])
+
     this.updateSize()
     this.displayVisibleBlocks()
-
-    this.hooks.onLoaded(this.audioDuration)
   }
 
   public dispose() {
@@ -273,16 +259,6 @@ export class Waveform {
     }
 
     canvasCtx.putImageData(imageData, putX, putY)
-  }
-
-  private async getDuration() {
-    if (!this.audioPath) {
-      throw new Error('Audio path is null.')
-    }
-
-    const result = await cmd.getAudioDurations({ paths: [this.audioPath] })
-    if (result[0].error) throw result[0].error
-    return result[0].duration!
   }
 
   private updateSize() {

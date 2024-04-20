@@ -1,6 +1,6 @@
 'use client'
 
-import { setCurrentAudioDuration, useAddMarkContextValue } from '@/atoms/editor'
+import { useAddMarkContextValue } from '@/atoms/editor'
 import {
   blockDuration,
   fillColor,
@@ -28,10 +28,11 @@ export const WaveformCanvas = forwardRef<
   HTMLDivElement,
   {
     path: string
+    duration: number
     mergeChannels: boolean
     children?: ReactNode
   }
->(function WaveformCanvas({ path, mergeChannels, children }, ref) {
+>(function WaveformCanvas({ path, duration, mergeChannels, children }, ref) {
   // Bind `Waveform`.
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasContainerRef = useRef<HTMLDivElement>(null)
@@ -43,6 +44,8 @@ export const WaveformCanvas = forwardRef<
     waveformRef.current = new Waveform(
       containerRef.current!,
       canvasContainerRef.current!,
+      path,
+      duration,
       {
         blockDuration,
         mergeChannels,
@@ -52,22 +55,17 @@ export const WaveformCanvas = forwardRef<
         widthScale,
       },
       {
-        onLoaded(duration) {
-          setCurrentAudioDuration(duration)
-        },
         onContainerVisibleAreaUpdate(startY, endY) {
           // Update visible area of virtual marks.
           virtualMarksRef.current!.updateVisibleArea(startY, endY)
         },
       },
     )
-    waveformRef.current!.load(path)
 
     return () => {
       waveformRef.current!.dispose()
-      waveformRef.current = null
     }
-  }, [mergeChannels, path])
+  }, [duration, mergeChannels, path])
 
   // Recover `scrollTop` when `path` prop changed.
   useEffect(() => {
