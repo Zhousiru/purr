@@ -24,7 +24,7 @@ export function FollowModeDispatcher() {
 
       const indicatorTop = seekHeight(time)
 
-      if (!lastScrollTop) {
+      if (lastScrollTop === null) {
         const areaStart = waveformVisibleArea.startY + followModeWaveformReserve
         const areaEnd = waveformVisibleArea.endY - followModeWaveformReserve
         if (indicatorTop < areaStart || indicatorTop > areaEnd) {

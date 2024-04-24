@@ -13,11 +13,11 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.26.12",
-    "@headlessui/react": "^1.7.18",
+    "@headlessui/react": "^1.7.19",
     "@tabler/icons-react": "^3.2.0",
-    "@tanstack/react-virtual": "^3.2.1",
-    "@tauri-apps/api": "^1.5.3",
-    "clsx": "^2.1.0",
+    "@tanstack/react-virtual": "^3.4.0",
+    "@tauri-apps/api": "^1.5.4",
+    "clsx": "^2.1.1",
     "dexie": "^4.0.4",
     "filesize": "^10.1.1",
     "immer": "^10.0.4",
@@ -27,12 +27,12 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.51.3",
     "rxjs": "^7.8.1",
-    "tailwind-merge": "^2.2.2"
+    "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.11",
     "@types/node": "^20.12.7",
-    "@types/react": "^18.2.77",
+    "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
     "autoprefixer": "^10.4.19",
     "eslint": "^8.57.0",
@@ -40,7 +40,7 @@
     "postcss": "^8.4.38",
     "prettier": "^3.2.5",
     "prettier-plugin-organize-imports": "^3.2.4",
-    "prettier-plugin-tailwindcss": "^0.5.13",
+    "prettier-plugin-tailwindcss": "^0.5.14",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.5"
   }
