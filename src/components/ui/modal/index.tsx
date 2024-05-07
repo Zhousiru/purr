@@ -1,7 +1,13 @@
 'use client'
 
 import { cn } from '@/lib/utils/cn'
-import { Dialog, Transition } from '@headlessui/react'
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react'
 import { Fragment, ReactNode, useRef } from 'react'
 
 export function Modal({
@@ -33,7 +39,7 @@ export function Modal({
           // We set the `initialFocus` to `Dialog.Panel` element to avoid the focus trap warning.
           initialFocus={noAutoFocus ? defaultFocusRef : undefined}
         >
-          <Transition.Child
+          <TransitionChild
             as={Fragment}
             enter="ease-out duration-200"
             enterFrom="opacity-0"
@@ -43,7 +49,7 @@ export function Modal({
             leaveTo="opacity-0"
           >
             <div className="fixed inset-0 bg-black/25" />
-          </Transition.Child>
+          </TransitionChild>
 
           <div className="fixed inset-0 overflow-y-auto">
             <div
@@ -53,7 +59,7 @@ export function Modal({
               )}
               style={{ paddingTop: fixedTop }}
             >
-              <Transition.Child
+              <TransitionChild
                 as={Fragment}
                 enter="ease-out duration-200"
                 enterFrom="opacity-0 scale-95"
@@ -62,7 +68,7 @@ export function Modal({
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel
+                <DialogPanel
                   className={cn(
                     'w-full max-w-md rounded-lg bg-white p-4 shadow-xl',
                     className,
@@ -70,13 +76,11 @@ export function Modal({
                   ref={defaultFocusRef}
                 >
                   {title && (
-                    <Dialog.Title className="mb-2 text-lg">
-                      {title}
-                    </Dialog.Title>
+                    <DialogTitle className="mb-2 text-lg">{title}</DialogTitle>
                   )}
                   {children}
-                </Dialog.Panel>
-              </Transition.Child>
+                </DialogPanel>
+              </TransitionChild>
             </div>
           </div>
         </Dialog>

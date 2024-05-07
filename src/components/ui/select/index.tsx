@@ -1,4 +1,10 @@
-import { Listbox, Transition } from '@headlessui/react'
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+  Transition,
+} from '@headlessui/react'
 import { IconCheck, IconSelector } from '@tabler/icons-react'
 import {
   ComponentPropsWithoutRef,
@@ -21,7 +27,7 @@ const Select = forwardRef<
   return (
     <Listbox ref={ref} {...props}>
       <div className={className}>
-        <Listbox.Button className="z-20 flex h-9 w-full items-center justify-between gap-2 rounded-md border border-gray-900 px-3 py-2 text-sm shadow placeholder:text-gray-400 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50">
+        <ListboxButton className="z-20 flex h-9 w-full items-center justify-between gap-2 rounded-md border border-gray-900 px-3 py-2 text-sm shadow placeholder:text-gray-400 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50">
           {({ value }) => (
             <>
               <div className="overflow-hidden text-ellipsis whitespace-nowrap">
@@ -30,7 +36,7 @@ const Select = forwardRef<
               <IconSelector className="flex-shrink-0" size={18} />
             </>
           )}
-        </Listbox.Button>
+        </ListboxButton>
 
         <div className="relative">
           <Transition
@@ -39,9 +45,9 @@ const Select = forwardRef<
             enterFrom="opacity-0 -translate-y-2 scale-95"
             enterTo="opacity-100"
           >
-            <Listbox.Options className="absolute inset-x-0 top-1 z-10 rounded-md border bg-white p-1 shadow-md">
+            <ListboxOptions className="absolute inset-x-0 top-1 z-10 rounded-md border bg-white p-1 shadow-md">
               {items.map((item) => (
-                <Listbox.Option
+                <ListboxOption
                   key={item.key}
                   value={item.key}
                   className="flex cursor-default items-center justify-between rounded px-2 py-1 hover:bg-gray-100"
@@ -56,9 +62,9 @@ const Select = forwardRef<
                       )}
                     </>
                   )}
-                </Listbox.Option>
+                </ListboxOption>
               ))}
-            </Listbox.Options>
+            </ListboxOptions>
           </Transition>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils/cn'
-import { Switch } from '@headlessui/react'
+import { Checkbox, Field, Label } from '@headlessui/react'
 import { IconCheck } from '@tabler/icons-react'
 import {
   ComponentPropsWithoutRef,
@@ -10,35 +10,29 @@ import {
 import { FieldValues, UseControllerProps, useController } from 'react-hook-form'
 
 const CheckboxPrimitive = forwardRef<
-  ElementRef<typeof Switch>,
-  Omit<ComponentPropsWithoutRef<typeof Switch>, 'children'>
+  ElementRef<typeof Checkbox>,
+  Omit<ComponentPropsWithoutRef<typeof Checkbox>, 'children'>
 >(({ className, ...props }, ref) => {
   return (
-    <Switch
+    <Checkbox
       ref={ref}
       className={cn(
-        'relative h-4 w-4 shrink-0 overflow-hidden rounded-sm border border-gray-900 shadow focus-visible:outline-none focus-visible:ring-2',
+        'group relative h-4 w-4 shrink-0 overflow-hidden rounded-sm border border-gray-900 shadow focus-visible:outline-none focus-visible:ring-2',
         className,
       )}
       {...props}
     >
-      {({ checked }) => (
-        <>
-          {checked && (
-            <div className="absolute inset-0 bg-gray-900 text-white">
-              {/* Visually... */}
-              <IconCheck size={15} />
-            </div>
-          )}
-        </>
-      )}
-    </Switch>
+      <div className="absolute inset-0 bg-gray-900 text-white opacity-0 group-data-[checked]:opacity-100">
+        {/* Visually... */}
+        <IconCheck size={15} />
+      </div>
+    </Checkbox>
   )
 })
 
 CheckboxPrimitive.displayName = 'CheckboxPrimitive'
 
-const Checkbox = forwardRef<
+const LabelCheckbox = forwardRef<
   ElementRef<typeof CheckboxPrimitive>,
   ComponentPropsWithoutRef<typeof CheckboxPrimitive> & {
     disabled?: boolean
@@ -47,36 +41,35 @@ const Checkbox = forwardRef<
 >(({ disabled, children, ...props }, ref) => {
   if (children) {
     return (
-      <Switch.Group ref={ref}>
-        <div
+      <Field
+        className={cn(
+          'flex items-center',
+          disabled && 'pointer-events-none opacity-50',
+        )}
+      >
+        <CheckboxPrimitive
+          {...props}
+          ref={ref}
+          aria-disabled={disabled}
+          className={cn(disabled && 'cursor-default')}
+        />
+        <Label
           className={cn(
-            'flex items-center',
-            disabled && 'pointer-events-none opacity-50',
+            'cursor-pointer pl-2 text-sm',
+            disabled && 'cursor-default',
           )}
+          aria-disabled={disabled}
         >
-          <CheckboxPrimitive
-            {...props}
-            aria-disabled={disabled}
-            className={cn(disabled && 'cursor-default')}
-          />
-          <Switch.Label
-            className={cn(
-              'cursor-pointer pl-2 text-sm',
-              disabled && 'cursor-default',
-            )}
-            aria-disabled={disabled}
-          >
-            {children}
-          </Switch.Label>
-        </div>
-      </Switch.Group>
+          {children}
+        </Label>
+      </Field>
     )
   }
 
   return <CheckboxPrimitive ref={ref} {...props} />
 })
 
-Checkbox.displayName = 'Checkbox'
+LabelCheckbox.displayName = 'Checkbox'
 
 export function FormCheckbox<T extends FieldValues>({
   className,
@@ -85,7 +78,7 @@ export function FormCheckbox<T extends FieldValues>({
   const { field } = useController(props)
 
   return (
-    <Checkbox
+    <LabelCheckbox
       name={field.name}
       checked={field.value}
       onChange={(e) => field.onChange(e)}
@@ -94,7 +87,7 @@ export function FormCheckbox<T extends FieldValues>({
       className={className}
     >
       {props.children}
-    </Checkbox>
+    </LabelCheckbox>
   )
 }
 
