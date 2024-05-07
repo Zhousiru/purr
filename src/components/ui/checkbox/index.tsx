@@ -91,4 +91,4 @@ export function FormCheckbox<T extends FieldValues>({
   )
 }
 
-export { Checkbox }
+export { CheckboxPrimitive, LabelCheckbox }
