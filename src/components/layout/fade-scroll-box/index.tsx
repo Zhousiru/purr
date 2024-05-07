@@ -3,6 +3,7 @@ import { HTMLAttributes } from 'react'
 
 export function FadeScrollBox({
   className,
+  style,
   children,
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
@@ -12,7 +13,9 @@ export function FadeScrollBox({
       style={{
         maskImage:
           'linear-gradient(to bottom, black calc(100% - 50px), transparent 100%)',
+        ...style,
       }}
+      {...props}
     >
       {children}
     </div>

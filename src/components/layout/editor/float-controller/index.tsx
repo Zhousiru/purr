@@ -22,9 +22,9 @@ export function FloatController() {
   const totalDuration = useCurrentEditingAudioDurationValue()
   const [currentTime, setCurrentTime] = useState(0)
   const remainDuration = totalDuration - currentTime
-  const formatedTotalDuration = formatSec(totalDuration, false)
-  const formatedCurrent = formatSec(currentTime, false)
-  const formatedRemainDuration = '-' + formatSec(remainDuration, false)
+  const formattedTotalDuration = formatSec(totalDuration, false)
+  const formattedCurrent = formatSec(currentTime, false)
+  const formattedRemainDuration = '-' + formatSec(remainDuration, false)
 
   const [showTotalDuration, setShowTotalDuration] = useState(false)
 
@@ -122,15 +122,15 @@ export function FloatController() {
 
         <div className="px-2">
           <div className="flex justify-between text-xs text-white/75">
-            <div>{formatedCurrent}</div>
+            <div>{formattedCurrent}</div>
             <div
               className="w-14 text-right"
               onMouseEnter={() => setShowTotalDuration(true)}
               onMouseLeave={() => setShowTotalDuration(false)}
             >
               {showTotalDuration
-                ? formatedTotalDuration
-                : formatedRemainDuration}
+                ? formattedTotalDuration
+                : formattedRemainDuration}
             </div>
           </div>
         </div>
