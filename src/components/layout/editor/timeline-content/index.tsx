@@ -70,11 +70,11 @@ export function TimelineContent() {
 
   // Handle focus event.
   function focusOnCard(index: number) {
+    setActiveIndex(index)
+
     if (index < 0) {
       return
     }
-
-    setActiveIndex(index)
 
     const height =
       index * (cardHeight + virtualTextGap) + virtualTextPaddingBlock

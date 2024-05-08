@@ -59,7 +59,10 @@ export function FollowModeDispatcher() {
       }
     })
 
-    return () => unsub()
+    return () => {
+      unsub()
+      textFocus.next({ index: -1 })
+    }
   }, [isFollowMode])
 
   return null
