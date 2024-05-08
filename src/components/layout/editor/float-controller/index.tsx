@@ -8,8 +8,10 @@ import { player } from '@/lib/player'
 import { cn } from '@/lib/utils/cn'
 import { formatSec } from '@/lib/utils/time'
 import {
+  IconLanguage,
   IconPlayerPauseFilled,
   IconPlayerPlayFilled,
+  IconShare2,
   IconViewfinder,
 } from '@tabler/icons-react'
 import { MouseEventHandler, useEffect, useRef, useState } from 'react'
@@ -135,7 +137,7 @@ export function FloatController() {
           </div>
         </div>
 
-        <div className="relative flex h-10 items-center px-1">
+        <div className="relative flex h-10 items-center gap-1 px-1">
           <TooltipGroup>
             <div className="pointer-events-none absolute inset-0 flex justify-center [&>*]:pointer-events-auto">
               <Tooltip content={isPlaying ? 'Pause' : 'Play'}>
@@ -160,6 +162,21 @@ export function FloatController() {
                     size={16}
                   />
                 }
+                small
+              />
+            </Tooltip>
+            <Tooltip content="Export">
+              <Button
+                className="ml-auto"
+                onClick={() => alert('Export')}
+                icon={<IconShare2 size={16} />}
+                small
+              />
+            </Tooltip>
+            <Tooltip content="Translate">
+              <Button
+                onClick={() => alert('Translate')}
+                icon={<IconLanguage size={16} />}
                 small
               />
             </Tooltip>
