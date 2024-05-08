@@ -25,6 +25,13 @@ export const useCurrentEditingTaskValue = () => {
   }
   return useAtomValue(taskAtom)
 }
+export const getCurrentEditingTask = () => {
+  const taskAtom = store.get(currentEditingTaskAtom)
+  if (!taskAtom) {
+    throw new Error('Current editing task atom cannot be `null`.')
+  }
+  return store.get(taskAtom)
+}
 
 const waveformViewportHeight = atom(-1)
 export const useWaveformViewportHeightValue = () =>
@@ -84,12 +91,6 @@ const addMarkContext = atom<{
 } | null>(null)
 export const useAddMarkContext = () => useAtom(addMarkContext)
 export const useAddMarkContextValue = () => useAtomValue(addMarkContext)
-
-const currentHighlightIndex = atom<number>(-1)
-export const setCurrentHighlightIndex = (index: number) =>
-  store.set(currentHighlightIndex, index)
-export const useCurrentHighlightIndexValue = () =>
-  useAtomValue(currentHighlightIndex)
 
 const isFollowModeAtom = atom(false)
 export const useIsFollowMode = () => useAtom(isFollowModeAtom)

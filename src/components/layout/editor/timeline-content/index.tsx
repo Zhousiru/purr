@@ -5,7 +5,7 @@ import {
   virtualTextPaddingBlock,
 } from '@/constants/editor'
 import { cn } from '@/lib/utils/cn'
-import { markHighlight, textHighlight } from '@/subjects/editor'
+import { markFocus, textFocus, textHighlight } from '@/subjects/editor'
 import { TranslateResult } from '@/types/tasks'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { produce } from 'immer'
@@ -68,6 +68,30 @@ export function TimelineContent() {
     return () => sub.unsubscribe()
   }, [cardHeight, rowVirtualizer])
 
+  // Handle focus event.
+  function focusOnCard(index: number) {
+    if (index < 0) {
+      return
+    }
+
+    setActiveIndex(index)
+
+    const height =
+      index * (cardHeight + virtualTextGap) + virtualTextPaddingBlock
+    const centerHeight = height + cardHeight / 2
+    const centerOffset = containerRef.current!.offsetHeight / 2
+    const top = centerHeight - centerOffset
+
+    containerRef.current!.scrollTo({ top, behavior: 'smooth' })
+  }
+  useEffect(() => {
+    const sub = textFocus.subscribe(({ index }) => {
+      focusOnCard(index)
+    })
+
+    return () => sub.unsubscribe()
+  })
+
   // Handle accessible keyboard event.
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
@@ -94,23 +118,14 @@ export function TimelineContent() {
   // Active text card.
   const [activeIndex, setActiveIndex] = useState(-1)
   function handleCardFocus(index: number) {
-    setActiveIndex(index)
-
-    const height =
-      index * (cardHeight + virtualTextGap) + virtualTextPaddingBlock
-    const centerHeight = height + cardHeight / 2
-    const centerOffset = containerRef.current!.offsetHeight / 2
-    const top = centerHeight - centerOffset
-
-    containerRef.current!.scrollTo({ top, behavior: 'smooth' })
-
-    markHighlight.next({
+    focusOnCard(index)
+    markFocus.next({
       index,
     })
   }
   function handleCardBlur() {
     setActiveIndex(-1)
-    markHighlight.next({ index: -1 })
+    markFocus.next({ index: -1 })
   }
 
   // Edit text card content.

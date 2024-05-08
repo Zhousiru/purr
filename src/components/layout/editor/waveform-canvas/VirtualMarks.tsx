@@ -1,12 +1,11 @@
 import {
   getWaveformViewportHeight,
   useCurrentEditingTaskValue,
-  useWaveformViewportHeightValue,
   useWaveformVisibleAreaValue,
 } from '@/atoms/editor'
 import { virtualMarksOverscanHeight } from '@/constants/editor'
 import { cn } from '@/lib/utils/cn'
-import { markHighlight, textHighlight, waveformScroll } from '@/subjects/editor'
+import { markFocus, textHighlight, waveformScroll } from '@/subjects/editor'
 import { useEffect, useState } from 'react'
 import { seekHeight } from './utils'
 
@@ -14,7 +13,6 @@ export function VirtualMarks() {
   const task = useCurrentEditingTaskValue()
 
   const visibleArea = useWaveformVisibleAreaValue()
-  const waveformHeight = useWaveformViewportHeightValue()
 
   const totalMarks = (task.result?.data ?? []).map(
     (d, index) => [index, seekHeight(d.start), seekHeight(d.end)] as const,
@@ -33,12 +31,11 @@ export function VirtualMarks() {
     textHighlight.next({ index })
   }
 
-  const [highlightIndex, setHighlightIndex] = useState(-1)
+  const [focusIndex, setFocusIndex] = useState(-1)
   useEffect(() => {
-    const sub = markHighlight.subscribe(({ index }) => {
+    const sub = markFocus.subscribe(({ index }) => {
       if (index === -1) {
-        // Unhighlight only.
-        setHighlightIndex(-1)
+        setFocusIndex(-1)
         return
       }
 
@@ -51,7 +48,7 @@ export function VirtualMarks() {
       console.log('VirtualMarks.SeekText', index)
 
       waveformScroll.next({ top })
-      setHighlightIndex(index)
+      setFocusIndex(index)
     })
 
     return () => sub.unsubscribe()
@@ -64,8 +61,8 @@ export function VirtualMarks() {
           key={`${index}${start}${end}`}
           className={cn(
             'absolute inset-x-0 cursor-pointer border-y border-amber-500 bg-amber-500/5 transition hover:bg-amber-500/10',
-            highlightIndex !== -1 && highlightIndex !== index && 'opacity-25',
-            highlightIndex === index && 'bg-amber-500/10',
+            focusIndex !== -1 && focusIndex !== index && 'opacity-25',
+            focusIndex === index && 'bg-amber-500/10',
           )}
           role="button"
           onClick={() => handleSeekText(index)}
