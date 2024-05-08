@@ -2,7 +2,8 @@ import { useCurrentEditingTask } from '@/atoms/editor'
 import {
   virtualTextGap,
   virtualTextOverscan,
-  virtualTextPaddingBlock,
+  virtualTextPaddingEnd,
+  virtualTextPaddingStart,
 } from '@/constants/editor'
 import { cn } from '@/lib/utils/cn'
 import { markFocus, textFocus, textHighlight } from '@/subjects/editor'
@@ -32,8 +33,8 @@ export function TimelineContent() {
     getScrollElement: () => containerRef.current,
     estimateSize: () => cardHeight,
     gap: virtualTextGap,
-    paddingStart: virtualTextPaddingBlock,
-    paddingEnd: virtualTextPaddingBlock,
+    paddingStart: virtualTextPaddingStart,
+    paddingEnd: virtualTextPaddingEnd,
     overscan: virtualTextOverscan,
   })
 
@@ -50,7 +51,7 @@ export function TimelineContent() {
         // Outside the viewport.
         const targetOffset =
           rowVirtualizer.getOffsetForIndex(index, 'start')[0] -
-          virtualTextPaddingBlock
+          virtualTextPaddingStart
         rowVirtualizer.scrollToOffset(targetOffset, { behavior: 'smooth' })
       }
 
@@ -77,7 +78,7 @@ export function TimelineContent() {
     }
 
     const height =
-      index * (cardHeight + virtualTextGap) + virtualTextPaddingBlock
+      index * (cardHeight + virtualTextGap) + virtualTextPaddingStart
     const centerHeight = height + cardHeight / 2
     const centerOffset = containerRef.current!.offsetHeight / 2
     const top = centerHeight - centerOffset
