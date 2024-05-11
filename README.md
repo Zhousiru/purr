@@ -14,3 +14,10 @@ Related project: [whisper-server](https://github.com/Zhousiru/whisper-server)
 ![Editor](./docs-assets/editor.webp)
 
 ![Whisper Server](./docs-assets/whisper-server.webp)
+
+## TODOs
+
+- [ ] Select task on the editor page
+- [ ] Adjust subtitle start and end times
+- [ ] Export subtitles
+- [ ] Process translation tasks
