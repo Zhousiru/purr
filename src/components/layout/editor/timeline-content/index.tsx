@@ -45,12 +45,12 @@ export function TimelineContent() {
 
     const sub = textHighlight.subscribe(({ index }) => {
       if (
-        rowVirtualizer.getOffsetForIndex(index, 'auto')[0] !==
+        rowVirtualizer.getOffsetForIndex(index, 'auto')![0] !==
         rowVirtualizer.scrollOffset
       ) {
         // Outside the viewport.
         const targetOffset =
-          rowVirtualizer.getOffsetForIndex(index, 'start')[0] -
+          rowVirtualizer.getOffsetForIndex(index, 'start')![0] -
           virtualTextPaddingStart
         rowVirtualizer.scrollToOffset(targetOffset, { behavior: 'smooth' })
       }
