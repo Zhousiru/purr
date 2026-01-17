@@ -10,7 +10,7 @@ import {
   ComponentPropsWithoutRef,
   ElementRef,
   Fragment,
-  forwardRef,
+  Ref,
 } from 'react'
 
 export interface SelectItem {
@@ -18,12 +18,12 @@ export interface SelectItem {
   key: string
 }
 
-const Select = forwardRef<
-  ElementRef<typeof Listbox>,
-  Omit<ComponentPropsWithoutRef<typeof Listbox>, 'children'> & {
-    items: SelectItem[]
-  }
->(({ items, className, ...props }, ref) => {
+type SelectProps = Omit<ComponentPropsWithoutRef<typeof Listbox>, 'children'> & {
+  items: SelectItem[]
+  ref?: Ref<ElementRef<typeof Listbox>>
+}
+
+const Select = ({ items, className, ref, ...props }: SelectProps) => {
   return (
     <Listbox ref={ref} {...props}>
       <div className={className}>
@@ -70,7 +70,7 @@ const Select = forwardRef<
       </div>
     </Listbox>
   )
-})
+}
 
 Select.displayName = 'Select'
 

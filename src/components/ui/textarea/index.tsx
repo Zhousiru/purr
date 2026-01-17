@@ -1,11 +1,12 @@
 import { cn } from '@/lib/utils/cn'
 import { Textarea as HeadlessTextarea } from '@headlessui/react'
-import { TextareaHTMLAttributes, forwardRef } from 'react'
+import { Ref, TextareaHTMLAttributes } from 'react'
 
-const Textarea = forwardRef<
-  HTMLTextAreaElement,
-  TextareaHTMLAttributes<HTMLTextAreaElement>
->(({ className, ...props }, ref) => {
+type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  ref?: Ref<HTMLTextAreaElement>
+}
+
+const Textarea = ({ className, ref, ...props }: TextareaProps) => {
   return (
     <HeadlessTextarea
       className={cn(
@@ -16,7 +17,7 @@ const Textarea = forwardRef<
       {...props}
     />
   )
-})
+}
 
 Textarea.displayName = 'Textarea'
 

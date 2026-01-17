@@ -4,15 +4,19 @@ import { IconCheck } from '@tabler/icons-react'
 import {
   ComponentPropsWithoutRef,
   ElementRef,
+  Ref,
   ReactNode,
-  forwardRef,
 } from 'react'
 import { FieldValues, UseControllerProps, useController } from 'react-hook-form'
 
-const CheckboxPrimitive = forwardRef<
-  ElementRef<typeof Checkbox>,
-  Omit<ComponentPropsWithoutRef<typeof Checkbox>, 'children'>
->(({ className, ...props }, ref) => {
+type CheckboxPrimitiveProps = Omit<
+  ComponentPropsWithoutRef<typeof Checkbox>,
+  'children'
+> & {
+  ref?: Ref<ElementRef<typeof Checkbox>>
+}
+
+const CheckboxPrimitive = ({ className, ref, ...props }: CheckboxPrimitiveProps) => {
   return (
     <Checkbox
       ref={ref}
@@ -28,17 +32,22 @@ const CheckboxPrimitive = forwardRef<
       </div>
     </Checkbox>
   )
-})
+}
 
 CheckboxPrimitive.displayName = 'CheckboxPrimitive'
 
-const LabelCheckbox = forwardRef<
-  ElementRef<typeof CheckboxPrimitive>,
-  ComponentPropsWithoutRef<typeof CheckboxPrimitive> & {
-    disabled?: boolean
-    children?: ReactNode
-  }
->(({ disabled, children, ...props }, ref) => {
+type LabelCheckboxProps = ComponentPropsWithoutRef<typeof CheckboxPrimitive> & {
+  disabled?: boolean
+  children?: ReactNode
+  ref?: Ref<ElementRef<typeof Checkbox>>
+}
+
+const LabelCheckbox = ({
+  disabled,
+  children,
+  ref,
+  ...props
+}: LabelCheckboxProps) => {
   if (children) {
     return (
       <Field
@@ -67,7 +76,7 @@ const LabelCheckbox = forwardRef<
   }
 
   return <CheckboxPrimitive ref={ref} {...props} />
-})
+}
 
 LabelCheckbox.displayName = 'Checkbox'
 

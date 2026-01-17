@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2022"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "incremental": true
+  },
+  "include": [
+    "next.config.mjs",
+    "eslint.config.mjs",
+    "postcss.config.js",
+    "**/*.config.{js,mjs,cjs,ts}",
+    "scripts/**/*.{ts,js,mjs,cjs}"
+  ],
+  "exclude": ["node_modules", "src-tauri"]
+}

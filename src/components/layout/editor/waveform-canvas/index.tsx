@@ -17,19 +17,24 @@ import { player } from '@/lib/player'
 import { mergeRefs } from '@/lib/utils/merge-refs'
 import { Waveform } from '@/lib/waveform'
 import { waveformScroll } from '@/subjects/editor'
-import { MouseEventHandler, forwardRef, useEffect, useRef } from 'react'
+import { MouseEventHandler, Ref, useEffect, useRef } from 'react'
 import { HoverLayer, HoverLayerRef } from './HoverLayer'
 import { VirtualMarks } from './VirtualMarks'
 import { seekHeight } from './utils'
 
-export const WaveformCanvas = forwardRef<
-  HTMLDivElement,
-  {
-    path: string
-    duration: number
-    mergeChannels: boolean
-  }
->(function WaveformCanvas({ path, duration, mergeChannels }, ref) {
+type WaveformCanvasProps = {
+  path: string
+  duration: number
+  mergeChannels: boolean
+  ref?: Ref<HTMLDivElement>
+}
+
+export const WaveformCanvas = ({
+  path,
+  duration,
+  mergeChannels,
+  ref,
+}: WaveformCanvasProps) => {
   // Bind `Waveform`.
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasContainerRef = useRef<HTMLDivElement>(null)
@@ -150,4 +155,4 @@ export const WaveformCanvas = forwardRef<
       <HoverLayer ref={hoverLayerRef} />
     </div>
   )
-})
+}

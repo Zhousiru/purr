@@ -1,11 +1,12 @@
 import { cn } from '@/lib/utils/cn'
 import { Input as HeadlessInput } from '@headlessui/react'
-import { InputHTMLAttributes, forwardRef } from 'react'
+import { InputHTMLAttributes, Ref } from 'react'
 
-const Input = forwardRef<
-  HTMLInputElement,
-  InputHTMLAttributes<HTMLInputElement>
->(({ className, type, ...props }, ref) => {
+type InputProps = InputHTMLAttributes<HTMLInputElement> & {
+  ref?: Ref<HTMLInputElement>
+}
+
+const Input = ({ className, type, ref, ...props }: InputProps) => {
   return (
     <HeadlessInput
       type={type}
@@ -17,7 +18,7 @@ const Input = forwardRef<
       {...props}
     />
   )
-})
+}
 
 Input.displayName = 'Input'
 

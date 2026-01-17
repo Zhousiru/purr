@@ -1,14 +1,21 @@
 import { cn } from '@/lib/utils/cn'
 import { formatSec } from '@/lib/utils/time'
-import { HTMLAttributes, forwardRef } from 'react'
+import { HTMLAttributes, Ref } from 'react'
 
-export const TextCard = forwardRef<
-  HTMLDivElement,
-  HTMLAttributes<HTMLDivElement> & {
-    start: number
-    end: number
-  }
->(function TextCard({ start, end, children, className, ...props }, ref) {
+type TextCardProps = HTMLAttributes<HTMLDivElement> & {
+  start: number
+  end: number
+  ref?: Ref<HTMLDivElement>
+}
+
+export const TextCard = ({
+  start,
+  end,
+  children,
+  className,
+  ref,
+  ...props
+}: TextCardProps) => {
   return (
     <div
       ref={ref}
@@ -21,4 +28,4 @@ export const TextCard = forwardRef<
       <div>{children}</div>
     </div>
   )
-})
+}

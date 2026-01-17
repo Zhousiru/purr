@@ -18,17 +18,18 @@ import { useAtomValue } from 'jotai'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   ButtonHTMLAttributes,
+  Ref,
   ReactNode,
-  forwardRef,
   useMemo,
   useState,
 } from 'react'
 import { WhisperConnectionIndicator } from './WhisperConnectionIndicator'
 
-const Button = forwardRef<
-  HTMLButtonElement,
-  ButtonHTMLAttributes<HTMLButtonElement>
->(function Button({ className, ...props }, ref) {
+type MenuButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  ref?: Ref<HTMLButtonElement>
+}
+
+const Button = ({ className, ref, ...props }: MenuButtonProps) => {
   return (
     <button
       ref={ref}
@@ -39,7 +40,7 @@ const Button = forwardRef<
       {...props}
     />
   )
-})
+}
 
 interface MenuItem {
   name: string

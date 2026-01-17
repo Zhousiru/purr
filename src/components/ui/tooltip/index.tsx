@@ -25,7 +25,6 @@ import {
   Ref,
   cloneElement,
   createContext,
-  forwardRef,
   isValidElement,
   useContext,
   useMemo,
@@ -105,34 +104,43 @@ export function Tooltip({
   )
 }
 
-type TriggerProps = HTMLAttributes<HTMLElement> & { ref?: Ref<HTMLElement> }
+type TooltipTriggerChildProps = HTMLAttributes<HTMLElement> & {
+  ref?: Ref<HTMLElement>
+}
 
-const TooltipTrigger = forwardRef<HTMLElement, HTMLAttributes<HTMLElement>>(
-  function TooltipTrigger({ children, ...props }, propRef) {
-    const state = useTooltipState()
+type TooltipTriggerProps = TooltipTriggerChildProps & {
+  children: ReactNode
+}
 
-    if (!isValidElement<TriggerProps>(children)) {
-      throw new Error('`children` is not a valid element')
-    }
+const TooltipTrigger = ({
+  children,
+  ref: propRef,
+  ...props
+}: TooltipTriggerProps) => {
+  const state = useTooltipState()
 
-    const childrenRef = children.props.ref
-    const ref = useMergeRefs([state.refs.setReference, propRef, childrenRef])
+  if (!isValidElement<TooltipTriggerChildProps>(children)) {
+    throw new Error('`children` is not a valid element')
+  }
 
-    return cloneElement(
-      children,
-      state.getReferenceProps({
-        ref,
-        ...props,
-        ...children.props,
-      }),
-    )
-  },
-)
+  const childrenRef = children.props.ref
+  const ref = useMergeRefs([state.refs.setReference, propRef, childrenRef])
 
-const TooltipContent = forwardRef<
-  HTMLDivElement,
-  HTMLAttributes<HTMLDivElement>
->(function TooltipContent(props, propRef) {
+  return cloneElement(
+    children,
+    state.getReferenceProps({
+      ref,
+      ...props,
+      ...children.props,
+    }),
+  )
+}
+
+type TooltipContentProps = HTMLAttributes<HTMLDivElement> & {
+  ref?: Ref<HTMLDivElement>
+}
+
+const TooltipContent = ({ ref: propRef, ...props }: TooltipContentProps) => {
   const state = useTooltipState()
   const { isInstantPhase, currentId } = useDelayGroupContext()
   const ref = useMergeRefs([state.refs.setFloating, propRef])
@@ -171,7 +179,7 @@ const TooltipContent = forwardRef<
       />
     </FloatingPortal>
   )
-})
+}
 
 export function TooltipGroup({ children }: { children: ReactNode }) {
   return (

@@ -1,14 +1,20 @@
 import { cn } from '@/lib/utils/cn'
 import { IconProps } from '@tabler/icons-react'
-import { ButtonHTMLAttributes, ReactElement, forwardRef } from 'react'
+import { ButtonHTMLAttributes, ReactElement, Ref } from 'react'
 
-export const Button = forwardRef<
-  HTMLButtonElement,
-  Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
-    icon: ReactElement<IconProps>
-    small?: boolean
-  }
->(function Button({ icon, small = false, className, ...props }, ref) {
+type FloatButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
+  icon: ReactElement<IconProps>
+  small?: boolean
+  ref?: Ref<HTMLButtonElement>
+}
+
+export const Button = ({
+  icon,
+  small = false,
+  className,
+  ref,
+  ...props
+}: FloatButtonProps) => {
   return (
     <button
       ref={ref}
@@ -22,4 +28,4 @@ export const Button = forwardRef<
       {icon}
     </button>
   )
-})
+}

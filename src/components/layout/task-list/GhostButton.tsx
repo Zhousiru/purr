@@ -3,16 +3,21 @@ import { IconProps } from '@tabler/icons-react'
 import {
   ButtonHTMLAttributes,
   ReactElement,
+  Ref,
   cloneElement,
-  forwardRef,
 } from 'react'
 
-export const GhostButton = forwardRef<
-  HTMLButtonElement,
-  Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
-    icon: ReactElement<IconProps>
-  }
->(function GhostButton({ icon, className, ...props }, ref) {
+type GhostButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
+  icon: ReactElement<IconProps>
+  ref?: Ref<HTMLButtonElement>
+}
+
+export const GhostButton = ({
+  icon,
+  className,
+  ref,
+  ...props
+}: GhostButtonProps) => {
   const clonedIcon = icon && cloneElement(icon, { size: 16 })
 
   return (
@@ -27,4 +32,4 @@ export const GhostButton = forwardRef<
       {clonedIcon}
     </button>
   )
-})
+}

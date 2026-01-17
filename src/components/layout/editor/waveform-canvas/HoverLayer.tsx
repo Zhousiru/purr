@@ -7,8 +7,8 @@ import {
   Dispatch,
   MouseEvent,
   MouseEventHandler,
+  Ref,
   SetStateAction,
-  forwardRef,
   useImperativeHandle,
   useRef,
   useState,
@@ -22,128 +22,130 @@ export interface HoverLayerRef {
   setIsHover: Dispatch<SetStateAction<boolean>>
 }
 
-export const HoverLayer = forwardRef<HoverLayerRef>(
-  function HoverLayer(_, ref) {
-    const containerRef = useRef<HTMLDivElement>(null)
-    const indicatorRef = useRef<HTMLDivElement>(null)
+type HoverLayerProps = {
+  ref?: Ref<HoverLayerRef>
+}
 
-    const offsetRef = useRef(0)
+export const HoverLayer = ({ ref }: HoverLayerProps) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const indicatorRef = useRef<HTMLDivElement>(null)
 
-    const [showIndicator, setShowIndicator] = useState(false)
+  const offsetRef = useRef(0)
 
-    const [addMarkContext, setAddMarkContext] = useAddMarkContext()
+  const [showIndicator, setShowIndicator] = useState(false)
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        updateBounding(rect) {
-          containerRef.current!.style.top = rect.top + 'px'
-          containerRef.current!.style.left = rect.left + 'px'
-          containerRef.current!.style.width = rect.width + 'px'
-          containerRef.current!.style.height = rect.height + 'px'
-        },
-        updateMouse(_, y) {
-          const height = y - containerRef.current!.getBoundingClientRect().top
-          indicatorRef.current!.style.top = height + 'px'
-        },
-        updateOffset(y) {
-          offsetRef.current = y
-        },
-        setIsHover: setShowIndicator,
-      }),
-      [],
-    )
+  const [addMarkContext, setAddMarkContext] = useAddMarkContext()
 
-    function calcHeight(e: MouseEvent) {
-      return (
-        e.clientY -
-        containerRef.current!.getBoundingClientRect().top +
-        offsetRef.current
-      )
-    }
+  useImperativeHandle(
+    ref,
+    () => ({
+      updateBounding(rect) {
+        containerRef.current!.style.top = rect.top + 'px'
+        containerRef.current!.style.left = rect.left + 'px'
+        containerRef.current!.style.width = rect.width + 'px'
+        containerRef.current!.style.height = rect.height + 'px'
+      },
+      updateMouse(_, y) {
+        const height = y - containerRef.current!.getBoundingClientRect().top
+        indicatorRef.current!.style.top = height + 'px'
+      },
+      updateOffset(y) {
+        offsetRef.current = y
+      },
+      setIsHover: setShowIndicator,
+    }),
+    [],
+  )
 
-    const handleSeek: MouseEventHandler<HTMLButtonElement> = (e) => {
-      player.seek(seekTime(calcHeight(e)))
-      player.play()
-    }
-
-    // Handle adding mark.
-    const handleAddMark: MouseEventHandler<HTMLButtonElement> = (e) => {
-      if (!addMarkContext) {
-        setAddMarkContext({
-          startHeight: calcHeight(e),
-        })
-
-        return
-      }
-
-      setAddMarkContext(null)
-      alert(
-        `Start at: ${seekTime(addMarkContext.startHeight)}\nEnd at: ${seekTime(calcHeight(e))}`,
-      )
-    }
-
+  function calcHeight(e: MouseEvent) {
     return (
+      e.clientY -
+      containerRef.current!.getBoundingClientRect().top +
+      offsetRef.current
+    )
+  }
+
+  const handleSeek: MouseEventHandler<HTMLButtonElement> = (e) => {
+    player.seek(seekTime(calcHeight(e)))
+    player.play()
+  }
+
+  // Handle adding mark.
+  const handleAddMark: MouseEventHandler<HTMLButtonElement> = (e) => {
+    if (!addMarkContext) {
+      setAddMarkContext({
+        startHeight: calcHeight(e),
+      })
+
+      return
+    }
+
+    setAddMarkContext(null)
+    alert(
+      `Start at: ${seekTime(addMarkContext.startHeight)}\nEnd at: ${seekTime(calcHeight(e))}`,
+    )
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="pointer-events-none fixed z-50 overflow-hidden"
+    >
       <div
-        ref={containerRef}
-        className="pointer-events-none fixed z-50 overflow-hidden"
+        ref={indicatorRef}
+        className={cn('absolute inset-x-0', !showIndicator && 'opacity-0')}
       >
         <div
-          ref={indicatorRef}
-          className={cn('absolute inset-x-0', !showIndicator && 'opacity-0')}
+          className={cn(
+            'border-t border-dashed border-gray-900',
+            addMarkContext && 'border-amber-500',
+          )}
+        />
+
+        <div
+          className={cn(
+            'absolute right-2 flex h-5 -translate-y-1/2 overflow-hidden rounded border border-transparent bg-gray-900 shadow-md',
+            showIndicator && 'pointer-events-auto',
+            addMarkContext && 'bg-amber-500',
+          )}
         >
-          <div
-            className={cn(
-              'border-t border-dashed border-gray-900',
-              addMarkContext && 'border-amber-500',
-            )}
-          />
+          <TooltipGroup>
+            <Tooltip content="Play" placement="top">
+              <button
+                className={cn(
+                  'flex items-center justify-center px-1',
+                  addMarkContext && 'bg-white',
+                )}
+                onClick={handleSeek}
+                // Prevent focus when not show.
+                tabIndex={showIndicator ? 0 : -1}
+              >
+                <IconPlayerPlay
+                  size={12}
+                  className={cn(!addMarkContext && 'text-white')}
+                />
+              </button>
+            </Tooltip>
 
-          <div
-            className={cn(
-              'absolute right-2 flex h-5 -translate-y-1/2 overflow-hidden rounded border border-transparent bg-gray-900 shadow-md',
-              showIndicator && 'pointer-events-auto',
-              addMarkContext && 'bg-amber-500',
-            )}
-          >
-            <TooltipGroup>
-              <Tooltip content="Play" placement="top">
-                <button
-                  className={cn(
-                    'flex items-center justify-center px-1',
-                    addMarkContext && 'bg-white',
-                  )}
-                  onClick={handleSeek}
-                  // Prevent focus when not show.
-                  tabIndex={showIndicator ? 0 : -1}
-                >
-                  <IconPlayerPlay
-                    size={12}
-                    className={cn(!addMarkContext && 'text-white')}
-                  />
-                </button>
-              </Tooltip>
-
-              <Tooltip content="Add" placement="top">
-                <button
-                  className={cn(
-                    'flex items-center justify-center px-1',
-                    !addMarkContext && 'bg-white',
-                  )}
-                  onClick={handleAddMark}
-                  tabIndex={showIndicator ? 0 : -1}
-                >
-                  {addMarkContext ? (
-                    <IconCheck size={12} className="text-white" />
-                  ) : (
-                    <IconPlus size={12} className="text-gray-600" />
-                  )}
-                </button>
-              </Tooltip>
-            </TooltipGroup>
-          </div>
+            <Tooltip content="Add" placement="top">
+              <button
+                className={cn(
+                  'flex items-center justify-center px-1',
+                  !addMarkContext && 'bg-white',
+                )}
+                onClick={handleAddMark}
+                tabIndex={showIndicator ? 0 : -1}
+              >
+                {addMarkContext ? (
+                  <IconCheck size={12} className="text-white" />
+                ) : (
+                  <IconPlus size={12} className="text-gray-600" />
+                )}
+              </button>
+            </Tooltip>
+          </TooltipGroup>
         </div>
       </div>
-    )
-  },
-)
+    </div>
+  )
+}
