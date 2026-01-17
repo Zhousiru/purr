@@ -6,7 +6,7 @@ use std::{
 };
 
 use shared_child::SharedChild;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 
 use super::events::WhisperServerEvent;
 use crate::{event_name, whisper_server::utils::get_path_env, WhisperServerDaemon};
@@ -26,7 +26,7 @@ pub fn spawn_daemon(base_path: String, args: Vec<String>, app: AppHandle) -> Dae
   let tx_clone = tx.clone();
 
   app
-    .emit_all(
+    .emit(
       event_name::WHISPER_SERVER_DAEMON,
       WhisperServerEvent::Launch,
     )
@@ -51,7 +51,7 @@ pub fn spawn_daemon(base_path: String, args: Vec<String>, app: AppHandle) -> Dae
     let stdout_lines = BufReader::new(stdout).lines();
     for line in stdout_lines {
       stdout_app
-        .emit_all(
+        .emit(
           event_name::WHISPER_SERVER_DAEMON,
           WhisperServerEvent::Stdout(line.unwrap()),
         )
@@ -64,7 +64,7 @@ pub fn spawn_daemon(base_path: String, args: Vec<String>, app: AppHandle) -> Dae
     let stderr_lines = BufReader::new(stderr).lines();
     for line in stderr_lines {
       stderr_app
-        .emit_all(
+        .emit(
           event_name::WHISPER_SERVER_DAEMON,
           WhisperServerEvent::Stderr(line.unwrap()),
         )
@@ -77,7 +77,7 @@ pub fn spawn_daemon(base_path: String, args: Vec<String>, app: AppHandle) -> Dae
     process_arc_clone.wait().unwrap();
 
     app
-      .emit_all(event_name::WHISPER_SERVER_DAEMON, WhisperServerEvent::Exit)
+      .emit(event_name::WHISPER_SERVER_DAEMON, WhisperServerEvent::Exit)
       .unwrap();
 
     tx_clone.send(false).ok();

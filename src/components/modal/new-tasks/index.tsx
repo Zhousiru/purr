@@ -18,7 +18,7 @@ import {
   IconRestore,
   IconX,
 } from '@tabler/icons-react'
-import { open } from '@tauri-apps/api/dialog'
+import { open } from '@tauri-apps/plugin-dialog'
 import { useLayoutEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 

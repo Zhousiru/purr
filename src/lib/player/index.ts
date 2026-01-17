@@ -1,4 +1,4 @@
-import { convertFileSrc } from '@tauri-apps/api/tauri'
+import { convertFileSrc } from '@tauri-apps/api/core'
 import { isServer } from '../utils/is-server'
 
 interface PlayerCallbacks {

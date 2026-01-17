@@ -3,70 +3,66 @@
   "build": {
     "beforeBuildCommand": "pnpm run next:build",
     "beforeDevCommand": "pnpm run next:dev",
-    "devPath": "http://localhost:3000",
-    "distDir": "../out"
+    "frontendDist": "../out",
+    "devUrl": "http://localhost:3000"
   },
-  "package": {
-    "productName": "purr",
-    "version": "0.1.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "dialog": {
-        "all": true
-      },
-      "path": {
-        "all": true
-      },
-      "protocol": {
-        "asset": true,
-        "assetScope": ["**"]
-      }
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "",
+    "targets": "all",
+    "externalBin": [],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
     },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
+    "longDescription": "",
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
+    },
+    "resources": [],
+    "shortDescription": "",
+    "linux": {
       "deb": {
         "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "app.mofu.purr",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
       }
-    },
-    "updater": {
-      "active": false
-    },
+    }
+  },
+  "productName": "purr",
+  "mainBinaryName": "purr",
+  "version": "0.1.0",
+  "identifier": "app.mofu.purr",
+  "plugins": {},
+  "app": {
     "windows": [
       {
         "fullscreen": false,
         "height": 800,
         "resizable": true,
         "title": "purr",
-        "width": 1200
+        "width": 1200,
+        "useHttpsScheme": true
       }
-    ]
+    ],
+    "security": {
+      "assetProtocol": {
+        "scope": [
+          "**"
+        ],
+        "enable": true
+      }
+    }
   }
 }
