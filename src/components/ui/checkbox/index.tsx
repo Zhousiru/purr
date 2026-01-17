@@ -3,7 +3,7 @@ import { Checkbox, Field, Label } from '@headlessui/react'
 import { IconCheck } from '@tabler/icons-react'
 import {
   ComponentPropsWithoutRef,
-  ElementRef,
+  ComponentRef,
   Ref,
   ReactNode,
 } from 'react'
@@ -13,7 +13,7 @@ type CheckboxPrimitiveProps = Omit<
   ComponentPropsWithoutRef<typeof Checkbox>,
   'children'
 > & {
-  ref?: Ref<ElementRef<typeof Checkbox>>
+  ref?: Ref<ComponentRef<typeof Checkbox>>
 }
 
 const CheckboxPrimitive = ({ className, ref, ...props }: CheckboxPrimitiveProps) => {
@@ -39,7 +39,7 @@ CheckboxPrimitive.displayName = 'CheckboxPrimitive'
 type LabelCheckboxProps = ComponentPropsWithoutRef<typeof CheckboxPrimitive> & {
   disabled?: boolean
   children?: ReactNode
-  ref?: Ref<ElementRef<typeof Checkbox>>
+  ref?: Ref<ComponentRef<typeof Checkbox>>
 }
 
 const LabelCheckbox = ({

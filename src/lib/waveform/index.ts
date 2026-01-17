@@ -233,8 +233,8 @@ export class Waveform {
         maxX = minX = xCenter
       }
 
-      let startIndex = (y * width + minX) * 4
-      let endIndex = (y * width + maxX) * 4
+      const startIndex = (y * width + minX) * 4
+      const endIndex = (y * width + maxX) * 4
 
       for (let i = startIndex; i <= endIndex; i += 4) {
         imageData.data[i] = this.options.fillColor.r

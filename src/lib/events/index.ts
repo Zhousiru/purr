@@ -1,7 +1,8 @@
+import { DaemonEventPayload } from '@/types/events'
 import { EventCallback, UnlistenFn, listen } from '@tauri-apps/api/event'
 import { handleWhisperServerDaemon } from './handlers'
 
-const eventMap: [string, EventCallback<any>][] = [
+const eventMap: [string, EventCallback<DaemonEventPayload>][] = [
   ['app://whisper-server-daemon', handleWhisperServerDaemon],
 ]
 

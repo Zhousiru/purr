@@ -60,7 +60,7 @@ export function NewTaskModal({
       watch('translationOption.prompt') !== ''
   }
 
-  let nextDone =
+  const nextDone =
     (currentStep === 'transcription' && !watch('state.createTranslation')) ||
     currentStep === 'translation'
 

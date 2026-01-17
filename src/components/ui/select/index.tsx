@@ -8,7 +8,7 @@ import {
 import { IconCheck, IconSelector } from '@tabler/icons-react'
 import {
   ComponentPropsWithoutRef,
-  ElementRef,
+  ComponentRef,
   Fragment,
   Ref,
 } from 'react'
@@ -20,7 +20,7 @@ export interface SelectItem {
 
 type SelectProps = Omit<ComponentPropsWithoutRef<typeof Listbox>, 'children'> & {
   items: SelectItem[]
-  ref?: Ref<ElementRef<typeof Listbox>>
+  ref?: Ref<ComponentRef<typeof Listbox>>
 }
 
 const Select = ({ items, className, ref, ...props }: SelectProps) => {

@@ -9,7 +9,6 @@ import {
   offset,
   shift,
   useDelayGroup,
-  useDelayGroupContext,
   useDismiss,
   useFloating,
   useFocus,
@@ -36,7 +35,6 @@ interface TooltipOptions {
 }
 
 export function useTooltip({ placement = 'bottom' }: TooltipOptions = {}) {
-  const { delay } = useDelayGroupContext()
   const [open, setOpen] = useState(false)
 
   const data = useFloating({
@@ -54,6 +52,7 @@ export function useTooltip({ placement = 'bottom' }: TooltipOptions = {}) {
   })
 
   const context = data.context
+  const { delay } = useDelayGroup(context)
 
   const hover = useHover(context, {
     move: false,
@@ -142,10 +141,10 @@ type TooltipContentProps = HTMLAttributes<HTMLDivElement> & {
 
 const TooltipContent = ({ ref: propRef, ...props }: TooltipContentProps) => {
   const state = useTooltipState()
-  const { isInstantPhase, currentId } = useDelayGroupContext()
+  const { isInstantPhase, currentId } = useDelayGroup(state.context, {
+    id: state.context.floatingId,
+  })
   const ref = useMergeRefs([state.refs.setFloating, propRef])
-
-  useDelayGroup(state.context, { id: state.context.floatingId })
 
   const instantDuration = 0
   const duration = 150
