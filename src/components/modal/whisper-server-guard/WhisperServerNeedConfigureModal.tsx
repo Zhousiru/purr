@@ -10,7 +10,7 @@ export function WhisperServerNeedConfigureModal({
   onClose,
 }: {
   isOpen: boolean
-  onClose: (value: false) => void
+  onClose: (value: boolean) => void
 }) {
   const router = useRouter()
 

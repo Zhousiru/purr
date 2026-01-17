@@ -12,7 +12,7 @@ export function WhisperServerSpinnerModal({
   isFailed,
 }: {
   isOpen: boolean
-  onClose: (value: false) => void
+  onClose: (value: boolean) => void
   isFailed: boolean
 }) {
   const router = useRouter()

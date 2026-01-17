@@ -22,6 +22,7 @@ import {
 import {
   HTMLAttributes,
   ReactNode,
+  Ref,
   cloneElement,
   createContext,
   forwardRef,
@@ -104,16 +105,18 @@ export function Tooltip({
   )
 }
 
+type TriggerProps = HTMLAttributes<HTMLElement> & { ref?: Ref<HTMLElement> }
+
 const TooltipTrigger = forwardRef<HTMLElement, HTMLAttributes<HTMLElement>>(
   function TooltipTrigger({ children, ...props }, propRef) {
     const state = useTooltipState()
 
-    const childrenRef = (children as any).ref
-    const ref = useMergeRefs([state.refs.setReference, propRef, childrenRef])
-
-    if (!isValidElement(children)) {
+    if (!isValidElement<TriggerProps>(children)) {
       throw new Error('`children` is not a valid element')
     }
+
+    const childrenRef = children.props.ref
+    const ref = useMergeRefs([state.refs.setReference, propRef, childrenRef])
 
     return cloneElement(
       children,

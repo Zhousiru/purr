@@ -1,9 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-@layer utilities {
-  .scrollbar-none::-webkit-scrollbar {
+@utility scrollbar-none {
+  &::-webkit-scrollbar {
     display: none;
   }
 }

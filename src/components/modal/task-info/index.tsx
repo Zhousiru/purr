@@ -51,7 +51,7 @@ export function TaskInfoModal({
   taskAtom,
 }: {
   isOpen: boolean
-  onClose: (value: false) => void
+  onClose: (value: boolean) => void
   taskAtom: TaskAtom<Task>
 }) {
   const task = useAtomValue(taskAtom)

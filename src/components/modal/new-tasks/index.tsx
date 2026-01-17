@@ -27,7 +27,7 @@ export function NewTaskModal({
   onClose,
 }: {
   isOpen: boolean
-  onClose: (value: false) => void
+  onClose: (value: boolean) => void
 }) {
   const { register, handleSubmit, control, setValue, getValues, watch, reset } =
     useForm<NewTasks>({
