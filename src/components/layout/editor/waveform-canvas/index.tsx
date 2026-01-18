@@ -141,7 +141,7 @@ export const WaveformCanvas = ({
     >
       {/* Scroll Shim - contains Canvas and VirtualMarks for synchronized scrolling */}
       <div
-        className="pointer-events-none relative"
+        className="pointer-events-none relative overflow-hidden"
         style={{ height: scrollState.totalHeight }}
       >
         {/* Canvas with absolute positioning - moves with scroll shim */}
