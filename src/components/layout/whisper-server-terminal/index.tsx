@@ -35,8 +35,8 @@ export function WhisperServerTerminal() {
   const isReady = useAtomValue(isReadyAtom)
 
   return (
-    <div className="relative flex-grow">
-      <div className="absolute inset-0 overflow-y-auto whitespace-pre-wrap break-words bg-gray-600 px-2 py-4 font-mono text-white selection:!bg-black/75">
+    <div className="relative grow">
+      <div className="absolute inset-0 overflow-y-auto whitespace-pre-wrap wrap-break-word bg-gray-600 px-2 py-4 font-mono text-white selection:bg-black/75!">
         <div>
           {lines.map((line, index) => (
             <Line

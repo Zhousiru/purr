@@ -60,7 +60,7 @@ export function TaskItem({ taskAtom }: { taskAtom: PrimitiveAtom<Task> }) {
   return (
     <TaskAtomProvider value={taskAtom}>
       <div
-        className="flex flex-col overflow-hidden rounded border"
+        className="flex flex-col overflow-hidden rounded border border-gray-200"
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
       >
@@ -80,7 +80,7 @@ export function TaskItem({ taskAtom }: { taskAtom: PrimitiveAtom<Task> }) {
             {task.type === 'transcribe' && <Badge>Transcribe</Badge>}
             {task.type === 'translate' && <Badge>Translate</Badge>}
             {task.type === 'transcribe' && task.options.translateWith && (
-              <Badge className="border bg-transparent">Then translate</Badge>
+              <Badge className="border border-gray-200 bg-transparent">Then translate</Badge>
             )}
             <ProgressText
               status={task.status}

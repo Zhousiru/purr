@@ -4,7 +4,7 @@ export default function Page() {
   return (
     <div className="flex h-screen flex-col">
       <PageHeader>Settings</PageHeader>
-      <div className="flex flex-grow">233</div>
+      <div className="flex grow">233</div>
     </div>
   )
 }

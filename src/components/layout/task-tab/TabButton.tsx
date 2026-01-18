@@ -30,7 +30,7 @@ export function TabButtonGroup({
 }) {
   return (
     <div className={cn('flex flex-col', className)}>
-      <div className="border-b p-2 text-sm text-gray-400">{title}</div>
+      <div className="border-b border-gray-200 p-2 text-sm text-gray-400">{title}</div>
       {children}
     </div>
   )

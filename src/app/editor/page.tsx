@@ -17,7 +17,7 @@ export default function Page() {
           <Editor />
         </ClientOnly>
       ) : (
-        <div className="flex flex-grow items-center justify-center">
+        <div className="flex grow items-center justify-center">
           Please select the task first.
         </div>
       )}

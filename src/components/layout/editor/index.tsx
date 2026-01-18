@@ -42,9 +42,9 @@ export function Editor() {
 
   return (
     <>
-      <div className="relative flex flex-grow">
-        <div className="flex w-[350px] border-r bg-gray-50">
-          <div className="relative flex-grow">
+      <div className="relative flex grow">
+        <div className="flex w-[350px] border-r border-gray-200 bg-gray-50">
+          <div className="relative grow">
             <WaveformCanvas
               path={audioPath}
               duration={audioDuration}
@@ -53,7 +53,7 @@ export function Editor() {
           </div>
         </div>
 
-        <div className="relative flex-grow">
+        <div className="relative grow">
           <TimelineContent />
           <FloatController />
         </div>

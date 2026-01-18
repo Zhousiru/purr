@@ -13,7 +13,7 @@ export interface ModelSwitchProps {
 
 const ModelSwitch = ({ models, value, onChange, ref }: ModelSwitchProps) => {
   return (
-    <div ref={ref} className="overflow-y-auto rounded-md border">
+    <div ref={ref} className="overflow-y-auto rounded-md border border-gray-200">
       <div className="flex flex-col divide-y">
         {models.map((model) => (
           <button

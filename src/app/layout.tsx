@@ -13,13 +13,13 @@ export default function RootLayout({
       <head>
         <script src="http://localhost:8097" async></script>
       </head>
-      <body className="max-h-[100vh] overflow-hidden text-gray-900 selection:bg-slate-500/25">
+      <body className="max-h-screen overflow-hidden text-gray-900 selection:bg-slate-500/25">
         <RegisterEvents />
 
         <JotaiProvider>
           <div className="flex h-screen">
             <SideMenu />
-            <div className="flex-grow">{children}</div>
+            <div className="grow">{children}</div>
           </div>
         </JotaiProvider>
       </body>

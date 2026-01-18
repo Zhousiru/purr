@@ -100,7 +100,7 @@ export function FloatController() {
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-10 flex justify-center">
-      <div className="pointer-events-auto rounded-lg border bg-gray-900/50 p-2 shadow-lg backdrop-blur backdrop-saturate-150">
+      <div className="pointer-events-auto rounded-lg border border-white/25 bg-gray-900/50 p-2 shadow-lg backdrop-blur backdrop-saturate-150">
         <div
           className="group flex h-4 cursor-pointer items-center px-2"
           onMouseDown={handleSeekMouseDown}

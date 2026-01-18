@@ -45,7 +45,7 @@ const Select = ({ items, className, ref, ...props }: SelectProps) => {
             enterFrom="opacity-0 -translate-y-2 scale-95"
             enterTo="opacity-100"
           >
-            <ListboxOptions className="absolute inset-x-0 top-1 z-10 rounded-md border bg-white p-1 shadow-md">
+            <ListboxOptions className="absolute inset-x-0 top-1 z-10 rounded-md border border-gray-200 bg-white p-1 shadow-md">
               {items.map((item) => (
                 <ListboxOption
                   key={item.key}

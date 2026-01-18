@@ -12,8 +12,8 @@ export function GroupFilter() {
   const [filter, setFilter] = useAtom(guardedTaskGroupFilterAtom)
 
   return (
-    <TabButtonGroup title="Group" className="flex-grow">
-      <div className="relative flex-grow">
+    <TabButtonGroup title="Group" className="grow">
+      <div className="relative grow">
         <FadeScrollBox className="absolute inset-0">
           <TabButtonGroup.Content>
             <TabButton onClick={() => setFilter('')} active={!filter}>

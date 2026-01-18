@@ -6,9 +6,9 @@ export default function Page() {
   return (
     <div className="flex h-screen flex-col">
       <PageHeader>Tasks</PageHeader>
-      <div className="flex flex-grow">
+      <div className="flex grow">
         <TaskTab />
-        <div className="relative flex-grow">
+        <div className="relative grow">
           <div className="absolute inset-0 overflow-y-auto">
             <TaskList />
           </div>

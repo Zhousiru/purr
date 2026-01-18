@@ -27,12 +27,12 @@ function InfoItem({
         )}
       >
         {noAlign ? (
-          <Badge className="border bg-transparent">{title}</Badge>
+          <Badge className="border border-gray-200 bg-transparent">{title}</Badge>
         ) : (
           <>{title}</>
         )}
       </div>
-      {!noAlign && <div className="border-l" />}
+      {!noAlign && <div className="border-l border-gray-200" />}
       <div
         className={cn(
           'overflow-hidden text-ellipsis py-[1px] text-gray-600',

@@ -122,7 +122,7 @@ export function NewTaskModal({
               control={control}
               name="files"
               render={({ field }) => (
-                <FileList {...field} className="flex-grow" />
+                <FileList {...field} className="grow" />
               )}
             />
           </>

@@ -7,7 +7,7 @@ export default function Page() {
   return (
     <div className="flex h-screen flex-col">
       <PageHeader>Whisper Server</PageHeader>
-      <div className="flex flex-grow">
+      <div className="flex grow">
         <div className="relative z-10 w-[300px] shadow">
           <ClientOnly>
             <WhisperServerConfigForm className="absolute inset-0 overflow-y-auto p-4" />
