@@ -60,7 +60,7 @@ export function VirtualMarks() {
         <div
           key={`${index}${start}${end}`}
           className={cn(
-            'absolute inset-x-0 cursor-pointer border-y border-amber-500 bg-amber-500/5 transition hover:bg-amber-500/10',
+            'pointer-events-auto absolute inset-x-0 cursor-pointer border-y border-amber-500 bg-amber-500/5 transition hover:bg-amber-500/10',
             focusIndex !== -1 && focusIndex !== index && 'opacity-25',
             focusIndex === index && 'bg-amber-500/10',
           )}
