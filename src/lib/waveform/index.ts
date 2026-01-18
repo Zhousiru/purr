@@ -14,6 +14,8 @@ interface WaveformOptions {
   marginBlock: number
 }
 
+const BUFFER_SCREENS = 1 // Extra screens above and below viewport
+
 export class Waveform {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
@@ -30,6 +32,7 @@ export class Waveform {
 
   private scrollTop: number = 0
   private viewportHeight: number = 0
+  private canvasTop: number = 0 // Top position of canvas in scroll coordinates
 
   private resizeObserver: ResizeObserver | null = null
 
@@ -59,22 +62,29 @@ export class Waveform {
 
   private handleScroll() {
     this.scrollTop = this.container.scrollTop
-    this.viewportHeight = this.container.clientHeight
-    this.render()
+    this.updateCanvasPosition()
+    this.scheduleRender()
   }
 
   private handleResize() {
     const width = this.container.clientWidth
     const height = this.container.clientHeight
     const dpr = window.devicePixelRatio
+    const canvasHeight = height * (1 + BUFFER_SCREENS * 2)
 
     this.canvas.width = Math.round(width * dpr)
-    this.canvas.height = Math.round(height * dpr)
+    this.canvas.height = Math.round(canvasHeight * dpr)
     this.canvas.style.width = width + 'px'
-    this.canvas.style.height = height + 'px'
+    this.canvas.style.height = canvasHeight + 'px'
 
     this.viewportHeight = height
+    this.updateCanvasPosition()
     this.scheduleRender()
+  }
+
+  private updateCanvasPosition() {
+    this.canvasTop = Math.max(0, this.scrollTop - this.viewportHeight * BUFFER_SCREENS)
+    this.canvas.style.top = this.canvasTop + 'px'
   }
 
   dispose() {
@@ -121,13 +131,14 @@ export class Waveform {
   private getVisibleBlockRange() {
     const { blockDuration, resolution, marginBlock } = this.options
     const dpr = window.devicePixelRatio
+    const canvasHeight = this.viewportHeight * (1 + BUFFER_SCREENS * 2)
 
     const startTime = Math.max(
       0,
-      ((this.scrollTop - marginBlock) * dpr) / resolution,
+      ((this.canvasTop - marginBlock) * dpr) / resolution,
     )
     const endTime =
-      ((this.scrollTop + this.viewportHeight - marginBlock) * dpr) / resolution
+      ((this.canvasTop + canvasHeight - marginBlock) * dpr) / resolution
 
     const totalBlocks = Math.ceil(this.audioDuration / blockDuration)
     const startBlock = Math.max(0, Math.floor(startTime / blockDuration))
@@ -144,9 +155,10 @@ export class Waveform {
       this.options
     const dpr = window.devicePixelRatio
 
+    // Canvas is positioned at canvasTop, so draw relative to that
     const blockStartY =
       marginBlock + (blockId * blockDuration * resolution) / dpr
-    const canvasY = (blockStartY - this.scrollTop) * dpr
+    const canvasY = (blockStartY - this.canvasTop) * dpr
 
     if (mergeChannels) {
       this.drawChannelData(data, 0, canvasY, this.canvas.width)

@@ -139,23 +139,18 @@ export const WaveformCanvas = ({
       onMouseLeave={handleMouseLeave}
       onMouseMove={handleMouseMove}
     >
-      {/* Scroll Shim */}
+      {/* Scroll Shim - contains Canvas and VirtualMarks for synchronized scrolling */}
       <div
-        className="pointer-events-none"
+        className="pointer-events-none relative"
         style={{ height: scrollState.totalHeight }}
-      />
-
-      {/* Single Canvas with sticky positioning */}
-      <canvas
-        ref={canvasRef}
-        className="pointer-events-none sticky top-0 left-0"
-        style={{
-          marginTop: -scrollState.totalHeight,
-        }}
-      />
-
-      {/* VirtualMarks */}
-      <VirtualMarks />
+      >
+        {/* Canvas with absolute positioning - moves with scroll shim */}
+        <canvas
+          ref={canvasRef}
+          className="pointer-events-none absolute left-0"
+        />
+        <VirtualMarks />
+      </div>
 
       {/* Current playback indicator */}
       <div
