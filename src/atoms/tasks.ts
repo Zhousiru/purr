@@ -37,7 +37,9 @@ export const taskGroupsAtom = atom((get) => {
 
   atoms.forEach((a) => {
     const group = get(selectTaskGroupAtom(a))
-    !result.includes(group) && result.push(group)
+    if (!result.includes(group)) {
+      result.push(group)
+    }
   })
 
   return result

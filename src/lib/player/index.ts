@@ -87,7 +87,9 @@ class Player {
     return () => {
       console.log('Player.UnsubCurrentTime')
       unsubFlag = true
-      frameId && cancelAnimationFrame(frameId)
+      if (frameId) {
+        cancelAnimationFrame(frameId)
+      }
     }
   }
 }

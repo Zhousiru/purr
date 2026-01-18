@@ -51,7 +51,9 @@ function useWhisperServerLauncher() {
         const status = store.get(monitorAtom).status
         if (status === 'connected') {
           unsubMonitor()
-          !daemonSub.closed && daemonSub.unsubscribe()
+          if (!daemonSub.closed) {
+            daemonSub.unsubscribe()
+          }
           setIsOpen(false)
           resolve(true)
         }
@@ -69,7 +71,9 @@ function useWhisperServerLauncher() {
         if (isLaunched && payload.type === 'exit') {
           // Failed to launch.
           unsubMonitor()
-          !daemonSub.closed && daemonSub.unsubscribe()
+          if (!daemonSub.closed) {
+            daemonSub.unsubscribe()
+          }
           setIsFailed(true)
           resolve(false)
         }

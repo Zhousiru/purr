@@ -42,6 +42,7 @@ const Button = ({
       )}
       ref={ref}
       disabled={loading || disabled}
+      type={type}
       {...props}
     >
       <span

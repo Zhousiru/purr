@@ -18,7 +18,9 @@ export function WhisperServerSpinnerModal({
   const router = useRouter()
 
   function handleUserClose() {
-    isFailed && onClose(false)
+    if (isFailed) {
+      onClose(false)
+    }
   }
 
   function handleNavigateWhisperServer() {

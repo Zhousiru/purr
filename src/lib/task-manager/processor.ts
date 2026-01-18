@@ -86,7 +86,7 @@ export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
       }
     } catch (error) {
       // Whisper server connection is closed unexpectedly.
-      reject()
+      reject(error)
     }
   })
 

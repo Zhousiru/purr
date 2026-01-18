@@ -43,7 +43,7 @@ export interface Commands {
 export const cmd = new Proxy(
   {},
   {
-    get(target, p, receiver) {
+    get(_target, p, _receiver) {
       return (args: InvokeArgs) => {
         if (typeof p !== 'string') {
           return

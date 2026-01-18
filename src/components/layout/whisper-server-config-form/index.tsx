@@ -56,7 +56,7 @@ export function WhisperServerConfigForm({ className }: { className?: string }) {
     })
     if (typeof selected === 'string') {
       setValue(field, selected, { shouldDirty: true })
-      onSuccess && onSuccess()
+      onSuccess?.()
     }
   }
 

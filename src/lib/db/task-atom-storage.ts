@@ -15,7 +15,9 @@ function atomTask<T extends Task>(initialTask: T) {
       const value =
         typeof update === 'function' ? update(get(taskAtom)) : update
       set(taskValueAtom, value)
-      !isServer() && db!.tasks.put(value)
+      if (!isServer()) {
+        db!.tasks.put(value)
+      }
     },
   )
 

@@ -8,7 +8,8 @@
     "next:dev": "next dev",
     "next:build": "next build",
     "next:start": "next start",
-    "next:lint": "next lint",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "format": "prettier . -w"
   },
   "dependencies": {
