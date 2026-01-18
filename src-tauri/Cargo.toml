@@ -24,7 +24,7 @@ tauri = { version = "2", features = [
 anyhow = "1.0"
 thiserror = "1.0"
 shared_child = "1.0.0"
-symphonia = { version = "0.5.4", features = ["wav", "flac", "mp3"] }
+symphonia = { version = "0.5.4", features = ["wav", "flac", "mp3", "isomp4", "aac"] }
 rayon = "1.10"
 reqwest = { version = "0.12", features = ["json", "blocking", "multipart"] }
 tauri-plugin-dialog = "2"

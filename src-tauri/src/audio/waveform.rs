@@ -21,14 +21,25 @@ pub fn get_audio_samples(
 
   let mut decoder = get_audio_decoder(codec_params)?;
 
-  let channel_count = codec_params
-    .channels
-    .ok_or(anyhow!("no channels in the default track"))?
-    .count();
   let samples_per_sec = codec_params
     .time_base
     .ok_or(anyhow!("no time_base in the default track"))?
     .denom;
+
+  // For AAC/M4A, channel info may not be available until first decode
+  let channel_count = match codec_params.channels {
+    Some(channels) => channels.count(),
+    None => {
+      let packet = reader.next_packet()?;
+      let decoded = decoder.decode(&packet)?;
+      let count = decoded.spec().channels.count();
+      reader.seek(
+        SeekMode::Accurate,
+        SeekTo::TimeStamp { ts: 0, track_id },
+      )?;
+      count
+    }
+  };
 
   reader.seek(
     SeekMode::Accurate,

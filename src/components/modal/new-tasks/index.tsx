@@ -81,7 +81,7 @@ export function NewTaskModal({
   async function handleAddFiles() {
     const selected = await open({
       multiple: true,
-      filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'flac'] }],
+      filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'flac', 'm4a'] }],
     })
 
     const prev = getValues('files')
