@@ -2,6 +2,7 @@ import {
   getWaveformViewportHeight,
   useCurrentEditingTaskValue,
   useWaveformVisibleAreaValue,
+  useZoomLevelValue,
 } from '@/atoms/editor'
 import { virtualMarksOverscanHeight } from '@/constants/editor'
 import { cn } from '@/lib/utils/cn'
@@ -13,6 +14,9 @@ export function VirtualMarks() {
   const task = useCurrentEditingTaskValue()
 
   const visibleArea = useWaveformVisibleAreaValue()
+
+  // Subscribe to zoom changes to trigger re-render
+  useZoomLevelValue()
 
   const totalMarks = (task.result?.data ?? []).map(
     (d, index) => [index, seekHeight(d.start), seekHeight(d.end)] as const,

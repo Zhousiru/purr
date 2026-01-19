@@ -1,9 +1,14 @@
 'use client'
 
 import {
+  getEffectiveResolution,
+  getZoomLevel,
   setWaveformViewportHeight,
   setWaveformVisibleArea,
+  setZoomLevel,
   useAddMarkContextValue,
+  ZOOM_LEVELS,
+  ZoomLevel,
 } from '@/atoms/editor'
 import {
   blockDuration,
@@ -21,7 +26,7 @@ import { waveformScroll } from '@/subjects/editor'
 import { MouseEventHandler, Ref, useEffect, useRef } from 'react'
 import { HoverLayer, HoverLayerRef } from './HoverLayer'
 import { VirtualMarks } from './VirtualMarks'
-import { seekHeight } from './utils'
+import { seekHeight, seekHeightWithResolution, seekTimeWithResolution } from './utils'
 
 type WaveformCanvasProps = {
   path: string
@@ -42,8 +47,6 @@ export const WaveformCanvas = ({
 
   const scrollState = useWaveformScroll(containerRef, {
     duration,
-    resolution,
-    marginBlock,
   })
 
   // Sync to global state for VirtualMarks and FollowModeDispatcher
@@ -126,6 +129,44 @@ export const WaveformCanvas = ({
     })
 
     return () => sub.unsubscribe()
+  }, [])
+
+  // Handle zoom with Ctrl + wheel
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const handleWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) return
+      e.preventDefault()
+
+      const currentZoom = getZoomLevel()
+      const currentIndex = ZOOM_LEVELS.indexOf(currentZoom)
+
+      const newIndex =
+        e.deltaY > 0
+          ? Math.max(0, currentIndex - 1)
+          : Math.min(ZOOM_LEVELS.length - 1, currentIndex + 1)
+      const newZoom = ZOOM_LEVELS[newIndex] as ZoomLevel
+
+      if (newZoom === currentZoom) return
+
+      const mouseY = e.clientY - container.getBoundingClientRect().top
+      const scrollTop = container.scrollTop
+      const oldResolution = getEffectiveResolution()
+      const mouseTime = seekTimeWithResolution(scrollTop + mouseY, oldResolution)
+
+      setZoomLevel(newZoom)
+
+      requestAnimationFrame(() => {
+        const newResolution = getEffectiveResolution()
+        const newMouseHeight = seekHeightWithResolution(mouseTime, newResolution)
+        container.scrollTop = newMouseHeight - mouseY
+      })
+    }
+
+    container.addEventListener('wheel', handleWheel, { passive: false })
+    return () => container.removeEventListener('wheel', handleWheel)
   }, [])
 
   const addMarkContext = useAddMarkContextValue()

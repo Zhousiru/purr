@@ -1,3 +1,5 @@
+import { useEffectiveResolution } from '@/atoms/editor'
+import { marginBlock } from '@/constants/editor'
 import { RefObject, useEffect, useRef, useSyncExternalStore } from 'react'
 
 interface WaveformScrollState {
@@ -8,8 +10,6 @@ interface WaveformScrollState {
 
 interface UseWaveformScrollOptions {
   duration: number
-  resolution: number
-  marginBlock: number
 }
 
 export function useWaveformScroll(
@@ -24,9 +24,11 @@ export function useWaveformScroll(
 
   const subscribersRef = useRef(new Set<() => void>())
 
+  const effectiveResolution = useEffectiveResolution()
+
   const totalHeight =
-    options.marginBlock * 2 +
-    (options.duration * options.resolution) / window.devicePixelRatio
+    marginBlock * 2 +
+    (options.duration * effectiveResolution) / window.devicePixelRatio
 
   useEffect(() => {
     const container = containerRef.current

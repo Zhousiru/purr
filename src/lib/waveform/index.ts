@@ -1,4 +1,6 @@
+import { getEffectiveResolution, subZoomLevel } from '@/atoms/editor'
 import { cmd } from '../commands'
+import { WaveformCache } from './cache'
 
 interface WaveformOptions {
   widthScale: number
@@ -14,7 +16,7 @@ interface WaveformOptions {
   marginBlock: number
 }
 
-const BUFFER_SCREENS = 1 // Extra screens above and below viewport
+const BUFFER_SCREENS = 1
 
 export class Waveform {
   private canvas: HTMLCanvasElement
@@ -25,16 +27,17 @@ export class Waveform {
   private audioPath: string
   private audioDuration: number
 
-  private waveformBlocks: Map<number, Float32Array[]> = new Map()
-  private loadingBlocks: Set<number> = new Set()
+  private cache = new WaveformCache()
+  private currentResolution: number
   private visibleBlockRange: { start: number; end: number } = { start: 0, end: 0 }
   private renderScheduled: boolean = false
 
   private scrollTop: number = 0
   private viewportHeight: number = 0
-  private canvasTop: number = 0 // Top position of canvas in scroll coordinates
+  private canvasTop: number = 0
 
   private resizeObserver: ResizeObserver | null = null
+  private unsubZoom: (() => void) | null = null
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -49,6 +52,7 @@ export class Waveform {
     this.audioPath = path
     this.audioDuration = duration
     this.options = options
+    this.currentResolution = getEffectiveResolution()
 
     this.handleScroll = this.handleScroll.bind(this)
     this.handleResize = this.handleResize.bind(this)
@@ -57,7 +61,17 @@ export class Waveform {
     this.resizeObserver = new ResizeObserver(this.handleResize)
     this.resizeObserver.observe(this.container)
 
+    // Subscribe to zoom changes
+    this.unsubZoom = subZoomLevel(() => {
+      this.handleZoomChange()
+    })
+
     this.handleResize()
+  }
+
+  private handleZoomChange() {
+    this.currentResolution = getEffectiveResolution()
+    this.scheduleRender()
   }
 
   private handleScroll() {
@@ -91,8 +105,8 @@ export class Waveform {
     this.container.removeEventListener('scroll', this.handleScroll)
     this.resizeObserver?.disconnect()
     this.resizeObserver = null
-    this.waveformBlocks.clear()
-    this.loadingBlocks.clear()
+    this.unsubZoom?.()
+    this.cache.clear()
   }
 
   private render() {
@@ -116,11 +130,11 @@ export class Waveform {
     const { startBlock, endBlock } = this.getVisibleBlockRange()
     this.visibleBlockRange = { start: startBlock, end: endBlock }
 
-    // Draw visible blocks
     for (let blockId = startBlock; blockId <= endBlock; blockId++) {
-      if (this.waveformBlocks.has(blockId)) {
-        this.drawBlock(blockId)
-      } else if (!this.loadingBlocks.has(blockId)) {
+      this.drawBlock(blockId)
+
+      // Load if not cached
+      if (!this.cache.has(this.currentResolution, blockId)) {
         this.loadBlock(blockId)
       }
     }
@@ -129,7 +143,8 @@ export class Waveform {
   }
 
   private getVisibleBlockRange() {
-    const { blockDuration, resolution, marginBlock } = this.options
+    const { blockDuration, marginBlock } = this.options
+    const resolution = this.currentResolution
     const dpr = window.devicePixelRatio
     const canvasHeight = this.viewportHeight * (1 + BUFFER_SCREENS * 2)
 
@@ -148,48 +163,64 @@ export class Waveform {
   }
 
   private drawBlock(blockId: number) {
-    const data = this.waveformBlocks.get(blockId)
+    let data = this.cache.get(this.currentResolution, blockId)
+    let sourceResolution = this.currentResolution
+
+    // Fallback: use closest cached data
+    if (!data) {
+      const fallback = this.cache.findClosest(blockId, this.currentResolution)
+      if (fallback) {
+        data = fallback.data
+        sourceResolution = fallback.resolution
+      }
+    }
+
     if (!data || data.length === 0) return
 
-    const { blockDuration, resolution, marginBlock, mergeChannels } =
-      this.options
+    const scale = this.currentResolution / sourceResolution
+    const { blockDuration, marginBlock, mergeChannels } = this.options
     const dpr = window.devicePixelRatio
 
-    // Canvas is positioned at canvasTop, so draw relative to that
     const blockStartY =
-      marginBlock + (blockId * blockDuration * resolution) / dpr
+      marginBlock + (blockId * blockDuration * this.currentResolution) / dpr
     const canvasY = (blockStartY - this.canvasTop) * dpr
 
     if (mergeChannels) {
-      this.drawChannelData(data, 0, canvasY, this.canvas.width)
+      this.drawChannelDataScaled(data, 0, canvasY, this.canvas.width, scale)
     } else {
       const channelWidth = Math.floor(this.canvas.width / data.length)
       for (let i = 0; i < data.length; i++) {
-        this.drawChannelData([data[i]], i * channelWidth, canvasY, channelWidth)
+        this.drawChannelDataScaled([data[i]], i * channelWidth, canvasY, channelWidth, scale)
       }
     }
   }
 
-  private drawChannelData(
+  private drawChannelDataScaled(
     data: Float32Array[],
     putX: number,
     putY: number,
     channelWidth: number,
+    scale: number,
   ) {
     if (data[0].length === 0) return
 
-    const height = data[0].length / 2
-    const imageData = this.ctx.createImageData(channelWidth, height)
+    const sourceHeight = data[0].length / 2
+    const targetHeight = Math.round(sourceHeight * scale)
 
+    if (targetHeight <= 0) return
+
+    const imageData = this.ctx.createImageData(channelWidth, targetHeight)
     const width = imageData.width
     const xCenter = channelWidth / 2
 
-    for (let y = 0; y < height; y++) {
-      let max = data[0][2 * y]
-      let min = data[0][2 * y + 1]
+    for (let targetY = 0; targetY < targetHeight; targetY++) {
+      const sourceY = Math.min(Math.floor(targetY / scale), sourceHeight - 1)
+
+      let max = data[0][2 * sourceY]
+      let min = data[0][2 * sourceY + 1]
       if (data.length > 1) {
-        max = Math.max(...data.map((c) => c[2 * y]))
-        min = Math.min(...data.map((c) => c[2 * y + 1]))
+        max = Math.max(...data.map((c) => c[2 * sourceY]))
+        min = Math.min(...data.map((c) => c[2 * sourceY + 1]))
       }
 
       let maxX = Math.floor(
@@ -203,8 +234,8 @@ export class Waveform {
         maxX = minX = xCenter
       }
 
-      const startIndex = (y * width + minX) * 4
-      const endIndex = (y * width + maxX) * 4
+      const startIndex = (targetY * width + minX) * 4
+      const endIndex = (targetY * width + maxX) * 4
 
       for (let i = startIndex; i <= endIndex; i += 4) {
         imageData.data[i] = this.options.fillColor.r
@@ -223,21 +254,24 @@ export class Waveform {
   }
 
   private async loadBlock(blockId: number) {
-    if (this.waveformBlocks.has(blockId)) return
-    if (this.loadingBlocks.has(blockId)) return
-    this.loadingBlocks.add(blockId)
+    const resolution = this.currentResolution
 
-    console.log('Waveform.RequestBlock', blockId)
+    if (this.cache.has(resolution, blockId)) return
+    if (this.cache.isLoading(resolution, blockId)) return
+
+    this.cache.setLoading(resolution, blockId)
+
+    console.log('Waveform.RequestBlock', resolution, blockId)
 
     try {
       const result = await cmd.getAudioWaveformData({
         path: this.audioPath,
-        pairPerSec: this.options.resolution,
+        pairPerSec: resolution,
         startSec: blockId * this.options.blockDuration,
         endSec: (blockId + 1) * this.options.blockDuration,
       })
 
-      console.log('Waveform.ReceiveBlock', blockId)
+      console.log('Waveform.ReceiveBlock', resolution, blockId)
 
       for (const channelResult of result) {
         if (channelResult.error) {
@@ -245,18 +279,24 @@ export class Waveform {
         }
       }
 
-      this.waveformBlocks.set(
+      this.cache.set(
+        resolution,
         blockId,
         result.map((r) => new Float32Array(r.data!)),
       )
 
-      // Only re-render if block is in visible range (not preload)
+      // Only re-render if resolution matches and block is in visible range
       const { start, end } = this.visibleBlockRange
-      if (blockId >= start && blockId <= end) {
+      if (
+        resolution === this.currentResolution &&
+        blockId >= start &&
+        blockId <= end
+      ) {
         this.scheduleRender()
       }
-    } finally {
-      this.loadingBlocks.delete(blockId)
+    } catch (e) {
+      // Remove from loading on error
+      console.error('Waveform.LoadBlockError', resolution, blockId, e)
     }
   }
 

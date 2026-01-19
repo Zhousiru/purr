@@ -5,6 +5,10 @@ import { Task } from '@/types/tasks'
 import { atom, useAtom, useAtomValue } from 'jotai'
 import { Getter } from 'jotai/vanilla'
 import { transcribeTaskListAtom } from './tasks'
+import { resolution } from '@/constants/editor'
+
+export const ZOOM_LEVELS = [0.5, 1, 2, 4, 8, 16] as const
+export type ZoomLevel = (typeof ZOOM_LEVELS)[number]
 
 const currentEditingTaskAtom = atom<TaskAtom<Task> | null>(null)
 export const setCurrentEditingTaskAtom = (taskAtom: TaskAtom<Task> | null) =>
@@ -95,3 +99,14 @@ export const useAddMarkContextValue = () => useAtomValue(addMarkContext)
 const isFollowModeAtom = atom(false)
 export const useIsFollowMode = () => useAtom(isFollowModeAtom)
 export const useIsFollowModeValue = () => useAtomValue(isFollowModeAtom)
+
+const zoomLevelAtom = atom<ZoomLevel>(1)
+export const useZoomLevel = () => useAtom(zoomLevelAtom)
+export const useZoomLevelValue = () => useAtomValue(zoomLevelAtom)
+export const getZoomLevel = () => store.get(zoomLevelAtom)
+export const setZoomLevel = (level: ZoomLevel) => store.set(zoomLevelAtom, level)
+export const subZoomLevel = (callback: () => void) => store.sub(zoomLevelAtom, callback)
+
+const effectiveResolutionAtom = atom((get) => Math.round(resolution * get(zoomLevelAtom)))
+export const useEffectiveResolution = () => useAtomValue(effectiveResolutionAtom)
+export const getEffectiveResolution = () => store.get(effectiveResolutionAtom)
