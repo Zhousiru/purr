@@ -5,7 +5,7 @@ import { WhisperServerTerminal } from '@/components/layout/whisper-server-termin
 
 export default function Page() {
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-full flex-col">
       <PageHeader>Whisper Server</PageHeader>
       <div className="flex grow">
         <div className="relative z-10 w-[300px] shadow">

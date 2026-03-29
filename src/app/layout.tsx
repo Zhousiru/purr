@@ -1,6 +1,7 @@
 import { JotaiProvider } from '@/components/common/jotai-provider'
 import { RegisterEvents } from '@/components/common/register-events'
 import { SideMenu } from '@/components/layout/side-menu'
+import { TitleBar } from '@/components/layout/title-bar'
 import './globals.css'
 
 export default function RootLayout({
@@ -17,9 +18,14 @@ export default function RootLayout({
         <RegisterEvents />
 
         <JotaiProvider>
-          <div className="flex h-screen">
-            <SideMenu />
-            <div className="grow">{children}</div>
+          <div className="flex h-screen flex-col">
+            <TitleBar />
+            <div className="flex min-h-0 grow">
+              <SideMenu />
+              <div className="grow overflow-hidden rounded-tl-2xl bg-white">
+                {children}
+              </div>
+            </div>
           </div>
         </JotaiProvider>
       </body>

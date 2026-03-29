@@ -1,5 +1,5 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "$schema": "https://schema.tauri.app/config/2",
   "build": {
     "beforeBuildCommand": "pnpm run next:build",
     "beforeDevCommand": "pnpm run next:dev",
@@ -51,6 +51,12 @@
         "fullscreen": false,
         "height": 800,
         "resizable": true,
+        "transparent": true,
+        "decorations": false,
+        "titleBarStyle": "Overlay",
+        "windowEffects": {
+          "effects": ["micaLight"]
+        },
         "title": "purr",
         "width": 1200,
         "useHttpsScheme": true
@@ -58,9 +64,7 @@
     ],
     "security": {
       "assetProtocol": {
-        "scope": [
-          "**"
-        ],
+        "scope": ["**"],
         "enable": true
       }
     }

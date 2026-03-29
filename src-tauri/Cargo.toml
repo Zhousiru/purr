@@ -7,7 +7,7 @@ license = ""
 repository = ""
 default-run = "purr"
 edition = "2021"
-rust-version = "1.60"
+rust-version = "1.77.2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -30,7 +30,5 @@ reqwest = { version = "0.12", features = ["json", "blocking", "multipart"] }
 tauri-plugin-dialog = "2"
 
 [features]
-# this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
-# If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
-# DO NOT REMOVE!!
+# Enables the custom protocol used for production builds.
 custom-protocol = ["tauri/custom-protocol"]

@@ -1,5 +1,16 @@
 @import 'tailwindcss';
 
+:root {
+  color-scheme: light;
+
+  --font-sans:
+    'Noto Sans SC', 'Source Han Sans SC', sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-serif:
+    'Noto Serif SC', 'Source Han Serif SC', Georgia, Cambria, 'Times New Roman',
+    Times, serif;
+}
+
 @utility scrollbar-none {
   &::-webkit-scrollbar {
     display: none;

@@ -4,7 +4,6 @@ import { isReadyAtom, isRunningAtom } from '@/atoms/whisper-server'
 import { NewTaskModal } from '@/components/modal/new-tasks'
 import { WhisperServerGuardModal } from '@/components/modal/whisper-server-guard'
 import { useWhisperServerGuard } from '@/components/modal/whisper-server-guard/use-whisper-server-guard'
-import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils/cn'
 import {
   IconEar,
@@ -16,31 +15,8 @@ import {
 } from '@tabler/icons-react'
 import { useAtomValue } from 'jotai'
 import { usePathname, useRouter } from 'next/navigation'
-import {
-  ButtonHTMLAttributes,
-  Ref,
-  ReactNode,
-  useMemo,
-  useState,
-} from 'react'
+import { ReactNode, useMemo, useState } from 'react'
 import { WhisperConnectionIndicator } from './WhisperConnectionIndicator'
-
-type MenuButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  ref?: Ref<HTMLButtonElement>
-}
-
-const Button = ({ className, ref, ...props }: MenuButtonProps) => {
-  return (
-    <button
-      ref={ref}
-      className={cn(
-        'flex aspect-square items-center justify-center text-white transition hover:bg-gray-800',
-        className,
-      )}
-      {...props}
-    />
-  )
-}
 
 interface MenuItem {
   name: string
@@ -48,59 +24,71 @@ interface MenuItem {
   icon: ReactNode
 }
 
+function NavButton({
+  icon,
+  label,
+  active,
+  onClick,
+  className,
+}: {
+  icon: ReactNode
+  label: string
+  active?: boolean
+  onClick?: () => void
+  className?: string
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'flex h-9 w-full items-center gap-3 rounded-xl px-2 text-sm font-medium',
+        active && 'bg-black/5',
+        className,
+      )}
+    >
+      <span className="shrink-0">{icon}</span>
+      <span>{label}</span>
+    </button>
+  )
+}
+
 export function SideMenu() {
   const isWhisperRunning = useAtomValue(isRunningAtom)
   const isWhisperReady = useAtomValue(isReadyAtom)
-
   const [newTaskModal, setNewTaskModal] = useState(false)
-
   const { register: guardRegister, guard } = useWhisperServerGuard()
 
   async function handleAddTask() {
     guard(() => setNewTaskModal(true))
   }
 
-  const menu: {
-    top: MenuItem[]
-    bottom: MenuItem[]
-  } = useMemo(
+  const menu: { top: MenuItem[]; bottom: MenuItem[] } = useMemo(
     () => ({
       top: [
-        {
-          name: 'Tasks',
-          pathname: '/tasks',
-          icon: <IconList />,
-        },
-        {
-          name: 'Editor',
-          pathname: '/editor',
-          icon: <IconPencil />,
-        },
+        { name: 'Tasks', pathname: '/tasks', icon: <IconList size={18} /> },
+        { name: 'Editor', pathname: '/editor', icon: <IconPencil size={18} /> },
         {
           name: 'Whisper Server',
           pathname: '/whisper-server',
           icon: (
-            <div className="relative h-[24px] w-[24px]">
+            <div className="relative h-[18px] w-[18px]">
               <div
                 className={cn(
                   'absolute inset-0 opacity-100 transition duration-500',
                   isWhisperRunning && !isWhisperReady && 'opacity-0',
-                  !isWhisperRunning && 'text-gray-400',
                 )}
               >
-                <IconEar />
+                <IconEar size={18} />
               </div>
-
               <div
                 className={cn(
                   'absolute inset-0 opacity-0 transition duration-500',
                   isWhisperRunning && !isWhisperReady && 'opacity-100',
                 )}
               >
-                <IconEar className="animate-pulse" />
+                <IconEar size={18} className="animate-pulse" />
               </div>
-
-              <WhisperConnectionIndicator className="absolute bottom-0 right-0" />
+              <WhisperConnectionIndicator className="absolute right-0 bottom-0" />
             </div>
           ),
         },
@@ -109,12 +97,12 @@ export function SideMenu() {
         {
           name: 'Notifications',
           pathname: '/notifications',
-          icon: <IconNotification />,
+          icon: <IconNotification size={18} />,
         },
         {
           name: 'Settings',
           pathname: '/settings',
-          icon: <IconSettings />,
+          icon: <IconSettings size={18} />,
         },
       ],
     }),
@@ -123,64 +111,42 @@ export function SideMenu() {
 
   const router = useRouter()
   const pathname = usePathname()
-  const indicatorTop = useMemo(() => {
-    const topIndex = menu.top.findIndex((item) => item.pathname === pathname)
-    if (topIndex !== -1) {
-      return `${(topIndex + 1) * 56}px`
-    }
-
-    const bottomIndex = menu.bottom.findIndex(
-      (item) => item.pathname === pathname,
-    )
-    if (bottomIndex !== -1) {
-      return `calc(100vh - ${(menu.bottom.length - bottomIndex) * 56}px)`
-    }
-
-    return ''
-  }, [menu.bottom, menu.top, pathname])
 
   return (
     <>
-      <TooltipGroup>
-        <div className="relative z-50 flex w-14 flex-shrink-0 flex-col bg-gray-900">
-          <Button
-            className="bg-blue-500 hover:bg-blue-600"
-            onClick={handleAddTask}
-          >
-            <IconPlus />
-          </Button>
+      <div className="flex w-[300px] shrink-0 flex-col p-2">
+        <button
+          onClick={handleAddTask}
+          className="mb-4 flex h-9 w-full items-center gap-3 rounded-xl bg-blue-500 px-2 text-sm font-medium text-white"
+        >
+          <IconPlus size={18} />
+          <span>New Task</span>
+        </button>
 
+        <nav className="flex flex-col">
           {menu.top.map((item) => (
-            <Tooltip key={item.pathname} content={item.name} placement="right">
-              <Button onClick={() => router.push(item.pathname)}>
-                {item.icon}
-              </Button>
-            </Tooltip>
+            <NavButton
+              key={item.pathname}
+              icon={item.icon}
+              label={item.name}
+              active={pathname === item.pathname}
+              onClick={() => router.push(item.pathname)}
+            />
           ))}
+        </nav>
 
-          {menu.bottom.map((item, index) => (
-            <Tooltip key={item.pathname} content={item.name} placement="right">
-              <Button
-                key={item.pathname}
-                className={cn(index === 0 && 'mt-auto')}
-                onClick={() => router.push(item.pathname)}
-              >
-                {item.icon}
-              </Button>
-            </Tooltip>
+        <nav className="mt-auto flex flex-col gap-0.5">
+          {menu.bottom.map((item) => (
+            <NavButton
+              key={item.pathname}
+              icon={item.icon}
+              label={item.name}
+              active={pathname === item.pathname}
+              onClick={() => router.push(item.pathname)}
+            />
           ))}
-
-          <div
-            className={cn(
-              'pointer-events-none absolute inset-x-0 flex aspect-square items-center transition-all',
-              indicatorTop === '' && 'hidden',
-            )}
-            style={{ top: indicatorTop }}
-          >
-            <div className="h-8 w-1 bg-blue-500"></div>
-          </div>
-        </div>
-      </TooltipGroup>
+        </nav>
+      </div>
 
       <NewTaskModal isOpen={newTaskModal} onClose={setNewTaskModal} />
       <WhisperServerGuardModal {...guardRegister} />
