@@ -4,7 +4,7 @@ import { store } from '@/lib/store'
 import { Task } from '@/types/tasks'
 import { atom, useAtom, useAtomValue } from 'jotai'
 import { Getter } from 'jotai/vanilla'
-import { transcribeTaskListAtom } from './tasks'
+import { transcribeTaskListAtom, translateTaskListAtom } from './tasks'
 import { resolution } from '@/constants/editor'
 
 export const ZOOM_LEVELS = [0.5, 1, 2, 4, 8, 16] as const
@@ -15,6 +15,21 @@ export const setCurrentEditingTaskAtom = (taskAtom: TaskAtom<Task> | null) =>
   store.set(currentEditingTaskAtom, taskAtom)
 export const useCurrentEditingTaskAtomValue = () =>
   useAtomValue(currentEditingTaskAtom)
+
+export function findTaskAtomByTypeAndName(
+  type: string,
+  name: string,
+): TaskAtom<Task> | null {
+  const list =
+    type === 'transcribe'
+      ? store.get(transcribeTaskListAtom)
+      : type === 'translate'
+        ? store.get(translateTaskListAtom)
+        : []
+  return (
+    (list as TaskAtom<Task>[]).find((a) => store.get(a).name === name) ?? null
+  )
+}
 export const useCurrentEditingTask = () => {
   const taskAtom = useCurrentEditingTaskAtomValue()
   if (!taskAtom) {

@@ -7,7 +7,6 @@ import { useWhisperServerGuard } from '@/components/modal/whisper-server-guard/u
 import { cn } from '@/lib/utils/cn'
 import {
   IconEar,
-  IconList,
   IconNotification,
   IconPencil,
   IconPlus,
@@ -16,6 +15,7 @@ import {
 import { useAtomValue } from 'jotai'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useMemo, useState } from 'react'
+import { SidebarTaskList } from './SidebarTaskList'
 import { WhisperConnectionIndicator } from './WhisperConnectionIndicator'
 
 interface MenuItem {
@@ -65,7 +65,6 @@ export function SideMenu() {
   const menu: { top: MenuItem[]; bottom: MenuItem[] } = useMemo(
     () => ({
       top: [
-        { name: 'Tasks', pathname: '/tasks', icon: <IconList size={18} /> },
         { name: 'Editor', pathname: '/editor', icon: <IconPencil size={18} /> },
         {
           name: 'Whisper Server',
@@ -134,6 +133,8 @@ export function SideMenu() {
             />
           ))}
         </nav>
+
+        <SidebarTaskList />
 
         <nav className="mt-auto flex flex-col gap-0.5">
           {menu.bottom.map((item) => (

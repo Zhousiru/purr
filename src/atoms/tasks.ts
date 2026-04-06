@@ -9,8 +9,6 @@ export const transcribeTaskListAtom =
 export const translateTaskListAtom =
   createTaskListAtomWithDb<TranslateTask>('translate')
 
-export const taskTypeFilterAtom = atom<'all' | Task['type']>('all')
-
 const taskGroupFilterAtom = atom<string>('')
 export const guardedTaskGroupFilterAtom = atom(
   (get) => {
@@ -46,24 +44,10 @@ export const taskGroupsAtom = atom((get) => {
 })
 
 export const taskListAtom = atom((get) => {
-  let list: Array<TaskAtom<Task>> = []
-
-  switch (get(taskTypeFilterAtom)) {
-    case 'transcribe':
-      list = get(transcribeTaskListAtom) as Array<TaskAtom<Task>>
-      break
-
-    case 'translate':
-      list = get(translateTaskListAtom) as Array<TaskAtom<Task>>
-      break
-
-    case 'all':
-      list = [
-        ...get(transcribeTaskListAtom),
-        ...get(translateTaskListAtom),
-      ] as Array<TaskAtom<Task>>
-      break
-  }
+  let list: Array<TaskAtom<Task>> = [
+    ...get(transcribeTaskListAtom),
+    ...get(translateTaskListAtom),
+  ] as Array<TaskAtom<Task>>
 
   const groupFilter = get(guardedTaskGroupFilterAtom)
 
