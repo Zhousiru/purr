@@ -1,10 +1,10 @@
 export type TaskStatus = 'stopped' | 'queued' | 'processing' | 'done'
 
 export interface BasicTask {
+  id: string
   name: string
   group: string
   status: TaskStatus
-  relatedTaskName: string | null
   creationTimestamp: number
 }
 
@@ -28,7 +28,6 @@ export interface TranscribeOptions {
   language: string
   prompt: string
   vadFilter: boolean
-  translateWith: Omit<TranslateOptions, 'transcription'> | null
 }
 
 export interface TranscribeResult {
@@ -43,7 +42,7 @@ export interface TranscribeTask extends BasicTask {
 }
 
 export interface TranslateOptions {
-  transcription: Transcript[]
+  targetLanguage: string
   model: string
   prompt: string
   batchSize: number
@@ -56,10 +55,17 @@ export interface TranslateResult {
 
 export interface TranslateTask extends BasicTask {
   type: 'translate'
+  parentTaskId: string
+  sourceSnapshot: Transcript[]
   options: TranslateOptions
   result: TranslateResult | null
 }
 
-export type BasicTaskOptions = Omit<BasicTask, 'status' | 'creationTimestamp'>
+export type BasicTaskOptions = Omit<BasicTask, 'id' | 'status' | 'creationTimestamp'>
+
+export type TranslateBasicTaskOptions = BasicTaskOptions & {
+  parentTaskId: string
+  sourceSnapshot: Transcript[]
+}
 
 export type Task = TranscribeTask | TranslateTask

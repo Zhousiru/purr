@@ -1,7 +1,7 @@
 'use client'
 
 import {
-  findTaskAtomByTypeAndName,
+  findTaskAtomById,
   setCurrentEditingTaskAtom,
   useCurrentEditingTaskAtomValue,
 } from '@/atoms/editor'
@@ -16,10 +16,9 @@ export default function Page() {
   const taskAtom = useCurrentEditingTaskAtomValue()
 
   useEffect(() => {
-    const type = searchParams.get('type')
-    const name = searchParams.get('name')
-    if (type && name) {
-      const found = findTaskAtomByTypeAndName(type, name)
+    const id = searchParams.get('id')
+    if (id) {
+      const found = findTaskAtomById(id)
       if (found) {
         setCurrentEditingTaskAtom(found)
       }

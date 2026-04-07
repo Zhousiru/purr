@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { TaskAtom } from '@/lib/db/task-atom-storage'
 import { cn } from '@/lib/utils/cn'
-import { Task } from '@/types/tasks'
+import { Task, TranslateTask } from '@/types/tasks'
 import { IconCheck } from '@tabler/icons-react'
 import { useAtomValue } from 'jotai'
 import { ReactNode } from 'react'
@@ -64,9 +64,6 @@ export function TaskInfoModal({
         <InfoItem title="Status">{upperFirst(task.status)}</InfoItem>
         <InfoItem title="Creation time">{task.creationTimestamp}</InfoItem>
         <InfoItem title="Type">{upperFirst(task.type)}</InfoItem>
-        <InfoItem title="Related task">
-          {task.relatedTaskName ?? <span className="italic">None</span>}
-        </InfoItem>
 
         {task.type === 'transcribe' && (
           <>
@@ -79,26 +76,20 @@ export function TaskInfoModal({
             <InfoItem title="VAD filter">
               {task.options.vadFilter ? 'Yes' : 'No'}
             </InfoItem>
-            {task.options.translateWith && (
-              <InfoItem title="Translate with">
-                <div className="flex flex-col gap-1">
-                  <InfoItem title="Model" noAlign>
-                    {task.options.translateWith.model}
-                  </InfoItem>
-                  <InfoItem title="Prompt" noAlign>
-                    {task.options.translateWith.prompt}
-                  </InfoItem>
-                  <InfoItem title="Batch size" noAlign>
-                    {task.options.translateWith.batchSize}
-                  </InfoItem>
-                </div>
-              </InfoItem>
-            )}
           </>
         )}
 
         {task.type === 'translate' && (
           <>
+            <InfoItem title="Parent task">
+              {(task as TranslateTask).parentTaskId}
+            </InfoItem>
+            <InfoItem title="Target language">
+              {task.options.targetLanguage}
+            </InfoItem>
+            <InfoItem title="Snapshot">
+              {(task as TranslateTask).sourceSnapshot.length} segments
+            </InfoItem>
             <InfoItem title="Model">{task.options.model}</InfoItem>
             <InfoItem title="Prompt">{task.options.prompt}</InfoItem>
             <InfoItem title="Batch size">{task.options.batchSize}</InfoItem>

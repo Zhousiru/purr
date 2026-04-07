@@ -22,7 +22,7 @@ export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
 
   const promise = new Promise<void>(async (resolve, reject) => {
     abort = () => {
-      cancelWhisperServerTask(task.name)
+      cancelWhisperServerTask(task.id)
       reject()
     }
 
@@ -38,14 +38,14 @@ export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
     const task = store.get(taskAtom)
     const monitor = getMonitor()
 
-    await addWhisperServerTask(task.name, task.options.sourcePath, {
+    await addWhisperServerTask(task.id, task.options.sourcePath, {
       lang: task.options.language,
       prompt: task.options.prompt,
       vad: task.options.vadFilter,
     })
 
     try {
-      for await (const event of monitor.watch(task.name)) {
+      for await (const event of monitor.watch(task.id)) {
         if (event.type === 'transcription') {
           const progress = calcProgress(
             event.data.end,

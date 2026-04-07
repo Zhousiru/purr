@@ -97,14 +97,14 @@ export class TaskPool<T extends Task> {
     this.tryAssignTaskToAll()
   }
 
-  public stopTask(taskName: string) {
+  public stopTask(taskId: string) {
     let inSlot = false
     for (const slot of this.taskSlots) {
       if (!slot) {
         continue
       }
 
-      if (store.get(slot.taskAtom).name === taskName) {
+      if (store.get(slot.taskAtom).id === taskId) {
         inSlot = true
         // Call `abort()` to reject the promise.
         // And the `catch()` block will update the task status.
@@ -115,7 +115,7 @@ export class TaskPool<T extends Task> {
 
     if (!inSlot) {
       for (const taskAtom of this.getTaskAtoms('processing')) {
-        if (store.get(taskAtom).name === taskName) {
+        if (store.get(taskAtom).id === taskId) {
           this.updateTaskStatus(taskAtom, 'stopped')
           break
         }
@@ -123,9 +123,9 @@ export class TaskPool<T extends Task> {
     }
   }
 
-  public startTask(taskName: string) {
+  public startTask(taskId: string) {
     for (const taskAtom of this.getTaskAtoms('stopped')) {
-      if (store.get(taskAtom).name === taskName) {
+      if (store.get(taskAtom).id === taskId) {
         this.updateTaskStatus(taskAtom, 'queued')
         this.tryAssignTaskToAll()
         break

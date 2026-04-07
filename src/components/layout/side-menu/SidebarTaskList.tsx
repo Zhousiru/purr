@@ -46,7 +46,7 @@ function TaskRowActions({ taskAtom }: { taskAtom: TaskAtom<Task> }) {
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded hover:bg-black/5"
             onClick={(e) => {
               e.stopPropagation()
-              stopTask(task.type, task.name)
+              stopTask(task.type, task.id)
             }}
           >
             <IconPlayerPause size={14} />
@@ -58,7 +58,7 @@ function TaskRowActions({ taskAtom }: { taskAtom: TaskAtom<Task> }) {
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded hover:bg-black/5"
             onClick={(e) => {
               e.stopPropagation()
-              guard(() => startTask(task.type, task.name))
+              guard(() => startTask(task.type, task.id))
             }}
           >
             <IconPlayerPlay size={14} />
@@ -75,7 +75,7 @@ function TaskRowActions({ taskAtom }: { taskAtom: TaskAtom<Task> }) {
               Task Info
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => removeTask(task.type, task.name)}
+              onClick={() => removeTask(task.type, task.id)}
               disabled={!canRemove}
               destructive
             >
@@ -183,7 +183,7 @@ function TaskRow({ taskAtom }: { taskAtom: TaskAtom<Task> }) {
 
   function handleClick() {
     setCurrentEditingTaskAtom(taskAtom)
-    router.push(`/editor?type=${task.type}&name=${encodeURIComponent(task.name)}`)
+    router.push(`/editor?id=${task.id}`)
   }
 
   return (

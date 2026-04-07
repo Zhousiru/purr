@@ -1,7 +1,7 @@
 import { TaskAtom } from '@/lib/db/task-atom-storage'
 import { createIsPlayingAtom } from '@/lib/player/atoms'
 import { store } from '@/lib/store'
-import { Task } from '@/types/tasks'
+import { Task, TranslateTask } from '@/types/tasks'
 import { atom, useAtom, useAtomValue } from 'jotai'
 import { Getter } from 'jotai/vanilla'
 import { transcribeTaskListAtom, translateTaskListAtom } from './tasks'
@@ -16,20 +16,19 @@ export const setCurrentEditingTaskAtom = (taskAtom: TaskAtom<Task> | null) =>
 export const useCurrentEditingTaskAtomValue = () =>
   useAtomValue(currentEditingTaskAtom)
 
-export function findTaskAtomByTypeAndName(
-  type: string,
-  name: string,
-): TaskAtom<Task> | null {
-  const list =
-    type === 'transcribe'
-      ? store.get(transcribeTaskListAtom)
-      : type === 'translate'
-        ? store.get(translateTaskListAtom)
-        : []
-  return (
-    (list as TaskAtom<Task>[]).find((a) => store.get(a).name === name) ?? null
-  )
+export function findTaskAtomById(id: string): TaskAtom<Task> | null {
+  const allLists = [
+    store.get(transcribeTaskListAtom),
+    store.get(translateTaskListAtom),
+  ] as TaskAtom<Task>[][]
+
+  for (const list of allLists) {
+    const found = list.find((a) => store.get(a).id === id)
+    if (found) return found as TaskAtom<Task>
+  }
+  return null
 }
+
 export const useCurrentEditingTask = () => {
   const taskAtom = useCurrentEditingTaskAtomValue()
   if (!taskAtom) {
@@ -83,14 +82,15 @@ const findTranscribeTask = (get: Getter) => {
     return task
   }
 
-  const relatedTaskAtom = get(transcribeTaskListAtom).find(
-    (taskAtom) => store.get(taskAtom).name === task.relatedTaskName,
+  const parentTaskId = (task as TranslateTask).parentTaskId
+  const parentTaskAtom = get(transcribeTaskListAtom).find(
+    (ta) => store.get(ta).id === parentTaskId,
   )
-  if (!relatedTaskAtom) {
-    throw new Error('Invalid `relatedTaskName`.')
+  if (!parentTaskAtom) {
+    throw new Error('Invalid `parentTaskId`.')
   }
 
-  return get(relatedTaskAtom)
+  return get(parentTaskAtom)
 }
 
 const currentEditingAudioPathAtom = atom(

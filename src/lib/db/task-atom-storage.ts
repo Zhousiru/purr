@@ -61,21 +61,19 @@ export function createTaskAtomWithDb<T extends Task>(task: T) {
 
 export function removeFromTaskListAtomWithDb<T extends Task>(
   taskListAtom: TaskListAtom<T>,
-  taskName: string,
+  taskId: string,
 ) {
   const taskList = store.get(taskListAtom)
-  const taskAtom = taskList.find((a) => store.get(a).name === taskName)!
+  const taskAtom = taskList.find((a) => store.get(a).id === taskId)!
 
   store.set(
     taskListAtom,
     taskList.filter((a) => a !== taskAtom),
   )
 
-  const task = store.get(taskAtom)
-
   if (!isServer()) {
     ;(async () => {
-      await db!.tasks.delete([task.type, task.name])
+      await db!.tasks.delete(taskId)
     })()
   }
 }

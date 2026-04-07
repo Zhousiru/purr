@@ -3,9 +3,11 @@ import {
   BasicTaskOptions,
   Task,
   TranscribeOptions,
+  TranslateBasicTaskOptions,
   TranslateOptions,
 } from '@/types/tasks'
 import { removeFromTaskListAtomWithDb } from '../db/task-atom-storage'
+import { store } from '../store'
 import { TaskPool } from './pool'
 import { transcribeProcessor, translateProcessor } from './processor'
 
@@ -32,17 +34,20 @@ export function addTask(
 ): void
 export function addTask(
   type: 'translate',
-  basicOptions: BasicTaskOptions,
+  basicOptions: TranslateBasicTaskOptions,
   options: TranslateOptions,
 ): void
-export function addTask<T extends Task>(
-  type: T['type'],
-  basicOptions: BasicTaskOptions,
-  options: T['options'],
+export function addTask(
+  type: Task['type'],
+  basicOptions: BasicTaskOptions | TranslateBasicTaskOptions,
+  options: TranscribeOptions | TranslateOptions,
 ): void {
+  const id = crypto.randomUUID()
+
   switch (type) {
     case 'transcribe':
       transcribePool.addTask({
+        id,
         type,
         ...basicOptions,
         options: options as TranscribeOptions,
@@ -52,51 +57,66 @@ export function addTask<T extends Task>(
       })
       break
 
-    case 'translate':
+    case 'translate': {
+      const translateBasicOptions = basicOptions as TranslateBasicTaskOptions
       translatePool.addTask({
+        id,
         type,
-        ...basicOptions,
+        name: translateBasicOptions.name,
+        group: translateBasicOptions.group,
+        parentTaskId: translateBasicOptions.parentTaskId,
+        sourceSnapshot: translateBasicOptions.sourceSnapshot,
         options: options as TranslateOptions,
         status: 'queued',
         creationTimestamp: Date.now(),
         result: null,
       })
       break
+    }
   }
 }
 
-export function stopTask(type: Task['type'], taskName: string) {
+export function stopTask(type: Task['type'], taskId: string) {
   switch (type) {
     case 'transcribe':
-      transcribePool.stopTask(taskName)
+      transcribePool.stopTask(taskId)
       break
 
     case 'translate':
-      translatePool.stopTask(taskName)
-      break
-  }
-}
-
-export function startTask(type: Task['type'], taskName: string) {
-  switch (type) {
-    case 'transcribe':
-      transcribePool.startTask(taskName)
-      break
-
-    case 'translate':
-      translatePool.startTask(taskName)
+      translatePool.stopTask(taskId)
       break
   }
 }
 
-export function removeTask(type: Task['type'], taskName: string) {
+export function startTask(type: Task['type'], taskId: string) {
   switch (type) {
     case 'transcribe':
-      removeFromTaskListAtomWithDb(transcribeTaskListAtom, taskName)
+      transcribePool.startTask(taskId)
       break
 
     case 'translate':
-      removeFromTaskListAtomWithDb(translateTaskListAtom, taskName)
+      translatePool.startTask(taskId)
+      break
+  }
+}
+
+export function removeTask(type: Task['type'], taskId: string) {
+  switch (type) {
+    case 'transcribe':
+      // Cascade delete child translate tasks
+      const translateTasks = store.get(translateTaskListAtom)
+      for (const ta of translateTasks) {
+        const t = store.get(ta)
+        if (t.parentTaskId === taskId) {
+          translatePool.stopTask(t.id)
+          removeFromTaskListAtomWithDb(translateTaskListAtom, t.id)
+        }
+      }
+      removeFromTaskListAtomWithDb(transcribeTaskListAtom, taskId)
+      break
+
+    case 'translate':
+      removeFromTaskListAtomWithDb(translateTaskListAtom, taskId)
       break
   }
 }

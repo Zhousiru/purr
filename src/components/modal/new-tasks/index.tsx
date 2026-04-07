@@ -1,7 +1,6 @@
 'use client'
 
 import { FileList } from '@/components/layout/file-list'
-import { TranslationOptionsForm } from '@/components/layout/translation-options-form'
 import { Button } from '@/components/ui/button'
 import { FormCheckbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -34,9 +33,9 @@ export function NewTaskModal({
       defaultValues: newTasksDefaultValues,
     })
 
-  const [currentStep, setCurrentStep] = useState<
-    'file' | 'transcription' | 'translation'
-  >('file')
+  const [currentStep, setCurrentStep] = useState<'file' | 'transcription'>(
+    'file',
+  )
 
   useLayoutEffect(() => {
     if (!isOpen) {
@@ -53,23 +52,12 @@ export function NewTaskModal({
   if (currentStep === 'transcription') {
     isCurrentValid = true
   }
-  if (currentStep === 'translation') {
-    isCurrentValid =
-      watch('translationOption.batchSize') > 0 &&
-      watch('translationOption.model') !== '' &&
-      watch('translationOption.prompt') !== ''
-  }
 
-  const nextDone =
-    (currentStep === 'transcription' && !watch('state.createTranslation')) ||
-    currentStep === 'translation'
+  const nextDone = currentStep === 'transcription'
 
   function handleNextStep() {
     if (currentStep === 'file') {
       setCurrentStep('transcription')
-    }
-    if (currentStep === 'transcription') {
-      setCurrentStep('translation')
     }
   }
 
@@ -165,17 +153,7 @@ export function NewTaskModal({
               >
                 Use VAD filter
               </FormCheckbox>
-              <FormCheckbox control={control} name="state.createTranslation">
-                Create translation task
-              </FormCheckbox>
             </div>
-          </>
-        )}
-
-        {currentStep === 'translation' && (
-          <>
-            <div className="text-lg">Translation Options</div>
-            <TranslationOptionsForm register={register} />
           </>
         )}
 

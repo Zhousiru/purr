@@ -3,12 +3,12 @@ import Dexie, { Table } from 'dexie'
 import { isServer } from '../utils/is-server'
 
 class Database extends Dexie {
-  tasks!: Table<Task, [string, string]>
+  tasks!: Table<Task, string>
 
   constructor() {
     super('db')
-    this.version(1).stores({
-      tasks: '[type+name], group, status, creationTimestamp, options, result',
+    this.version(2).stores({
+      tasks: 'id, type, group, status, creationTimestamp',
     })
   }
 }

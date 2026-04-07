@@ -1,16 +1,11 @@
-import { TranscribeOptions, TranslateOptions } from './tasks'
+import { TranscribeOptions } from './tasks'
 
 export interface NewTasks {
   files: string[]
   group: string
-  transcriptionOption: Omit<
-    TranscribeOptions,
-    'sourcePath' | 'sourceMeta' | 'translateWith'
-  >
-  translationOption: Omit<TranslateOptions, 'transcription'>
+  transcriptionOption: Omit<TranscribeOptions, 'sourcePath' | 'sourceMeta'>
   state: {
     createTranscription: boolean
-    createTranslation: boolean
     autoLanguage: boolean
   }
 }

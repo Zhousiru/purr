@@ -8,10 +8,8 @@ export const newTasksDefaultValues: NewTasks = {
     prompt: '',
     vadFilter: true,
   },
-  translationOption: { model: 'gpt-3.5-turbo', batchSize: 20, prompt: '' },
   state: {
     createTranscription: true,
-    createTranslation: true,
     autoLanguage: true,
   },
 }

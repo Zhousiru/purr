@@ -1,4 +1,4 @@
-import { transcribeTaskListAtom } from '@/atoms/tasks'
+import { transcribeTaskListAtom, translateTaskListAtom } from '@/atoms/tasks'
 import { DurationResult } from '@/types/commands'
 import { NewTasks } from '@/types/new-tasks-form'
 import {
@@ -6,6 +6,7 @@ import {
   Task,
   TranscribeOptions,
   TranscribeTask,
+  TranslateOptions,
   Transcript,
   TranslateTask,
   Translation,
@@ -95,49 +96,55 @@ export function extractDurationResults(
 }
 
 export async function addTasksFromForm(formData: NewTasks) {
-  if (formData.state.createTranscription) {
-    const nameGenerator = new NameGenerator(transcribeTaskListAtom)
-
-    const durations = await cmd.getAudioDurations({ paths: formData.files })
-
-    for (const file of formData.files) {
-      const duration = extractDurationResults(durations, file)
-      if (duration === null) {
-        continue
-      }
-
-      const options: [BasicTaskOptions, TranscribeOptions] = [
-        {
-          group: formData.group,
-          name: nameGenerator.generateName(file),
-          relatedTaskName: null,
-        },
-        {
-          sourcePath: file,
-          sourceMeta: { duration },
-          translateWith: formData.state.createTranslation
-            ? formData.translationOption
-            : null,
-          ...formData.transcriptionOption,
-        },
-      ]
-
-      // FIXME: Remove debug code.
-      console.log(
-        nameGenerator.generateName(file),
-        '\n',
-        options[0],
-        '\n',
-        options[1],
-      )
-      addTask('transcribe', ...options)
-    }
-
-    nameGenerator.dispose()
+  if (!formData.state.createTranscription) {
     return
   }
 
-  if (formData.state.createTranslation) {
-    // TODO: Add translation tasks.
+  const nameGenerator = new NameGenerator(transcribeTaskListAtom)
+  const durations = await cmd.getAudioDurations({ paths: formData.files })
+
+  for (const file of formData.files) {
+    const duration = extractDurationResults(durations, file)
+    if (duration === null) {
+      continue
+    }
+
+    const options: [BasicTaskOptions, TranscribeOptions] = [
+      {
+        group: formData.group,
+        name: nameGenerator.generateName(file),
+      },
+      {
+        sourcePath: file,
+        sourceMeta: { duration },
+        ...formData.transcriptionOption,
+      },
+    ]
+
+    addTask('transcribe', ...options)
   }
+
+  nameGenerator.dispose()
+}
+
+export function addTranslationTask(
+  parentTask: TranscribeTask,
+  config: TranslateOptions,
+) {
+  const nameGenerator = new NameGenerator(translateTaskListAtom)
+  const sourceSnapshot = structuredClone(parentTask.result!.data)
+  const name = `${parentTask.name} [${config.targetLanguage}]`
+
+  addTask(
+    'translate',
+    {
+      name,
+      group: parentTask.group,
+      parentTaskId: parentTask.id,
+      sourceSnapshot,
+    },
+    config,
+  )
+
+  nameGenerator.dispose()
 }

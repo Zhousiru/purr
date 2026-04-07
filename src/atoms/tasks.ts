@@ -28,10 +28,7 @@ function selectTaskGroupAtom<T extends Task>(atom: TaskAtom<T>) {
 
 export const taskGroupsAtom = atom((get) => {
   const result: string[] = []
-  const atoms = [
-    ...get(transcribeTaskListAtom),
-    ...get(translateTaskListAtom),
-  ] as Array<TaskAtom<Task>>
+  const atoms = get(transcribeTaskListAtom) as Array<TaskAtom<Task>>
 
   atoms.forEach((a) => {
     const group = get(selectTaskGroupAtom(a))
@@ -44,10 +41,7 @@ export const taskGroupsAtom = atom((get) => {
 })
 
 export const taskListAtom = atom((get) => {
-  let list: Array<TaskAtom<Task>> = [
-    ...get(transcribeTaskListAtom),
-    ...get(translateTaskListAtom),
-  ] as Array<TaskAtom<Task>>
+  let list = get(transcribeTaskListAtom) as Array<TaskAtom<Task>>
 
   const groupFilter = get(guardedTaskGroupFilterAtom)
 
