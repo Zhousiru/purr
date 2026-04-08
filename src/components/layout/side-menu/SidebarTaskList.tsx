@@ -1,5 +1,3 @@
-'use client'
-
 import { setCurrentEditingTaskAtom } from '@/atoms/editor'
 import { taskGroupsAtom, taskListAtom } from '@/atoms/tasks'
 import { TaskInfoModal } from '@/components/modal/task-info'
@@ -26,7 +24,7 @@ import {
   IconTrash,
 } from '@tabler/icons-react'
 import { useAtomValue } from 'jotai'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 
 function TaskRowActions({ taskAtom }: { taskAtom: TaskAtom<Task> }) {
@@ -178,12 +176,12 @@ function StatusIndicator({
 
 function TaskRow({ taskAtom }: { taskAtom: TaskAtom<Task> }) {
   const task = useAtomValue(taskAtom)
-  const router = useRouter()
+  const navigate = useNavigate()
   const [isHover, setIsHover] = useState(false)
 
   function handleClick() {
     setCurrentEditingTaskAtom(taskAtom)
-    router.push(`/editor?id=${task.id}`)
+    navigate({ to: '/editor', search: { id: task.id } })
   }
 
   return (

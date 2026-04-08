@@ -1,5 +1,3 @@
-'use client'
-
 import { store } from '@/lib/store'
 import { Provider } from 'jotai'
 import { ReactNode } from 'react'

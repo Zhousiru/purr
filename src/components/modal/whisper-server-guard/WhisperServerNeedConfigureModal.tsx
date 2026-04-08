@@ -1,9 +1,7 @@
-'use client'
-
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { IconX } from '@tabler/icons-react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from '@tanstack/react-router'
 
 export function WhisperServerNeedConfigureModal({
   isOpen,
@@ -12,11 +10,11 @@ export function WhisperServerNeedConfigureModal({
   isOpen: boolean
   onClose: (value: boolean) => void
 }) {
-  const router = useRouter()
+  const navigate = useNavigate()
 
   function handleNavigateWhisperServer() {
     onClose(false)
-    router.push('/whisper-server')
+    navigate({ to: '/whisper-server' })
   }
 
   return (

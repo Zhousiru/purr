@@ -1,5 +1,3 @@
-'use client'
-
 import { cn } from '@/lib/utils/cn'
 import { getFilename } from '@/lib/utils/path'
 import { IconX } from '@tabler/icons-react'

@@ -1,10 +1,8 @@
-'use client'
-
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { cn } from '@/lib/utils/cn'
 import { IconLoader2, IconX } from '@tabler/icons-react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from '@tanstack/react-router'
 
 export function WhisperServerSpinnerModal({
   isOpen,
@@ -15,7 +13,7 @@ export function WhisperServerSpinnerModal({
   onClose: (value: boolean) => void
   isFailed: boolean
 }) {
-  const router = useRouter()
+  const navigate = useNavigate()
 
   function handleUserClose() {
     if (isFailed) {
@@ -25,7 +23,7 @@ export function WhisperServerSpinnerModal({
 
   function handleNavigateWhisperServer() {
     onClose(false)
-    router.push('/whisper-server')
+    navigate({ to: '/whisper-server' })
   }
 
   return (

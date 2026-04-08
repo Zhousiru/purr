@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "tauri dev",
     "build": "tauri build",
-    "next:dev": "next dev",
-    "next:build": "next build",
-    "next:start": "next start",
+    "dev:frontend": "vite",
+    "build:frontend": "vite build",
+    "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "format": "prettier . -w"
@@ -16,6 +16,7 @@
     "@floating-ui/react": "^0.27.16",
     "@headlessui/react": "^2.2.9",
     "@tabler/icons-react": "^3.36.1",
+    "@tanstack/react-router": "^1.168.10",
     "@tanstack/react-virtual": "^3.13.18",
     "@tauri-apps/api": "^2.10.1",
     "@tauri-apps/plugin-dialog": "~2.6.0",
@@ -24,7 +25,6 @@
     "filesize": "^11.0.13",
     "immer": "^11.1.3",
     "jotai": "^2.16.2",
-    "next": "16.1.3",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-hook-form": "^7.71.1",
@@ -32,19 +32,27 @@
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@rolldown/plugin-babel": "^0.2.2",
     "@tailwindcss/postcss": "^4.1.18",
     "@tauri-apps/cli": "^2.10.1",
     "@types/node": "^25.0.9",
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9.39.2",
-    "eslint-config-next": "16.1.3",
+    "eslint-plugin-react-compiler": "19.1.0-rc.2",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
     "postcss": "^8.5.6",
     "prettier": "^3.8.0",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.58.1",
+    "vite": "^8.0.7"
   },
   "packageManager": "pnpm@10.28.0+sha512.05df71d1421f21399e053fde567cea34d446fa02c76571441bfc1c7956e98e363088982d940465fd34480d4d90a0668bc12362f8aa88000a64e83d0b0e47be48"
 }

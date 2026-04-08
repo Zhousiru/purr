@@ -1,5 +1,3 @@
-'use client'
-
 import { isReadyAtom, isRunningAtom } from '@/atoms/whisper-server'
 import { NewTaskModal } from '@/components/modal/new-tasks'
 import { WhisperServerGuardModal } from '@/components/modal/whisper-server-guard'
@@ -13,7 +11,7 @@ import {
   IconSettings,
 } from '@tabler/icons-react'
 import { useAtomValue } from 'jotai'
-import { usePathname, useRouter } from 'next/navigation'
+import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { ReactNode, useMemo, useState } from 'react'
 import { SidebarTaskList } from './SidebarTaskList'
 import { WhisperConnectionIndicator } from './WhisperConnectionIndicator'
@@ -108,8 +106,8 @@ export function SideMenu() {
     [isWhisperReady, isWhisperRunning],
   )
 
-  const router = useRouter()
-  const pathname = usePathname()
+  const navigate = useNavigate()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
 
   return (
     <>
@@ -129,7 +127,7 @@ export function SideMenu() {
               icon={item.icon}
               label={item.name}
               active={pathname === item.pathname}
-              onClick={() => router.push(item.pathname)}
+              onClick={() => navigate({ to: item.pathname })}
             />
           ))}
         </nav>
@@ -143,7 +141,7 @@ export function SideMenu() {
               icon={item.icon}
               label={item.name}
               active={pathname === item.pathname}
-              onClick={() => router.push(item.pathname)}
+              onClick={() => navigate({ to: item.pathname })}
             />
           ))}
         </nav>

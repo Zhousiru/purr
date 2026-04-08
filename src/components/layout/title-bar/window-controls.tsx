@@ -1,5 +1,3 @@
-'use client'
-
 import { cn } from '@/lib/utils/cn'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { type SVGProps, useCallback, useEffect, useState } from 'react'

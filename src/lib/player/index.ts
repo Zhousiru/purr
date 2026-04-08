@@ -1,5 +1,4 @@
 import { convertFileSrc } from '@tauri-apps/api/core'
-import { isServer } from '../utils/is-server'
 
 interface PlayerCallbacks {
   onPlay: () => void
@@ -94,4 +93,4 @@ class Player {
   }
 }
 
-export const player = (isServer() ? null : new Player())!
+export const player = new Player()

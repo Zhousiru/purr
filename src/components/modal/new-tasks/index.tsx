@@ -1,5 +1,3 @@
-'use client'
-
 import { FileList } from '@/components/layout/file-list'
 import { Button } from '@/components/ui/button'
 import { FormCheckbox } from '@/components/ui/checkbox'

@@ -1,6 +1,5 @@
 import { Task } from '@/types/tasks'
 import Dexie, { Table } from 'dexie'
-import { isServer } from '../utils/is-server'
 
 class Database extends Dexie {
   tasks!: Table<Task, string>
@@ -13,7 +12,4 @@ class Database extends Dexie {
   }
 }
 
-/**
- * NOTE: Check `isServer()` before using.
- */
-export const db = isServer() ? null : new Database()
+export const db = new Database()

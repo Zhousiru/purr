@@ -1,21 +1,8 @@
-'use client'
-
-import type { Placement } from '@floating-ui/react'
 import {
   FloatingDelayGroup,
   FloatingPortal,
-  autoUpdate,
-  flip,
-  offset,
-  shift,
   useDelayGroup,
-  useDismiss,
-  useFloating,
-  useFocus,
-  useHover,
-  useInteractions,
   useMergeRefs,
-  useRole,
   useTransitionStyles,
 } from '@floating-ui/react'
 import {
@@ -23,85 +10,9 @@ import {
   ReactNode,
   Ref,
   cloneElement,
-  createContext,
   isValidElement,
-  useContext,
-  useMemo,
-  useState,
 } from 'react'
-
-interface TooltipOptions {
-  placement?: Placement
-}
-
-export function useTooltip({ placement = 'bottom' }: TooltipOptions = {}) {
-  const [open, setOpen] = useState(false)
-
-  const data = useFloating({
-    placement,
-    open,
-    onOpenChange: setOpen,
-    whileElementsMounted: autoUpdate,
-    middleware: [
-      offset(5),
-      flip(),
-      shift({
-        padding: 5,
-      }),
-    ],
-  })
-
-  const context = data.context
-  const { delay } = useDelayGroup(context)
-
-  const hover = useHover(context, {
-    move: false,
-    delay,
-  })
-  const focus = useFocus(context)
-  const dismiss = useDismiss(context)
-  const role = useRole(context, { role: 'tooltip' })
-
-  const interactions = useInteractions([hover, focus, dismiss, role])
-
-  return useMemo(
-    () => ({
-      open,
-      setOpen,
-      ...interactions,
-      ...data,
-    }),
-    [open, setOpen, interactions, data],
-  )
-}
-
-type ContextType = ReturnType<typeof useTooltip> | null
-
-const TooltipContext = createContext<ContextType>(null)
-
-export const useTooltipState = () => {
-  const context = useContext(TooltipContext)
-
-  if (context === null) {
-    throw new Error('Tooltip components must be wrapped in <Tooltip />')
-  }
-
-  return context
-}
-
-export function Tooltip({
-  children,
-  content,
-  ...options
-}: { children: ReactNode; content: ReactNode } & TooltipOptions) {
-  const tooltip = useTooltip(options)
-  return (
-    <TooltipContext.Provider value={tooltip}>
-      <TooltipTrigger>{children}</TooltipTrigger>
-      <TooltipContent>{content}</TooltipContent>
-    </TooltipContext.Provider>
-  )
-}
+import { TooltipContext, useTooltip, useTooltipState } from './use-tooltip'
 
 type TooltipTriggerChildProps = HTMLAttributes<HTMLElement> & {
   ref?: Ref<HTMLElement>
@@ -177,6 +88,22 @@ const TooltipContent = ({ ref: propRef, ...props }: TooltipContentProps) => {
         {...state.getFloatingProps(props)}
       />
     </FloatingPortal>
+  )
+}
+
+export function Tooltip({
+  children,
+  content,
+  ...options
+}: { children: ReactNode; content: ReactNode } & Parameters<
+  typeof useTooltip
+>[0]) {
+  const tooltip = useTooltip(options)
+  return (
+    <TooltipContext.Provider value={tooltip}>
+      <TooltipTrigger>{children}</TooltipTrigger>
+      <TooltipContent>{content}</TooltipContent>
+    </TooltipContext.Provider>
   )
 }
 

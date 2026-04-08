@@ -14,11 +14,9 @@
     "incremental": true
   },
   "include": [
-    "next.config.mjs",
+    "vite.config.ts",
     "eslint.config.mjs",
-    "postcss.config.js",
-    "**/*.config.{js,mjs,cjs,ts}",
-    "scripts/**/*.{ts,js,mjs,cjs}"
+    "postcss.config.js"
   ],
   "exclude": ["node_modules", "src-tauri"]
 }

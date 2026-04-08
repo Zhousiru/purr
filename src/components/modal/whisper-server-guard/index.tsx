@@ -1,5 +1,3 @@
-'use client'
-
 import { ComponentProps } from 'react'
 import { WhisperServerNeedConfigureModal } from './WhisperServerNeedConfigureModal'
 import { WhisperServerSpinnerModal } from './WhisperServerSpinnerModal'

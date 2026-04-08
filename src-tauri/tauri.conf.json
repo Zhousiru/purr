@@ -1,10 +1,10 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "build": {
-    "beforeBuildCommand": "pnpm run next:build",
-    "beforeDevCommand": "pnpm run next:dev",
-    "frontendDist": "../out",
-    "devUrl": "http://localhost:3000"
+    "beforeBuildCommand": "pnpm run build:frontend",
+    "beforeDevCommand": "pnpm run dev:frontend",
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420"
   },
   "bundle": {
     "active": true,
