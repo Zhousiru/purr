@@ -2,6 +2,7 @@ import { useRecentlyViewedTasks } from '@/atoms/recently-viewed'
 import { TaskRow } from '@/components/common/task-row'
 import { PageHeader } from '@/components/layout/page-header'
 import { NewTaskModal } from '@/components/modal/new-tasks'
+import { NewUrlTaskModal } from '@/components/modal/new-url-task'
 import { WhisperServerGuardModal } from '@/components/modal/whisper-server-guard'
 import { useWhisperServerGuard } from '@/components/modal/whisper-server-guard/use-whisper-server-guard'
 import { cn } from '@/lib/utils/cn'
@@ -58,11 +59,16 @@ function QuickActionCard({
 
 export function LaunchpadPage() {
   const [newTaskModal, setNewTaskModal] = useState(false)
+  const [newUrlTaskModal, setNewUrlTaskModal] = useState(false)
   const { register: guardRegister, guard } = useWhisperServerGuard()
   const recentlyViewed = useRecentlyViewedTasks()
 
   function handleNewTask() {
     guard(() => setNewTaskModal(true))
+  }
+
+  function handleNewUrlTask() {
+    guard(() => setNewUrlTaskModal(true))
   }
 
   return (
@@ -85,7 +91,7 @@ export function LaunchpadPage() {
             iconColorClass="text-violet-500"
             title="New Task From URL"
             description="Import audio from a web link"
-            comingSoon
+            onClick={handleNewUrlTask}
           />
           <QuickActionCard
             icon={<IconMicrophone size={20} />}
@@ -112,6 +118,7 @@ export function LaunchpadPage() {
       </div>
 
       <NewTaskModal isOpen={newTaskModal} onClose={setNewTaskModal} />
+      <NewUrlTaskModal isOpen={newUrlTaskModal} onClose={setNewUrlTaskModal} />
       <WhisperServerGuardModal {...guardRegister} />
     </div>
   )

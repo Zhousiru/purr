@@ -1,4 +1,9 @@
-import { DurationResult, WaveformResult } from '@/types/commands'
+import {
+  DownloadResult,
+  DurationResult,
+  UrlMetadata,
+  WaveformResult,
+} from '@/types/commands'
 import { ModelItem } from '@/types/whisper-server'
 import { InvokeArgs, invoke } from '@tauri-apps/api/core'
 
@@ -37,6 +42,11 @@ export interface Commands {
       pairPerSec: number
     },
     Array<WaveformResult>
+  >
+  fetchUrlMetadata: CommandFunction<{ url: string }, UrlMetadata>
+  downloadAudioFromUrl: CommandFunction<
+    { url: string; outputDir: string },
+    DownloadResult
   >
 }
 

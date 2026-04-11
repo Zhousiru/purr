@@ -127,6 +127,31 @@ export async function addTasksFromForm(formData: NewTasks) {
   nameGenerator.dispose()
 }
 
+export function addTaskFromUrl(
+  title: string,
+  downloadedPath: string,
+  duration: number,
+  group: string,
+  transcriptionOption: Omit<TranscribeOptions, 'sourcePath' | 'sourceMeta'>,
+) {
+  const nameGenerator = new NameGenerator(transcribeTaskListAtom)
+
+  const options: [BasicTaskOptions, TranscribeOptions] = [
+    {
+      group,
+      name: nameGenerator.generateName(title),
+    },
+    {
+      sourcePath: downloadedPath,
+      sourceMeta: { duration },
+      ...transcriptionOption,
+    },
+  ]
+
+  addTask('transcribe', ...options)
+  nameGenerator.dispose()
+}
+
 export function addTranslationTask(
   parentTask: TranscribeTask,
   config: TranslateOptions,

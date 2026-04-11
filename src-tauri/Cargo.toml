@@ -28,6 +28,8 @@ symphonia = { version = "0.5.4", features = ["wav", "flac", "mp3", "isomp4", "aa
 rayon = "1.10"
 reqwest = { version = "0.12", features = ["json", "blocking", "multipart"] }
 tauri-plugin-dialog = "2"
+yt-dlp = "2.7.2"
+tokio = { version = "1", features = ["sync", "time", "fs"] }
 
 [features]
 # Enables the custom protocol used for production builds.

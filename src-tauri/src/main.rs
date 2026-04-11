@@ -6,6 +6,7 @@ mod error;
 mod event_name;
 mod utils;
 mod whisper_server;
+mod yt_dlp;
 
 use std::sync::Mutex;
 
@@ -19,6 +20,10 @@ use crate::{
       submit_transcription_task,
     },
     daemon::Daemon,
+  },
+  yt_dlp::{
+    commands::{download_audio_from_url, fetch_url_metadata},
+    state::YtDlpState,
   },
 };
 
@@ -35,9 +40,12 @@ fn main() {
       get_audio_durations,
       submit_transcription_task,
       is_whisper_server_running,
-      get_audio_waveform_data
+      get_audio_waveform_data,
+      fetch_url_metadata,
+      download_audio_from_url
     ])
     .manage(WhisperServerDaemon(Default::default()))
+    .manage(YtDlpState::default())
     .on_window_event(|window, event| {
       if let WindowEvent::Destroyed = event {
         let daemon: State<'_, WhisperServerDaemon> = window.state();
