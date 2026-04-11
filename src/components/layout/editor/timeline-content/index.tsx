@@ -173,8 +173,8 @@ export function TimelineContent() {
             className={cn(
               'absolute inset-x-4 transition',
               activeIndex !== -1 && activeIndex !== item.index && 'opacity-50',
-              activeIndex === item.index && 'ring-2 ring-amber-500',
-              highlightIndex === item.index && 'bg-amber-100',
+              activeIndex === item.index && 'ring-2 ring-accent',
+              highlightIndex === item.index && 'bg-accent/20',
             )}
             style={{
               top: item.start,
@@ -187,7 +187,7 @@ export function TimelineContent() {
               type="text"
               value={result.data[item.index].text}
               onChange={(e) => updateText(item.index, 'text', e.target.value)}
-              className="w-full overflow-hidden text-ellipsis whitespace-nowrap border-amber-500 bg-transparent outline-none focus:border-b"
+              className="w-full overflow-hidden text-ellipsis whitespace-nowrap border-accent bg-transparent outline-none focus:border-b"
             />
             {task.type === 'translate' && (
               <input
@@ -196,7 +196,7 @@ export function TimelineContent() {
                 onChange={(e) =>
                   updateText(item.index, 'translated', e.target.value)
                 }
-                className="w-full overflow-hidden text-ellipsis whitespace-nowrap border-amber-500 bg-transparent outline-none focus:border-b"
+                className="w-full overflow-hidden text-ellipsis whitespace-nowrap border-accent bg-transparent outline-none focus:border-b"
               />
             )}
           </TextCard>

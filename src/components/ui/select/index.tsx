@@ -27,7 +27,7 @@ const Select = ({ items, className, ref, ...props }: SelectProps) => {
   return (
     <Listbox ref={ref} {...props}>
       <div className={className}>
-        <ListboxButton className="z-20 flex h-9 w-full items-center justify-between gap-2 rounded-md border border-gray-900 px-3 py-2 text-sm shadow placeholder:text-gray-400 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50">
+        <ListboxButton className="z-20 flex h-9 w-full items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm shadow placeholder:text-muted-foreground focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50">
           {({ value }) => (
             <>
               <div className="overflow-hidden text-ellipsis whitespace-nowrap">
@@ -45,12 +45,12 @@ const Select = ({ items, className, ref, ...props }: SelectProps) => {
             enterFrom="opacity-0 -translate-y-2 scale-95"
             enterTo="opacity-100"
           >
-            <ListboxOptions className="absolute inset-x-0 top-1 z-10 rounded-md border border-gray-200 bg-white p-1 shadow-md">
+            <ListboxOptions className="absolute inset-x-0 top-1 z-10 rounded-md border border-border bg-card p-1 shadow-md">
               {items.map((item) => (
                 <ListboxOption
                   key={item.key}
                   value={item.key}
-                  className="flex cursor-default items-center justify-between rounded px-2 py-1 hover:bg-gray-100"
+                  className="flex cursor-default items-center justify-between rounded px-2 py-1 hover:bg-muted"
                 >
                   {({ selected }) => (
                     <>

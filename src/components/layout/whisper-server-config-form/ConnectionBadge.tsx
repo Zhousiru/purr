@@ -7,7 +7,7 @@ export function ConnectionBadge() {
   const status = useMonitorStatusValue()
 
   return (
-    <Badge className="gap-1 border border-gray-200 bg-transparent text-gray-600">
+    <Badge className="gap-1 border border-border bg-transparent text-muted-foreground">
       <Dot
         className={cn('transition', status === 'connected' && 'bg-green-500')}
       />

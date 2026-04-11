@@ -97,16 +97,16 @@ export const HoverLayer = ({ ref }: HoverLayerProps) => {
       >
         <div
           className={cn(
-            'border-t border-dashed border-gray-900',
-            addMarkContext && 'border-amber-500',
+            'border-t border-dashed border-foreground',
+            addMarkContext && 'border-accent',
           )}
         />
 
         <div
           className={cn(
-            'absolute right-2 flex h-5 -translate-y-1/2 overflow-hidden rounded border border-transparent bg-gray-900 shadow-md',
+            'absolute right-2 flex h-5 -translate-y-1/2 overflow-hidden rounded border border-transparent bg-foreground shadow-md',
             showIndicator && 'pointer-events-auto',
-            addMarkContext && 'bg-amber-500',
+            addMarkContext && 'bg-accent',
           )}
         >
           <TooltipGroup>
@@ -114,7 +114,7 @@ export const HoverLayer = ({ ref }: HoverLayerProps) => {
               <button
                 className={cn(
                   'flex items-center justify-center px-1',
-                  addMarkContext && 'bg-white',
+                  addMarkContext && 'bg-card',
                 )}
                 onClick={handleSeek}
                 // Prevent focus when not show.
@@ -122,7 +122,7 @@ export const HoverLayer = ({ ref }: HoverLayerProps) => {
               >
                 <IconPlayerPlay
                   size={12}
-                  className={cn(!addMarkContext && 'text-white')}
+                  className={cn(!addMarkContext && 'text-primary-foreground')}
                 />
               </button>
             </Tooltip>
@@ -131,15 +131,15 @@ export const HoverLayer = ({ ref }: HoverLayerProps) => {
               <button
                 className={cn(
                   'flex items-center justify-center px-1',
-                  !addMarkContext && 'bg-white',
+                  !addMarkContext && 'bg-card',
                 )}
                 onClick={handleAddMark}
                 tabIndex={showIndicator ? 0 : -1}
               >
                 {addMarkContext ? (
-                  <IconCheck size={12} className="text-white" />
+                  <IconCheck size={12} className="text-accent-foreground" />
                 ) : (
-                  <IconPlus size={12} className="text-gray-600" />
+                  <IconPlus size={12} className="text-muted-foreground" />
                 )}
               </button>
             </Tooltip>

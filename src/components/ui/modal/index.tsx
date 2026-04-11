@@ -46,7 +46,7 @@ export function Modal({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black/25" />
+            <div className="fixed inset-0 bg-foreground/20" />
           </TransitionChild>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -68,7 +68,7 @@ export function Modal({
               >
                 <DialogPanel
                   className={cn(
-                    'w-full max-w-md rounded-lg bg-white p-4 shadow-xl',
+                    'w-full max-w-md rounded-lg bg-card p-4 shadow-xl',
                     className,
                   )}
                   ref={defaultFocusRef}

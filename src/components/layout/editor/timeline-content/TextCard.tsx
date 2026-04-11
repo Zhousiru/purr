@@ -19,7 +19,7 @@ export const TextCard = ({
   return (
     <div
       ref={ref}
-      className={cn('rounded-lg bg-gray-100 p-4 text-lg', className)}
+      className={cn('rounded-lg bg-muted p-4 text-lg', className)}
       {...props}
     >
       <div className="font-mono text-sm opacity-50">

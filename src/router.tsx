@@ -6,8 +6,8 @@ import {
 } from '@tanstack/react-router'
 import { RootLayout } from './components/layout/root-layout'
 import { EditorPage } from './pages/editor'
+import { LaunchpadPage } from './pages/launchpad'
 import { SettingsPage } from './pages/settings'
-import { TasksPage } from './pages/tasks'
 import { WhisperServerPage } from './pages/whisper-server'
 
 const rootRoute = createRootRoute({
@@ -18,14 +18,14 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   beforeLoad: () => {
-    throw redirect({ to: '/tasks' })
+    throw redirect({ to: '/launchpad' })
   },
 })
 
-const tasksRoute = createRoute({
+const launchpadRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/tasks',
-  component: TasksPage,
+  path: '/launchpad',
+  component: LaunchpadPage,
 })
 
 const editorRoute = createRoute({
@@ -51,7 +51,7 @@ const whisperServerRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  tasksRoute,
+  launchpadRoute,
   editorRoute,
   settingsRoute,
   whisperServerRoute,

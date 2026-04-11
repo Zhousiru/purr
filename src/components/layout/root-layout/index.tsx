@@ -12,7 +12,7 @@ export function RootLayout() {
         <TitleBar />
         <div className="flex min-h-0 grow">
           <SideMenu />
-          <div className="grow overflow-hidden rounded-tl-2xl bg-white">
+          <div className="grow overflow-hidden rounded-tl-2xl bg-background">
             <Outlet />
           </div>
         </div>

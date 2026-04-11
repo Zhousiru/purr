@@ -84,7 +84,7 @@ const TooltipContent = ({ ref: propRef, ...props }: TooltipContentProps) => {
           ...props.style,
           ...styles,
         }}
-        className="z-50 rounded-md bg-black/75 px-2 py-1 text-xs text-white"
+        className="z-50 rounded-md bg-foreground/80 px-2 py-1 text-xs text-primary-foreground"
         {...state.getFloatingProps(props)}
       />
     </FloatingPortal>

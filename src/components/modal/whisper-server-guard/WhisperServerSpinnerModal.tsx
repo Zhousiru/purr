@@ -37,7 +37,7 @@ export function WhisperServerSpinnerModal({
         {!isFailed ? (
           <div className="flex w-[250px] flex-col gap-2">
             <div>
-              <div className="flex items-center justify-center gap-1 text-gray-600">
+              <div className="flex items-center justify-center gap-1 text-muted-foreground">
                 <IconLoader2 size={18} className="animate-spin" />
                 Launching whisper server...
               </div>
@@ -47,7 +47,7 @@ export function WhisperServerSpinnerModal({
           <>
             <div className="flex flex-col gap-2">
               <div className="text-lg">Something&apos;s Wrong</div>
-              <div className="text-gray-600">
+              <div className="text-muted-foreground">
                 <p>Failed to launch or connect whisper server.</p>
                 <p>Please check your configuration.</p>
               </div>

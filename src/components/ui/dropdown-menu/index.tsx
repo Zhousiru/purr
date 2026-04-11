@@ -34,7 +34,7 @@ export function DropdownMenuItems({
     <MenuItems
       anchor={anchor ?? 'bottom end'}
       className={cn(
-        'z-50 min-w-[140px] rounded-lg bg-white py-1 shadow-lg ring-1 ring-black/5',
+        'z-50 min-w-[140px] rounded-lg bg-card py-1 shadow-lg ring-1 ring-ring',
         'origin-top-right transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0',
         className,
       )}
@@ -61,9 +61,9 @@ export function DropdownMenuItem({
     <MenuItem>
       <button
         className={cn(
-          'flex w-full items-center gap-2 px-3 py-1.5 text-sm data-[focus]:bg-black/5',
+          'flex w-full items-center gap-2 px-3 py-1.5 text-sm data-[focus]:bg-secondary',
           disabled && 'cursor-not-allowed opacity-40',
-          destructive && 'text-red-500',
+          destructive && 'text-destructive',
           className,
         )}
         onClick={disabled ? undefined : onClick}

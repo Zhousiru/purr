@@ -23,7 +23,7 @@ export function WhisperServerNeedConfigureModal({
         <div className="flex max-w-md flex-col gap-2">
           <div className="text-lg">Need Configure</div>
 
-          <div className="text-gray-600">
+          <div className="text-muted-foreground">
             <p>Whisper server is not configured yet.</p>
             <p>Please configure it first.</p>
           </div>

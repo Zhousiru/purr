@@ -43,7 +43,7 @@ export function Editor() {
   return (
     <>
       <div className="relative flex grow">
-        <div className="flex w-[350px] border-r border-gray-200 bg-gray-50">
+        <div className="flex w-[350px] border-r border-border bg-secondary">
           <div className="relative grow">
             <WaveformCanvas
               path={audioPath}

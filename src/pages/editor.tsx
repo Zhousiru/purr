@@ -3,6 +3,7 @@ import {
   setCurrentEditingTaskAtom,
   useCurrentEditingTaskAtomValue,
 } from '@/atoms/editor'
+import { addRecentlyViewed } from '@/atoms/recently-viewed'
 import { Editor } from '@/components/layout/editor'
 import { PageHeader } from '@/components/layout/page-header'
 import { useSearch } from '@tanstack/react-router'
@@ -17,6 +18,7 @@ export function EditorPage() {
       const found = findTaskAtomById(id)
       if (found) {
         setCurrentEditingTaskAtom(found)
+        addRecentlyViewed(id)
       }
     }
   }, [id])

@@ -200,7 +200,7 @@ export const WaveformCanvas = ({
       {/* AddMark indicator */}
       {addMarkContext && (
         <div
-          className="pointer-events-none absolute inset-x-0 z-40 border-t border-amber-500"
+          className="pointer-events-none absolute inset-x-0 z-40 border-t border-accent"
           style={{ top: addMarkContext.startHeight }}
         />
       )}

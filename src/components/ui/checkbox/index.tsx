@@ -21,12 +21,12 @@ const CheckboxPrimitive = ({ className, ref, ...props }: CheckboxPrimitiveProps)
     <Checkbox
       ref={ref}
       className={cn(
-        'group relative h-4 w-4 shrink-0 overflow-hidden rounded-sm border border-gray-900 shadow focus-visible:outline-none focus-visible:ring-2',
+        'group relative h-4 w-4 shrink-0 overflow-hidden rounded-sm border border-border shadow focus-visible:outline-none focus-visible:ring-2',
         className,
       )}
       {...props}
     >
-      <div className="absolute inset-0 bg-gray-900 text-white opacity-0 group-data-[checked]:opacity-100">
+      <div className="absolute inset-0 bg-foreground text-primary-foreground opacity-0 group-data-[checked]:opacity-100">
         {/* Visually... */}
         <IconCheck size={15} />
       </div>

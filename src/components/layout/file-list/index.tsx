@@ -18,7 +18,7 @@ export const FileList = ({ value, onChange, className, ref }: FileListProps) => 
   return (
     <div
       className={cn(
-        'relative overflow-y-auto rounded-md border border-gray-200 bg-gray-50',
+        'relative overflow-y-auto rounded-md border border-border bg-secondary',
         className,
       )}
       ref={ref}
@@ -28,7 +28,7 @@ export const FileList = ({ value, onChange, className, ref }: FileListProps) => 
           {value.map((p) => (
             <div
               key={p}
-              className="flex items-center gap-2 border-b border-gray-200 bg-white p-2 last:shadow-sm"
+              className="flex items-center gap-2 border-b border-border bg-card p-2 last:shadow-sm"
             >
               <div className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm">
                 {getFilename(p)}
@@ -36,12 +36,12 @@ export const FileList = ({ value, onChange, className, ref }: FileListProps) => 
 
               {/* TODO: Display path properly. */}
               {/* <div className="h-4 border-l"></div>
-          <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-gray-400">
+          <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-muted-foreground">
             {p}
           </div> */}
 
               <button
-                className="ml-auto flex-shrink-0 text-gray-400 hover:text-gray-600"
+                className="ml-auto flex-shrink-0 text-muted-foreground hover:text-foreground"
                 onClick={() => handleRemove(p)}
               >
                 <IconX size={18} />
@@ -49,7 +49,7 @@ export const FileList = ({ value, onChange, className, ref }: FileListProps) => 
             </div>
           ))}
         </div>
-        <div className="flex h-8 items-center justify-center text-xs font-light text-gray-400">
+        <div className="flex h-8 items-center justify-center text-xs font-light text-muted-foreground">
           {value.length === 0 ? 'No files' : `${value.length} file(s)`}
         </div>
       </div>

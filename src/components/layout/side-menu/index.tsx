@@ -1,18 +1,15 @@
 import { isReadyAtom, isRunningAtom } from '@/atoms/whisper-server'
-import { NewTaskModal } from '@/components/modal/new-tasks'
-import { WhisperServerGuardModal } from '@/components/modal/whisper-server-guard'
-import { useWhisperServerGuard } from '@/components/modal/whisper-server-guard/use-whisper-server-guard'
 import { cn } from '@/lib/utils/cn'
 import {
+  IconBolt,
   IconEar,
   IconNotification,
   IconPencil,
-  IconPlus,
   IconSettings,
 } from '@tabler/icons-react'
-import { useAtomValue } from 'jotai'
 import { useNavigate, useRouterState } from '@tanstack/react-router'
-import { ReactNode, useMemo, useState } from 'react'
+import { useAtomValue } from 'jotai'
+import { ReactNode, useMemo } from 'react'
 import { SidebarTaskList } from './SidebarTaskList'
 import { WhisperConnectionIndicator } from './WhisperConnectionIndicator'
 
@@ -39,7 +36,7 @@ function NavButton({
     <button
       onClick={onClick}
       className={cn(
-        'flex h-9 w-full items-center gap-3 rounded-xl px-2 text-sm font-medium',
+        'flex h-9 w-full items-center gap-3 rounded-xl px-2 text-sm',
         active && 'bg-black/5',
         className,
       )}
@@ -53,12 +50,6 @@ function NavButton({
 export function SideMenu() {
   const isWhisperRunning = useAtomValue(isRunningAtom)
   const isWhisperReady = useAtomValue(isReadyAtom)
-  const [newTaskModal, setNewTaskModal] = useState(false)
-  const { register: guardRegister, guard } = useWhisperServerGuard()
-
-  async function handleAddTask() {
-    guard(() => setNewTaskModal(true))
-  }
 
   const menu: { top: MenuItem[]; bottom: MenuItem[] } = useMemo(
     () => ({
@@ -110,45 +101,39 @@ export function SideMenu() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
 
   return (
-    <>
-      <div className="flex w-[300px] shrink-0 flex-col p-2">
-        <button
-          onClick={handleAddTask}
-          className="mb-4 flex h-9 w-full items-center gap-3 rounded-xl bg-blue-500 px-2 text-sm font-medium text-white"
-        >
-          <IconPlus size={18} />
-          <span>New Task</span>
-        </button>
+    <div className="flex w-[300px] shrink-0 flex-col p-2">
+      <NavButton
+        icon={<IconBolt size={18} />}
+        label="Launchpad"
+        active={pathname === '/launchpad'}
+        onClick={() => navigate({ to: '/launchpad' })}
+      />
 
-        <nav className="flex flex-col">
-          {menu.top.map((item) => (
-            <NavButton
-              key={item.pathname}
-              icon={item.icon}
-              label={item.name}
-              active={pathname === item.pathname}
-              onClick={() => navigate({ to: item.pathname })}
-            />
-          ))}
-        </nav>
+      <nav className="flex flex-col">
+        {menu.top.map((item) => (
+          <NavButton
+            key={item.pathname}
+            icon={item.icon}
+            label={item.name}
+            active={pathname === item.pathname}
+            onClick={() => navigate({ to: item.pathname })}
+          />
+        ))}
+      </nav>
 
-        <SidebarTaskList />
+      <SidebarTaskList />
 
-        <nav className="mt-auto flex flex-col gap-0.5">
-          {menu.bottom.map((item) => (
-            <NavButton
-              key={item.pathname}
-              icon={item.icon}
-              label={item.name}
-              active={pathname === item.pathname}
-              onClick={() => navigate({ to: item.pathname })}
-            />
-          ))}
-        </nav>
-      </div>
-
-      <NewTaskModal isOpen={newTaskModal} onClose={setNewTaskModal} />
-      <WhisperServerGuardModal {...guardRegister} />
-    </>
+      <nav className="mt-auto flex flex-col gap-0.5">
+        {menu.bottom.map((item) => (
+          <NavButton
+            key={item.pathname}
+            icon={item.icon}
+            label={item.name}
+            active={pathname === item.pathname}
+            onClick={() => navigate({ to: item.pathname })}
+          />
+        ))}
+      </nav>
+    </div>
   )
 }

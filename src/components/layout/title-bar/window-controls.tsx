@@ -105,7 +105,7 @@ export function WindowControls() {
         onClick={() => getCurrentWindow().minimize()}
         className={cn(
           btnBase,
-          'text-black/90 hover:bg-black/5 active:bg-black/3 dark:text-white dark:hover:bg-white/6 dark:active:bg-white/4',
+          'hover:bg-secondary active:bg-muted',
         )}
       >
         <MinimizeIcon />
@@ -114,7 +114,7 @@ export function WindowControls() {
         onClick={() => getCurrentWindow().toggleMaximize()}
         className={cn(
           btnBase,
-          'text-black/90 hover:bg-black/5 active:bg-black/3 dark:text-white dark:hover:bg-white/6 dark:active:bg-white/4',
+          'hover:bg-secondary active:bg-muted',
         )}
       >
         {isMaximized ? <RestoreIcon /> : <MaximizeIcon />}
@@ -123,7 +123,7 @@ export function WindowControls() {
         onClick={() => getCurrentWindow().close()}
         className={cn(
           btnBase,
-          'text-black/90 hover:bg-[#c42b1c] hover:text-white active:bg-[#c42b1c]/90 dark:text-white',
+          'hover:bg-[#c42b1c] hover:text-white active:bg-[#c42b1c]/90',
         )}
       >
         <CloseIcon />

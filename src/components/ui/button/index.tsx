@@ -33,11 +33,11 @@ const Button = ({
     <button
       className={cn(
         'relative inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-transparent px-3 py-2 text-sm font-medium shadow transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50',
-        variant === 'solid' && ' bg-gray-900 text-white  hover:bg-gray-800',
-        variant === 'outline' && 'border border-gray-900 hover:bg-gray-100',
-        variant === 'ghost' && 'bg-transparent shadow-none hover:bg-gray-100',
+        variant === 'solid' && 'bg-foreground text-primary-foreground hover:bg-foreground/80',
+        variant === 'outline' && 'border border-border hover:bg-muted',
+        variant === 'ghost' && 'bg-transparent shadow-none hover:bg-muted',
         variant === 'destructive' &&
-          'border-red-500 bg-red-500/10 hover:bg-red-500/50',
+          'border-destructive bg-destructive/10 hover:bg-destructive/50',
         className,
       )}
       ref={ref}
@@ -60,10 +60,10 @@ const Button = ({
         <div className="absolute inset-0 flex items-center justify-center">
           <div
             className={cn(
-              'h-4 w-4 animate-spin rounded-full border-2 border-gray-800 border-t-transparent',
-              variant === 'solid' && 'border-white border-t-transparent',
+              'h-4 w-4 animate-spin rounded-full border-2 border-foreground border-t-transparent',
+              variant === 'solid' && 'border-primary-foreground border-t-transparent',
               variant === 'destructive' &&
-                'border-red-500 border-t-transparent',
+                'border-destructive border-t-transparent',
             )}
           ></div>
         </div>
