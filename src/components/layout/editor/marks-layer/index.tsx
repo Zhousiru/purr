@@ -1,6 +1,7 @@
 import {
   useActiveRowIndexValue,
   useHoveredRowIndexValue,
+  useIsFollowModeValue,
   useVisibleCardPositionsValue,
 } from '@/atoms/editor'
 import { cn } from '@/lib/utils/cn'
@@ -9,6 +10,7 @@ export function MarksLayer() {
   const visibleCards = useVisibleCardPositionsValue()
   const activeIndex = useActiveRowIndexValue()
   const hoveredIndex = useHoveredRowIndexValue()
+  const isFollowMode = useIsFollowModeValue()
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10">
@@ -21,7 +23,7 @@ export function MarksLayer() {
             key={card.index}
             className={cn(
               'absolute inset-x-0 border-y border-transparent transition',
-              (isActive || (!hasOtherActive && isHover)) &&
+              (isActive || (!hasOtherActive && !isFollowMode && isHover)) &&
                 'border-accent bg-accent/10',
             )}
             style={{
