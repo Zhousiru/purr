@@ -5,6 +5,7 @@ import {
   useActiveRowIndexValue,
   useCurrentEditingTask,
   useHoveredRowIndexValue,
+  useIsFollowModeValue,
   useVisibleCardPositionsValue,
 } from '@/atoms/editor'
 import { cn } from '@/lib/utils/cn'
@@ -21,6 +22,8 @@ export function TimelineContent() {
   if (!result) {
     throw new Error('Task does not have result yet.')
   }
+
+  const isFollowMode = useIsFollowModeValue()
 
   const visibleCards = useVisibleCardPositionsValue()
   const activeIndex = useActiveRowIndexValue()
@@ -39,7 +42,7 @@ export function TimelineContent() {
         e.preventDefault()
         e.stopPropagation()
 
-        if (focused instanceof HTMLElement) {
+        if (focused instanceof HTMLElement && !isFollowMode) {
           focused.blur()
         }
       }
@@ -48,10 +51,12 @@ export function TimelineContent() {
     document.addEventListener('keydown', handleKeydown)
 
     return () => document.removeEventListener('keydown', handleKeydown)
-  }, [])
+  }, [isFollowMode])
 
   // Active text card.
   function handleCardFocus(index: number) {
+    if (isFollowMode) return
+
     setActiveRowIndex(index)
     const card = getCardPositions()[index]
     if (card) {
@@ -61,6 +66,8 @@ export function TimelineContent() {
     }
   }
   function handleCardBlur() {
+    if (isFollowMode) return
+
     setActiveRowIndex(-1)
   }
 

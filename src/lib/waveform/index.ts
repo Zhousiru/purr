@@ -96,6 +96,14 @@ export class Waveform {
 
   private handleScroll() {
     this.scrollTop = this.scrollContainer.scrollTop
+
+    const canvasBottom =
+      this.canvasTop + this.viewportHeight * (1 + BUFFER_SCREENS * 2)
+    const topHeadroom = this.scrollTop - this.canvasTop
+    const bottomHeadroom = canvasBottom - (this.scrollTop + this.viewportHeight)
+    const threshold = this.viewportHeight * BUFFER_SCREENS * 0.5
+    if (topHeadroom >= threshold && bottomHeadroom >= threshold) return
+
     this.updateCanvasPosition()
     this.scheduleRender()
   }
