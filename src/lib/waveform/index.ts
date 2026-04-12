@@ -1,4 +1,9 @@
-import { getEffectiveResolution, subZoomLevel } from '@/atoms/editor'
+import {
+  getEffectiveResolution,
+  getMarginBlock,
+  subMarginBlock,
+  subZoomLevel,
+} from '@/atoms/editor'
 import { cmd } from '../commands'
 import { WaveformCache } from './cache'
 
@@ -13,7 +18,6 @@ interface WaveformOptions {
     g: number
     b: number
   }
-  marginBlock: number
 }
 
 const BUFFER_SCREENS = 1
@@ -29,7 +33,10 @@ export class Waveform {
 
   private cache = new WaveformCache()
   private currentResolution: number
-  private visibleBlockRange: { start: number; end: number } = { start: 0, end: 0 }
+  private visibleBlockRange: { start: number; end: number } = {
+    start: 0,
+    end: 0,
+  }
   private renderScheduled: boolean = false
 
   private scrollTop: number = 0
@@ -38,10 +45,14 @@ export class Waveform {
 
   private resizeObserver: ResizeObserver | null = null
   private unsubZoom: (() => void) | null = null
+  private unsubMargin: (() => void) | null = null
+
+  private scrollContainer: HTMLElement
 
   constructor(
     canvas: HTMLCanvasElement,
     container: HTMLElement,
+    scrollContainer: HTMLElement,
     path: string,
     duration: number,
     options: WaveformOptions,
@@ -49,6 +60,7 @@ export class Waveform {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')!
     this.container = container
+    this.scrollContainer = scrollContainer
     this.audioPath = path
     this.audioDuration = duration
     this.options = options
@@ -57,13 +69,21 @@ export class Waveform {
     this.handleScroll = this.handleScroll.bind(this)
     this.handleResize = this.handleResize.bind(this)
 
-    this.container.addEventListener('scroll', this.handleScroll, { passive: true })
+    this.scrollContainer.addEventListener('scroll', this.handleScroll, {
+      passive: true,
+    })
     this.resizeObserver = new ResizeObserver(this.handleResize)
     this.resizeObserver.observe(this.container)
+    this.resizeObserver.observe(this.scrollContainer)
 
     // Subscribe to zoom changes
     this.unsubZoom = subZoomLevel(() => {
       this.handleZoomChange()
+    })
+
+    // Subscribe to marginBlock changes (derived from viewport height).
+    this.unsubMargin = subMarginBlock(() => {
+      this.scheduleRender()
     })
 
     this.handleResize()
@@ -75,14 +95,14 @@ export class Waveform {
   }
 
   private handleScroll() {
-    this.scrollTop = this.container.scrollTop
+    this.scrollTop = this.scrollContainer.scrollTop
     this.updateCanvasPosition()
     this.scheduleRender()
   }
 
   private handleResize() {
     const width = this.container.clientWidth
-    const height = this.container.clientHeight
+    const height = this.scrollContainer.clientHeight
     const dpr = window.devicePixelRatio
     const canvasHeight = height * (1 + BUFFER_SCREENS * 2)
 
@@ -97,15 +117,19 @@ export class Waveform {
   }
 
   private updateCanvasPosition() {
-    this.canvasTop = Math.max(0, this.scrollTop - this.viewportHeight * BUFFER_SCREENS)
+    this.canvasTop = Math.max(
+      0,
+      this.scrollTop - this.viewportHeight * BUFFER_SCREENS,
+    )
     this.canvas.style.top = this.canvasTop + 'px'
   }
 
   dispose() {
-    this.container.removeEventListener('scroll', this.handleScroll)
+    this.scrollContainer.removeEventListener('scroll', this.handleScroll)
     this.resizeObserver?.disconnect()
     this.resizeObserver = null
     this.unsubZoom?.()
+    this.unsubMargin?.()
     this.cache.clear()
   }
 
@@ -143,7 +167,8 @@ export class Waveform {
   }
 
   private getVisibleBlockRange() {
-    const { blockDuration, marginBlock } = this.options
+    const { blockDuration } = this.options
+    const marginBlock = getMarginBlock()
     const resolution = this.currentResolution
     const dpr = window.devicePixelRatio
     const canvasHeight = this.viewportHeight * (1 + BUFFER_SCREENS * 2)
@@ -157,7 +182,10 @@ export class Waveform {
 
     const totalBlocks = Math.ceil(this.audioDuration / blockDuration)
     const startBlock = Math.max(0, Math.floor(startTime / blockDuration))
-    const endBlock = Math.min(totalBlocks - 1, Math.ceil(endTime / blockDuration))
+    const endBlock = Math.min(
+      totalBlocks - 1,
+      Math.ceil(endTime / blockDuration),
+    )
 
     return { startBlock, endBlock }
   }
@@ -178,7 +206,8 @@ export class Waveform {
     if (!data || data.length === 0) return
 
     const scale = this.currentResolution / sourceResolution
-    const { blockDuration, marginBlock, mergeChannels } = this.options
+    const { blockDuration, mergeChannels } = this.options
+    const marginBlock = getMarginBlock()
     const dpr = window.devicePixelRatio
 
     const blockStartY =
@@ -190,7 +219,13 @@ export class Waveform {
     } else {
       const channelWidth = Math.floor(this.canvas.width / data.length)
       for (let i = 0; i < data.length; i++) {
-        this.drawChannelDataScaled([data[i]], i * channelWidth, canvasY, channelWidth, scale)
+        this.drawChannelDataScaled(
+          [data[i]],
+          i * channelWidth,
+          canvasY,
+          channelWidth,
+          scale,
+        )
       }
     }
   }

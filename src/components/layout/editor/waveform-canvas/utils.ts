@@ -1,11 +1,10 @@
-import { marginBlock } from '@/constants/editor'
-import { getEffectiveResolution } from '@/atoms/editor'
+import { getEffectiveResolution, getMarginBlock } from '@/atoms/editor'
 
 export const seekHeightWithResolution = (time: number, resolution: number) =>
-  marginBlock + (time * resolution) / window.devicePixelRatio
+  getMarginBlock() + (time * resolution) / window.devicePixelRatio
 
 export const seekTimeWithResolution = (height: number, resolution: number) =>
-  ((height - marginBlock) * window.devicePixelRatio) / resolution
+  ((height - getMarginBlock()) * window.devicePixelRatio) / resolution
 
 export const seekHeight = (time: number) =>
   seekHeightWithResolution(time, getEffectiveResolution())

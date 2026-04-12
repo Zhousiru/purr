@@ -1,18 +1,18 @@
-import { useCurrentEditingTask } from '@/atoms/editor'
 import {
-  virtualTextGap,
-  virtualTextOverscan,
-  virtualTextPaddingEnd,
-  virtualTextPaddingStart,
-} from '@/constants/editor'
+  getCardPositions,
+  getWaveformViewportHeight,
+  setActiveRowIndex,
+  useActiveRowIndexValue,
+  useCurrentEditingTask,
+  useHoveredRowIndexValue,
+  useVisibleCardPositionsValue,
+} from '@/atoms/editor'
 import { cn } from '@/lib/utils/cn'
-import { markFocus, textFocus, textHighlight } from '@/subjects/editor'
+import { waveformScroll } from '@/subjects/editor'
 import { TranslateResult } from '@/types/tasks'
-import { useVirtualizer } from '@tanstack/react-virtual'
 import { produce } from 'immer'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { TextCard } from './TextCard'
-import { getTextCardHeight } from './utils'
 
 export function TimelineContent() {
   const [task, setTask] = useCurrentEditingTask()
@@ -22,78 +22,12 @@ export function TimelineContent() {
     throw new Error('Task does not have result yet.')
   }
 
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  // Virtualize text cards.
-  const line = task.type === 'transcribe' ? 1 : 2
-  const cardHeight = getTextCardHeight(line)
-
-  const rowVirtualizer = useVirtualizer({
-    count: result.data.length,
-    getScrollElement: () => containerRef.current,
-    estimateSize: () => cardHeight,
-    gap: virtualTextGap,
-    paddingStart: virtualTextPaddingStart,
-    paddingEnd: virtualTextPaddingEnd,
-    overscan: virtualTextOverscan,
-  })
-
-  // Handle highlight event.
-  const [highlightIndex, setHighlightIndex] = useState(-1)
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | null = null
-
-    const sub = textHighlight.subscribe(({ index }) => {
-      if (
-        rowVirtualizer.getOffsetForIndex(index, 'auto')![0] !==
-        rowVirtualizer.scrollOffset
-      ) {
-        // Outside the viewport.
-        const targetOffset =
-          rowVirtualizer.getOffsetForIndex(index, 'start')![0] -
-          virtualTextPaddingStart
-        rowVirtualizer.scrollToOffset(targetOffset, { behavior: 'smooth' })
-      }
-
-      setHighlightIndex(index)
-
-      if (timer) {
-        clearTimeout(timer)
-      }
-      timer = setTimeout(() => {
-        setHighlightIndex(-1)
-        timer = null
-      }, 1000)
-    })
-
-    return () => sub.unsubscribe()
-  }, [cardHeight, rowVirtualizer])
-
-  // Handle focus event.
-  function focusOnCard(index: number) {
-    setActiveIndex(index)
-
-    if (index < 0) {
-      return
-    }
-
-    const height =
-      index * (cardHeight + virtualTextGap) + virtualTextPaddingStart
-    const centerHeight = height + cardHeight / 2
-    const centerOffset = containerRef.current!.offsetHeight / 2
-    const top = centerHeight - centerOffset
-
-    containerRef.current!.scrollTo({ top, behavior: 'smooth' })
-  }
-  useEffect(() => {
-    const sub = textFocus.subscribe(({ index }) => {
-      focusOnCard(index)
-    })
-
-    return () => sub.unsubscribe()
-  })
+  const visibleCards = useVisibleCardPositionsValue()
+  const activeIndex = useActiveRowIndexValue()
+  const hoveredIndex = useHoveredRowIndexValue()
 
   // Handle accessible keyboard event.
+  const containerRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.code === 'Escape') {
@@ -114,19 +48,20 @@ export function TimelineContent() {
     document.addEventListener('keydown', handleKeydown)
 
     return () => document.removeEventListener('keydown', handleKeydown)
-  })
+  }, [])
 
   // Active text card.
-  const [activeIndex, setActiveIndex] = useState(-1)
   function handleCardFocus(index: number) {
-    focusOnCard(index)
-    markFocus.next({
-      index,
-    })
+    setActiveRowIndex(index)
+    const card = getCardPositions()[index]
+    if (card) {
+      const centerY = card.top + card.height / 2
+      const top = centerY - getWaveformViewportHeight() / 2
+      waveformScroll.next({ top, behavior: 'smooth' })
+    }
   }
   function handleCardBlur() {
-    setActiveIndex(-1)
-    markFocus.next({ index: -1 })
+    setActiveRowIndex(-1)
   }
 
   // Edit text card content.
@@ -157,51 +92,46 @@ export function TimelineContent() {
     )
   }
 
+  const hasEmphasis = activeIndex !== -1 || hoveredIndex !== -1
+
   return (
-    <div className="absolute inset-0 overflow-y-scroll" ref={containerRef}>
-      <div
-        className="relative overflow-hidden"
-        style={{
-          height: rowVirtualizer.getTotalSize(),
-        }}
-      >
-        {rowVirtualizer.getVirtualItems().map((item) => (
+    <div className="absolute inset-0" ref={containerRef}>
+      {visibleCards.map((card) => {
+        const isEmphasized =
+          activeIndex === card.index || hoveredIndex === card.index
+        return (
           <TextCard
-            key={`${item.key}${result.data[item.index].start}${result.data[item.index].end}`}
-            start={result.data[item.index].start}
-            end={result.data[item.index].end}
+            key={`${card.index}${result.data[card.index].start}${result.data[card.index].end}`}
+            start={result.data[card.index].start}
+            end={result.data[card.index].end}
             className={cn(
               'absolute inset-x-4 transition',
-              activeIndex !== -1 && activeIndex !== item.index && 'opacity-50',
-              activeIndex === item.index && 'ring-2 ring-accent',
-              highlightIndex === item.index && 'bg-accent/20',
+              hasEmphasis && !isEmphasized && 'opacity-50',
             )}
             style={{
-              top: item.start,
-              height: cardHeight,
+              top: card.top,
+              height: card.height,
             }}
-            onFocus={() => handleCardFocus(item.index)}
+            onFocus={() => handleCardFocus(card.index)}
             onBlur={() => handleCardBlur()}
           >
-            <input
-              type="text"
-              value={result.data[item.index].text}
-              onChange={(e) => updateText(item.index, 'text', e.target.value)}
-              className="w-full overflow-hidden text-ellipsis whitespace-nowrap border-accent bg-transparent outline-none focus:border-b"
+            <textarea
+              value={result.data[card.index].text}
+              onChange={(e) => updateText(card.index, 'text', e.target.value)}
+              className="border-accent scrollbar-none field-sizing-content w-full resize-none bg-transparent outline-none focus:border-b"
             />
             {task.type === 'translate' && (
-              <input
-                type="text"
-                value={(result as TranslateResult).data[item.index].translated}
+              <textarea
+                value={(result as TranslateResult).data[card.index].translated}
                 onChange={(e) =>
-                  updateText(item.index, 'translated', e.target.value)
+                  updateText(card.index, 'translated', e.target.value)
                 }
-                className="w-full overflow-hidden text-ellipsis whitespace-nowrap border-accent bg-transparent outline-none focus:border-b"
+                className="border-accent scrollbar-none field-sizing-content w-full resize-none bg-transparent outline-none focus:border-b"
               />
             )}
           </TextCard>
-        ))}
-      </div>
+        )
+      })}
     </div>
   )
 }

@@ -74,7 +74,6 @@ export function FloatController() {
 
     const seekMouseUp = () => {
       if (nowSeeking.current === null) return
-      console.log('FloatController.Seek', nowSeeking.current)
       player.seek(totalDuration * nowSeeking.current)
       nowSeeking.current = null
     }
@@ -99,7 +98,7 @@ export function FloatController() {
   }
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-10 flex justify-center">
+    <div className="pointer-events-none absolute inset-x-0 bottom-10 z-40 flex justify-center">
       <div className="pointer-events-auto rounded-lg border border-white/25 bg-gray-900/50 p-2 shadow-lg backdrop-blur backdrop-saturate-150">
         <div
           className="group flex h-4 cursor-pointer items-center px-2"
@@ -117,7 +116,7 @@ export function FloatController() {
             </div>
             <div
               ref={knobRef}
-              className="pointer-events-none absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 translate-x-1/2 rounded-full bg-white shadow transition-transform duration-75 group-hover:scale-125"
+              className="pointer-events-none absolute top-1/2 h-2.5 w-2.5 translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow transition-transform duration-75 group-hover:scale-125"
             />
           </div>
         </div>

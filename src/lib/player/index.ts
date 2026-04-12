@@ -1,15 +1,16 @@
 import { convertFileSrc } from '@tauri-apps/api/core'
 
-interface PlayerCallbacks {
-  onPlay: () => void
-  onPause: () => void
-}
+type PlayStateListener = (isPlaying: boolean) => void
+type TimeListener = (time: number) => void
 
 class Player {
   private audioElement: HTMLAudioElement
   public currentSource: string | null = null
 
-  public callbacks: PlayerCallbacks | null = null
+  private playStateListeners = new Set<PlayStateListener>()
+  private timeListeners = new Set<TimeListener>()
+  private rafId: number | null = null
+  private lastEmittedTime = -1
 
   constructor() {
     this.audioElement = new Audio()
@@ -17,8 +18,16 @@ class Player {
     this.audioElement.addEventListener('ended', () => this.pause())
   }
 
-  public bindCallbacks(callbacks: PlayerCallbacks) {
-    this.callbacks = callbacks
+  public subPlayState(fn: PlayStateListener): () => void {
+    this.playStateListeners.add(fn)
+    return () => {
+      this.playStateListeners.delete(fn)
+    }
+  }
+
+  private emitPlayState() {
+    const isPlaying = this.isPlaying
+    for (const fn of this.playStateListeners) fn(isPlaying)
   }
 
   public async load(path: string) {
@@ -42,16 +51,12 @@ class Player {
 
   public async play() {
     await this.audioElement.play()
-    this.callbacks?.onPlay()
-
-    console.log('Player.PlayStart')
+    this.emitPlayState()
   }
 
   public pause() {
     this.audioElement.pause()
-    this.callbacks?.onPause()
-
-    console.log('Player.Pause')
+    this.emitPlayState()
   }
 
   public async togglePlay() {
@@ -66,30 +71,38 @@ class Player {
     this.audioElement.currentTime = time
   }
 
-  public subCurrentTime(fn: (time: number) => void): () => void {
-    let unsubFlag = false
-    let frameId: number | null = null
+  public get currentTime(): number {
+    return this.audioElement.currentTime
+  }
 
-    const interval = () => {
-      if (unsubFlag) {
-        return
-      }
-      frameId = requestAnimationFrame(() => {
-        fn(this.audioElement.currentTime)
-        interval()
-      })
-    }
-    interval()
+  public get isPlaying(): boolean {
+    return !this.audioElement.paused
+  }
 
-    console.log('Player.SubCurrentTime')
-
+  public subCurrentTime(fn: TimeListener): () => void {
+    this.timeListeners.add(fn)
+    fn(this.audioElement.currentTime)
+    this.startTimeLoopIfNeeded()
     return () => {
-      console.log('Player.UnsubCurrentTime')
-      unsubFlag = true
-      if (frameId) {
-        cancelAnimationFrame(frameId)
+      this.timeListeners.delete(fn)
+      if (this.timeListeners.size === 0 && this.rafId !== null) {
+        cancelAnimationFrame(this.rafId)
+        this.rafId = null
       }
     }
+  }
+
+  private startTimeLoopIfNeeded() {
+    if (this.rafId !== null) return
+    const tick = () => {
+      const time = this.audioElement.currentTime
+      if (time !== this.lastEmittedTime) {
+        this.lastEmittedTime = time
+        for (const fn of this.timeListeners) fn(time)
+      }
+      this.rafId = requestAnimationFrame(tick)
+    }
+    this.rafId = requestAnimationFrame(tick)
   }
 }
 

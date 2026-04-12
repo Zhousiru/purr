@@ -1,69 +1,122 @@
 import {
   getWaveformViewportHeight,
-  getWaveformVisibleArea,
+  setActiveRowIndex,
   useIsFollowModeValue,
 } from '@/atoms/editor'
-import { followModeWaveformReserve } from '@/constants/editor'
 import { player } from '@/lib/player'
-import { textFocus, waveformScroll } from '@/subjects/editor'
-import { useEffect } from 'react'
-import { seekHeight } from '../waveform-canvas/utils'
+import { userScrub } from '@/subjects/editor'
+import { RefObject, useEffect } from 'react'
+import { seekHeight, seekTime } from '../waveform-canvas/utils'
 import { determineCurrentTextIndex } from './utils'
 
-export function FollowModeDispatcher() {
+const WHEEL_IDLE_MS = 100
+
+type FollowModeDispatcherProps = {
+  scrollContainerRef: RefObject<HTMLDivElement | null>
+}
+
+export function FollowModeDispatcher({
+  scrollContainerRef,
+}: FollowModeDispatcherProps) {
   const isFollowMode = useIsFollowModeValue()
 
   useEffect(() => {
     if (!isFollowMode) return
+    const scrollEl = scrollContainerRef.current
+    if (!scrollEl) return
 
-    // Save `waveformLastScrollTop` to avoid delayed updates caused by scroll animation.
-    let waveformLastScrollTop: number | null = null
+    const sources = new Set<'drag' | 'wheel'>()
+    let expectedScrollTop = scrollEl.scrollTop
     let textLastFocusIndex: number | null = null
+    let resumeOnRelease = false
+    let wheelIdleTimer: ReturnType<typeof setTimeout> | null = null
 
-    const unsub = player.subCurrentTime((time) => {
-      // Dispatch waveform scrolling.
-      const waveformVisibleArea = getWaveformVisibleArea()
-      const waveformHeight = getWaveformViewportHeight()
+    const inUserMode = () => sources.size > 0
 
-      const indicatorTop = seekHeight(time)
+    const addSource = (s: 'drag' | 'wheel') => {
+      const wasEmpty = sources.size === 0
+      sources.add(s)
+      if (wasEmpty) {
+        resumeOnRelease = player.isPlaying
+        if (resumeOnRelease) player.pause()
+      }
+    }
 
-      if (waveformLastScrollTop === null) {
-        const areaStart = waveformVisibleArea.startY + followModeWaveformReserve
-        const areaEnd = waveformVisibleArea.endY - followModeWaveformReserve
-        if (indicatorTop < areaStart || indicatorTop > areaEnd) {
-          const top = indicatorTop - followModeWaveformReserve
-          waveformScroll.next({
-            top,
-          })
-          waveformLastScrollTop = top
-        }
-      } else {
-        const areaStart = waveformLastScrollTop + followModeWaveformReserve
-        const areaEnd =
-          waveformLastScrollTop + waveformHeight - followModeWaveformReserve
+    const removeSource = (s: 'drag' | 'wheel') => {
+      if (!sources.delete(s)) return
+      if (sources.size === 0 && resumeOnRelease) {
+        resumeOnRelease = false
+        player.play()
+      }
+    }
 
-        if (indicatorTop < areaStart || indicatorTop > areaEnd) {
-          const top = indicatorTop - followModeWaveformReserve
-          waveformScroll.next({
-            top,
-          })
-          waveformLastScrollTop = top
-        }
+    const bumpWheelIdle = () => {
+      if (wheelIdleTimer) clearTimeout(wheelIdleTimer)
+      wheelIdleTimer = setTimeout(() => {
+        wheelIdleTimer = null
+        removeSource('wheel')
+      }, WHEEL_IDLE_MS)
+    }
+
+    const seekToCenter = (scrollTop: number) => {
+      const newTime = seekTime(scrollTop + getWaveformViewportHeight() / 2)
+      player.seek(Math.max(0, newTime))
+    }
+
+    // Player → scroll. Suspended while user is scrubbing so we don't fight
+    // native scroll animations.
+    const unsubTime = player.subCurrentTime((time) => {
+      const index = determineCurrentTextIndex(time)
+      if (index !== textLastFocusIndex) {
+        setActiveRowIndex(index)
+        textLastFocusIndex = index
       }
 
-      // Dispatch `TimelineContent` focus.
-      const textFocusIndex = determineCurrentTextIndex(time)
-      if (textFocusIndex !== textLastFocusIndex) {
-        textFocus.next({ index: textFocusIndex })
-        textLastFocusIndex = textFocusIndex
-      }
+      if (inUserMode()) return
+
+      const target = seekHeight(time) - getWaveformViewportHeight() / 2
+      expectedScrollTop = target
+      scrollEl.scrollTop = target
     })
 
-    return () => {
-      unsub()
-      textFocus.next({ index: -1 })
+    // Wheel (incl. trackpad) is the explicit entry signal for wheel scrubbing.
+    // Each tick extends the idle timer; momentum-driven scroll events also
+    // extend it so inertia stays in user mode until it fully settles.
+    const onWheel = () => {
+      addSource('wheel')
+      bumpWheelIdle()
     }
-  }, [isFollowMode])
+
+    // Scroll: while in user mode, seek the player to match the current center.
+    // While in player mode, this either matches `expectedScrollTop` (our own
+    // write, skip) or is some other source we can't classify — ignore.
+    const onScroll = () => {
+      const current = scrollEl.scrollTop
+      if (current === expectedScrollTop) return
+      if (!inUserMode()) return
+      expectedScrollTop = current
+      seekToCenter(current)
+      if (sources.has('wheel')) bumpWheelIdle()
+    }
+
+    // Drag emits explicit start / end from the waveform pointer handler.
+    const scrubSub = userScrub.subscribe((phase) => {
+      if (phase === 'start') addSource('drag')
+      else removeSource('drag')
+    })
+
+    scrollEl.addEventListener('wheel', onWheel, { passive: true })
+    scrollEl.addEventListener('scroll', onScroll, { passive: true })
+
+    return () => {
+      unsubTime()
+      scrubSub.unsubscribe()
+      if (wheelIdleTimer) clearTimeout(wheelIdleTimer)
+      scrollEl.removeEventListener('wheel', onWheel)
+      scrollEl.removeEventListener('scroll', onScroll)
+      setActiveRowIndex(-1)
+    }
+  }, [isFollowMode, scrollContainerRef])
 
   return null
 }

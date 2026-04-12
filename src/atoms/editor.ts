@@ -1,3 +1,4 @@
+import { cardOverscanHeight, resolution } from '@/constants/editor'
 import { TaskAtom } from '@/lib/db/task-atom-storage'
 import { createIsPlayingAtom } from '@/lib/player/atoms'
 import { store } from '@/lib/store'
@@ -5,7 +6,6 @@ import { Task, TranslateTask } from '@/types/tasks'
 import { atom, useAtom, useAtomValue } from 'jotai'
 import { Getter } from 'jotai/vanilla'
 import { transcribeTaskListAtom, translateTaskListAtom } from './tasks'
-import { resolution } from '@/constants/editor'
 
 export const ZOOM_LEVELS = [0.5, 1, 2, 4, 8, 16] as const
 export type ZoomLevel = (typeof ZOOM_LEVELS)[number]
@@ -51,22 +51,27 @@ export const getCurrentEditingTask = () => {
   return store.get(taskAtom)
 }
 
-const waveformViewportHeight = atom(-1)
+const waveformViewportHeight = atom(0)
 export const useWaveformViewportHeightValue = () =>
   useAtomValue(waveformViewportHeight)
 export const setWaveformViewportHeight = (height: number) =>
   store.set(waveformViewportHeight, height)
 export const getWaveformViewportHeight = () => store.get(waveformViewportHeight)
+export const subWaveformViewportHeight = (callback: () => void) =>
+  store.sub(waveformViewportHeight, callback)
+
+// Dynamic margin
+const marginBlockAtom = atom((get) => get(waveformViewportHeight) / 2)
+export const getMarginBlock = () => store.get(marginBlockAtom)
+export const subMarginBlock = (callback: () => void) =>
+  store.sub(marginBlockAtom, callback)
 
 const waveformVisibleArea = atom({
   startY: -1,
   endY: -1,
 })
-export const useWaveformVisibleAreaValue = () =>
-  useAtomValue(waveformVisibleArea)
 export const setWaveformVisibleArea = (startY: number, endY: number) =>
   store.set(waveformVisibleArea, { startY, endY })
-export const getWaveformVisibleArea = () => store.get(waveformVisibleArea)
 
 const isPlayingAtom = createIsPlayingAtom()
 export const useIsPlayingValue = () => useAtomValue(isPlayingAtom)
@@ -119,9 +124,78 @@ const zoomLevelAtom = atom<ZoomLevel>(1)
 export const useZoomLevel = () => useAtom(zoomLevelAtom)
 export const useZoomLevelValue = () => useAtomValue(zoomLevelAtom)
 export const getZoomLevel = () => store.get(zoomLevelAtom)
-export const setZoomLevel = (level: ZoomLevel) => store.set(zoomLevelAtom, level)
-export const subZoomLevel = (callback: () => void) => store.sub(zoomLevelAtom, callback)
+export const setZoomLevel = (level: ZoomLevel) =>
+  store.set(zoomLevelAtom, level)
+export const subZoomLevel = (callback: () => void) =>
+  store.sub(zoomLevelAtom, callback)
 
-const effectiveResolutionAtom = atom((get) => Math.round(resolution * get(zoomLevelAtom)))
-export const useEffectiveResolution = () => useAtomValue(effectiveResolutionAtom)
+const effectiveResolutionAtom = atom((get) =>
+  Math.round(resolution * get(zoomLevelAtom)),
+)
 export const getEffectiveResolution = () => store.get(effectiveResolutionAtom)
+
+export type CardPosition = {
+  index: number
+  top: number
+  height: number
+}
+
+const cardPositionsAtom = atom<CardPosition[]>((get) => {
+  const taskAtom = get(currentEditingTaskAtom)
+  if (!taskAtom) return []
+  const data = get(taskAtom).result?.data
+  if (!data) return []
+  const marginBlock = get(marginBlockAtom)
+  const effRes = get(effectiveResolutionAtom)
+  const dpr = window.devicePixelRatio
+  return data.map((d, i) => {
+    const top = marginBlock + (d.start * effRes) / dpr
+    const bottom = marginBlock + (d.end * effRes) / dpr
+    return { index: i, top, height: bottom - top }
+  })
+})
+export const useCardPositionsValue = () => useAtomValue(cardPositionsAtom)
+export const getCardPositions = () => store.get(cardPositionsAtom)
+
+const visibleCardPositionsAtom = atom((get) => {
+  const positions = get(cardPositionsAtom)
+  const area = get(waveformVisibleArea)
+  const start = area.startY - cardOverscanHeight
+  const end = area.endY + cardOverscanHeight
+  return positions.filter((c) => c.top + c.height >= start && c.top <= end)
+})
+export const useVisibleCardPositionsValue = () =>
+  useAtomValue(visibleCardPositionsAtom)
+
+const totalHeightAtom = atom((get) => {
+  const duration = get(currentEditingAudioDurationAtom)
+  const marginBlock = get(marginBlockAtom)
+  const effRes = get(effectiveResolutionAtom)
+  return marginBlock * 2 + (duration * effRes) / window.devicePixelRatio
+})
+export const useTotalHeightValue = () => useAtomValue(totalHeightAtom)
+
+// Row index hovered by pointer Y (shared across waveform / cards / gaps).
+const hoveredRowIndexAtom = atom(-1)
+export const useHoveredRowIndexValue = () => useAtomValue(hoveredRowIndexAtom)
+export const setHoveredRowIndex = (index: number) =>
+  store.set(hoveredRowIndexAtom, index)
+
+// Row index actively focused (textarea focus or playback follow).
+const activeRowIndexAtom = atom(-1)
+export const useActiveRowIndexValue = () => useAtomValue(activeRowIndexAtom)
+export const setActiveRowIndex = (index: number) =>
+  store.set(activeRowIndexAtom, index)
+
+// Hit-test a Y coordinate (in scroll-content space) against card positions.
+// Returns -1 when the pointer lands in a gap or outside every row.
+export function findRowIndexByY(y: number): number {
+  const positions = store.get(cardPositionsAtom)
+  for (let i = 0; i < positions.length; i++) {
+    const p = positions[i]
+    if (y >= p.top && y <= p.top + p.height) {
+      return p.index
+    }
+  }
+  return -1
+}

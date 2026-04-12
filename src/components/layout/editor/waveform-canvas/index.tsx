@@ -1,8 +1,6 @@
 import {
   getEffectiveResolution,
   getZoomLevel,
-  setWaveformViewportHeight,
-  setWaveformVisibleArea,
   setZoomLevel,
   useAddMarkContextValue,
   ZOOM_LEVELS,
@@ -11,56 +9,48 @@ import {
 import {
   blockDuration,
   fillColor,
-  marginBlock,
   preload,
   resolution,
   widthScale,
 } from '@/constants/editor'
-import { useWaveformScroll } from '@/hooks/useWaveformScroll'
-import { player } from '@/lib/player'
-import { mergeRefs } from '@/lib/utils/merge-refs'
+import { usePointerInRect } from '@/hooks/usePointerInRect'
 import { Waveform } from '@/lib/waveform'
-import { waveformScroll } from '@/subjects/editor'
-import { MouseEventHandler, Ref, useEffect, useRef } from 'react'
-import { HoverLayer, HoverLayerRef } from './HoverLayer'
-import { VirtualMarks } from './VirtualMarks'
-import { seekHeight, seekHeightWithResolution, seekTimeWithResolution } from './utils'
+import { userScrub } from '@/subjects/editor'
+import { RefObject, useEffect, useRef } from 'react'
+import { HoverLayerRef } from './HoverLayer'
+import { seekHeightWithResolution, seekTimeWithResolution } from './utils'
+
+const DRAG_THRESHOLD = 3
 
 type WaveformCanvasProps = {
   path: string
   duration: number
   mergeChannels: boolean
-  ref?: Ref<HTMLDivElement>
+  scrollContainerRef: RefObject<HTMLDivElement | null>
+  hoverLayerRef: RefObject<HoverLayerRef | null>
+  totalHeight: number
 }
 
 export const WaveformCanvas = ({
   path,
   duration,
   mergeChannels,
-  ref,
+  scrollContainerRef,
+  hoverLayerRef,
+  totalHeight,
 }: WaveformCanvasProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const waveformRef = useRef<Waveform | null>(null)
 
-  const scrollState = useWaveformScroll(containerRef, {
-    duration,
-  })
-
-  // Sync to global state for VirtualMarks and FollowModeDispatcher
-  useEffect(() => {
-    setWaveformVisibleArea(
-      scrollState.scrollTop,
-      scrollState.scrollTop + scrollState.viewportHeight,
-    )
-    setWaveformViewportHeight(scrollState.viewportHeight)
-  }, [scrollState.scrollTop, scrollState.viewportHeight])
-
   // Initialize Waveform
   useEffect(() => {
+    if (!scrollContainerRef.current) return
+
     waveformRef.current = new Waveform(
       canvasRef.current!,
       containerRef.current!,
+      scrollContainerRef.current,
       path,
       duration,
       {
@@ -70,7 +60,6 @@ export const WaveformCanvas = ({
         resolution,
         fillColor,
         widthScale,
-        marginBlock,
       },
     )
 
@@ -78,61 +67,126 @@ export const WaveformCanvas = ({
       waveformRef.current?.dispose()
       waveformRef.current = null
     }
-  }, [path, duration, mergeChannels])
+  }, [path, duration, mergeChannels, scrollContainerRef])
 
-  // Reset scrollTop when path changes
+  // Position the fixed hover layer — use the scroll container's viewport rect
+  // with the waveform column's width for a stable bounding.
   useEffect(() => {
-    containerRef.current?.scrollTo({ top: 0 })
-  }, [path])
-
-  // Position the current indicator
-  const currentIndicatorRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const unsub = player.subCurrentTime((time) => {
-      if (!currentIndicatorRef.current) return
-      currentIndicatorRef.current.style.top =
-        Math.round(seekHeight(time)).toString() + 'px'
-    })
-    return () => unsub()
-  }, [])
-
-  // Position the fixed hover layer
-  const hoverLayerRef = useRef<HoverLayerRef>(null)
-  useEffect(() => {
-    const observer = new ResizeObserver(() => {
+    const updateBounding = () => {
+      const scrollRect = scrollContainerRef.current?.getBoundingClientRect()
+      const waveformWidth = containerRef.current?.clientWidth
+      if (!scrollRect || !waveformWidth) return
       hoverLayerRef.current?.updateBounding(
-        containerRef.current!.getBoundingClientRect(),
+        new DOMRect(
+          scrollRect.left,
+          scrollRect.top,
+          waveformWidth,
+          scrollRect.height,
+        ),
       )
-    })
-    observer.observe(containerRef.current!)
+    }
+
+    const observer = new ResizeObserver(updateBounding)
+    if (scrollContainerRef.current) observer.observe(scrollContainerRef.current)
+    if (containerRef.current) observer.observe(containerRef.current)
 
     return () => observer.disconnect()
+  }, [scrollContainerRef, hoverLayerRef])
+
+  // Drive the hoisted hover layer from rect hit-testing, not DOM enter/leave.
+  // The indicator's button lives outside this container's subtree, so relying
+  // on mouseleave would flicker each time the pointer crossed onto the button.
+  usePointerInRect({
+    targetRef: containerRef,
+    onUpdate: ({ inside, x, y }) => {
+      if (inside) {
+        hoverLayerRef.current?.updateMouse(x, y)
+      }
+      hoverLayerRef.current?.setIsHover(inside)
+    },
   })
 
-  // Handle mouse events
-  const handleMouseEnter = () => hoverLayerRef.current?.setIsHover(true)
-  const handleMouseLeave = () => hoverLayerRef.current?.setIsHover(false)
-  const handleMouseMove: MouseEventHandler<HTMLDivElement> = (e) => {
-    hoverLayerRef.current?.updateMouse(e.clientX, e.clientY)
-  }
-
-  function handleContainerScroll() {
-    hoverLayerRef.current?.updateOffset(containerRef.current!.scrollTop)
-  }
-
-  // Handle external scroll commands
+  // Drag-to-scroll
   useEffect(() => {
-    const sub = waveformScroll.subscribe(({ top }) => {
-      containerRef.current?.scrollTo({ top, behavior: 'smooth' })
-    })
+    const container = containerRef.current
+    const scrollEl = scrollContainerRef.current
+    if (!container || !scrollEl) return
 
-    return () => sub.unsubscribe()
-  }, [])
+    let state: {
+      startY: number
+      startScrollTop: number
+      pointerId: number
+      dragging: boolean
+    } | null = null
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.button !== 0) return
+      state = {
+        startY: e.clientY,
+        startScrollTop: scrollEl.scrollTop,
+        pointerId: e.pointerId,
+        dragging: false,
+      }
+    }
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!state || state.pointerId !== e.pointerId) return
+
+      const delta = e.clientY - state.startY
+
+      if (!state.dragging) {
+        if (Math.abs(delta) < DRAG_THRESHOLD) return
+        state.dragging = true
+        // Capture once we commit — lets child button clicks work below threshold.
+        container.setPointerCapture(e.pointerId)
+        userScrub.next('start')
+      }
+
+      scrollEl.scrollTop = state.startScrollTop - delta
+    }
+
+    const onPointerUp = (e: PointerEvent) => {
+      if (!state || state.pointerId !== e.pointerId) return
+      if (state.dragging) {
+        if (container.hasPointerCapture(e.pointerId)) {
+          container.releasePointerCapture(e.pointerId)
+        }
+        userScrub.next('end')
+      }
+      state = null
+    }
+
+    container.addEventListener('pointerdown', onPointerDown)
+    container.addEventListener('pointermove', onPointerMove)
+    container.addEventListener('pointerup', onPointerUp)
+    container.addEventListener('pointercancel', onPointerUp)
+
+    return () => {
+      container.removeEventListener('pointerdown', onPointerDown)
+      container.removeEventListener('pointermove', onPointerMove)
+      container.removeEventListener('pointerup', onPointerUp)
+      container.removeEventListener('pointercancel', onPointerUp)
+    }
+  }, [scrollContainerRef])
+
+  // Handle container scroll for hover layer
+  useEffect(() => {
+    const scrollEl = scrollContainerRef.current
+    if (!scrollEl) return
+
+    const onScroll = () => {
+      hoverLayerRef.current?.updateOffset(scrollEl.scrollTop)
+    }
+
+    scrollEl.addEventListener('scroll', onScroll, { passive: true })
+    return () => scrollEl.removeEventListener('scroll', onScroll)
+  }, [scrollContainerRef, hoverLayerRef])
 
   // Handle zoom with Ctrl + wheel
   useEffect(() => {
     const container = containerRef.current
-    if (!container) return
+    const scrollEl = scrollContainerRef.current
+    if (!container || !scrollEl) return
 
     const handleWheel = (e: WheelEvent) => {
       if (!e.ctrlKey) return
@@ -149,64 +203,48 @@ export const WaveformCanvas = ({
 
       if (newZoom === currentZoom) return
 
-      const mouseY = e.clientY - container.getBoundingClientRect().top
-      const scrollTop = container.scrollTop
+      const mouseY = e.clientY - scrollEl.getBoundingClientRect().top
+      const scrollTop = scrollEl.scrollTop
       const oldResolution = getEffectiveResolution()
-      const mouseTime = seekTimeWithResolution(scrollTop + mouseY, oldResolution)
+      const mouseTime = seekTimeWithResolution(
+        scrollTop + mouseY,
+        oldResolution,
+      )
 
       setZoomLevel(newZoom)
 
       requestAnimationFrame(() => {
         const newResolution = getEffectiveResolution()
-        const newMouseHeight = seekHeightWithResolution(mouseTime, newResolution)
-        container.scrollTop = newMouseHeight - mouseY
+        const newMouseHeight = seekHeightWithResolution(
+          mouseTime,
+          newResolution,
+        )
+        scrollEl.scrollTop = newMouseHeight - mouseY
       })
     }
 
     container.addEventListener('wheel', handleWheel, { passive: false })
     return () => container.removeEventListener('wheel', handleWheel)
-  }, [])
+  }, [scrollContainerRef])
 
   const addMarkContext = useAddMarkContextValue()
 
   return (
     <div
-      ref={mergeRefs([containerRef, ref])}
-      className="scrollbar-none absolute inset-0 overflow-y-auto"
-      onScroll={handleContainerScroll}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onMouseMove={handleMouseMove}
+      ref={containerRef}
+      className="relative touch-none overflow-hidden select-none"
+      style={{ height: totalHeight }}
     >
-      {/* Scroll Shim - contains Canvas and VirtualMarks for synchronized scrolling */}
-      <div
-        className="pointer-events-none relative overflow-hidden"
-        style={{ height: scrollState.totalHeight }}
-      >
-        {/* Canvas with absolute positioning - moves with scroll shim */}
-        <canvas
-          ref={canvasRef}
-          className="pointer-events-none absolute left-0"
-        />
-        <VirtualMarks />
-      </div>
-
-      {/* Current playback indicator */}
-      <div
-        ref={currentIndicatorRef}
-        className="pointer-events-none absolute inset-x-0 z-30 border-t border-blue-500"
-      />
+      {/* Canvas with absolute positioning */}
+      <canvas ref={canvasRef} className="pointer-events-none absolute left-0" />
 
       {/* AddMark indicator */}
       {addMarkContext && (
         <div
-          className="pointer-events-none absolute inset-x-0 z-40 border-t border-accent"
+          className="border-accent pointer-events-none absolute inset-x-0 border-t"
           style={{ top: addMarkContext.startHeight }}
         />
       )}
-
-      {/* Hover layer */}
-      <HoverLayer ref={hoverLayerRef} />
     </div>
   )
 }

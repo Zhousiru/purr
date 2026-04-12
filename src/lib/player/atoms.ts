@@ -4,15 +4,8 @@ import { store } from '../store'
 
 export function createIsPlayingAtom() {
   const isPlayingAtom = atom(false)
-
-  player.bindCallbacks({
-    onPlay() {
-      store.set(isPlayingAtom, true)
-    },
-    onPause() {
-      store.set(isPlayingAtom, false)
-    },
+  player.subPlayState((isPlaying) => {
+    store.set(isPlayingAtom, isPlaying)
   })
-
   return isPlayingAtom
 }
