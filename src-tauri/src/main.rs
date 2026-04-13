@@ -32,6 +32,11 @@ pub struct WhisperServerDaemon(Mutex<Option<Daemon>>);
 
 fn main() {
   tauri::Builder::default()
+    .plugin(
+      tauri_plugin_prevent_default::Builder::new()
+        .with_flags(tauri_plugin_prevent_default::Flags::debug())
+        .build(),
+    )
     .plugin(tauri_plugin_dialog::init())
     .invoke_handler(tauri::generate_handler![
       list_models,
