@@ -72,6 +72,8 @@ const waveformVisibleArea = atom({
 })
 export const setWaveformVisibleArea = (startY: number, endY: number) =>
   store.set(waveformVisibleArea, { startY, endY })
+export const useWaveformVisibleAreaValue = () =>
+  useAtomValue(waveformVisibleArea)
 
 const isPlayingAtom = createIsPlayingAtom()
 export const useIsPlayingValue = () => useAtomValue(isPlayingAtom)

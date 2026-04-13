@@ -23,6 +23,7 @@ import { Waveform } from '@/lib/waveform'
 import { userScrub } from '@/subjects/editor'
 import { RefObject, useEffect, useRef } from 'react'
 import { HoverLayerRef } from './HoverLayer'
+import { TimeAxisBackground } from './TimeAxisBackground'
 import { seekHeightWithResolution, seekTimeWithResolution } from './utils'
 
 const DRAG_THRESHOLD = 3
@@ -262,6 +263,8 @@ export const WaveformCanvas = ({
       className="relative touch-none overflow-hidden select-none"
       style={{ height: totalHeight }}
     >
+      <TimeAxisBackground />
+
       {/* Canvas with absolute positioning */}
       <canvas ref={canvasRef} className="pointer-events-none absolute left-0" />
 
