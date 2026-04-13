@@ -1,4 +1,8 @@
-import { useIsFollowModeValue } from '@/atoms/editor'
+import {
+  subMarginBlock,
+  subZoomLevel,
+  useIsFollowModeValue,
+} from '@/atoms/editor'
 import { player } from '@/lib/player'
 import { RefObject, useEffect, useRef } from 'react'
 import { seekHeight } from '../waveform-canvas/utils'
@@ -38,10 +42,14 @@ export function PlaybackIndicator({
 
     update()
     const unsubTime = player.subCurrentTime(update)
+    const unsubMargin = subMarginBlock(update)
+    const unsubZoom = subZoomLevel(update)
     scrollEl.addEventListener('scroll', update, { passive: true })
 
     return () => {
       unsubTime()
+      unsubMargin()
+      unsubZoom()
       scrollEl.removeEventListener('scroll', update)
     }
   }, [isFollowMode, scrollContainerRef])

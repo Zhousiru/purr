@@ -22,7 +22,7 @@ export function MarksLayer() {
           <div
             key={card.index}
             className={cn(
-              'absolute inset-x-0 border-y border-transparent transition',
+              'absolute inset-x-0 border-y border-transparent',
               (isActive || (!hasOtherActive && !isFollowMode && isHover)) &&
                 'border-accent bg-accent/10',
             )}

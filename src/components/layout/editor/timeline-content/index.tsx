@@ -112,7 +112,7 @@ export function TimelineContent() {
             start={result.data[card.index].start}
             end={result.data[card.index].end}
             className={cn(
-              'absolute inset-x-4 transition',
+              'absolute inset-x-4',
               hasEmphasis && !isEmphasized && 'opacity-50',
             )}
             style={{

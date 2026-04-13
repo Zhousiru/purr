@@ -28,6 +28,7 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-hook-form": "^7.71.1",
+    "react-resizable-panels": "^4.10.0",
     "rxjs": "^7.8.2",
     "tailwind-merge": "^3.4.0"
   },

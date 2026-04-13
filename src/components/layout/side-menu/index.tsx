@@ -101,7 +101,7 @@ export function SideMenu() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
 
   return (
-    <div className="flex w-[300px] shrink-0 flex-col p-2">
+    <div className="flex h-full flex-col p-2">
       <NavButton
         icon={<IconBolt size={18} />}
         label="Launchpad"

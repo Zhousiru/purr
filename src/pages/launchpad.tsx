@@ -30,10 +30,10 @@ function QuickActionCard({
     <button
       onClick={comingSoon ? undefined : onClick}
       className={cn(
-        'flex flex-col items-start rounded-2xl border border-border p-5 text-left transition',
+        'border-border flex flex-col items-start rounded-2xl border p-5 text-left transition',
         comingSoon
           ? 'cursor-default opacity-50'
-          : 'cursor-pointer hover:border-border hover:bg-secondary',
+          : 'hover:border-border hover:bg-secondary cursor-pointer',
       )}
     >
       <div
@@ -47,12 +47,12 @@ function QuickActionCard({
       <div className="mt-3 flex items-center gap-2">
         <span className="text-sm font-medium">{title}</span>
         {comingSoon && (
-          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-medium">
             Soon
           </span>
         )}
       </div>
-      <span className="mt-1 text-xs text-muted-foreground">{description}</span>
+      <span className="text-muted-foreground mt-1 text-xs">{description}</span>
     </button>
   )
 }
@@ -72,7 +72,7 @@ export function LaunchpadPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-full flex-col">
       <PageHeader>Launchpad</PageHeader>
 
       <div className="flex-1 overflow-y-auto p-6">

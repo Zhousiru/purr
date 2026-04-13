@@ -24,7 +24,7 @@ export function EditorPage() {
   }, [id])
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-full flex-col">
       <PageHeader>Editor</PageHeader>
 
       {taskAtom ? (

@@ -21,6 +21,7 @@ interface WaveformOptions {
 }
 
 const BUFFER_SCREENS = 1
+const RESIZE_DEBOUNCE_MS = 150
 
 export class Waveform {
   private canvas: HTMLCanvasElement
@@ -46,6 +47,9 @@ export class Waveform {
   private resizeObserver: ResizeObserver | null = null
   private unsubZoom: (() => void) | null = null
   private unsubMargin: (() => void) | null = null
+
+  private hasAppliedResize = false
+  private resizeDebounceId: number | null = null
 
   private scrollContainer: HTMLElement
 
@@ -109,6 +113,26 @@ export class Waveform {
   }
 
   private handleResize() {
+    if (!this.hasAppliedResize) {
+      this.applyResize()
+      return
+    }
+
+    const width = this.container.clientWidth
+
+    // Just stretch the canvas to preview the new width
+    this.canvas.style.width = width + 'px'
+
+    if (this.resizeDebounceId !== null) {
+      window.clearTimeout(this.resizeDebounceId)
+    }
+    this.resizeDebounceId = window.setTimeout(() => {
+      this.resizeDebounceId = null
+      this.applyResize()
+    }, RESIZE_DEBOUNCE_MS)
+  }
+
+  private applyResize() {
     const width = this.container.clientWidth
     const height = this.scrollContainer.clientHeight
     const dpr = window.devicePixelRatio
@@ -116,10 +140,12 @@ export class Waveform {
 
     this.canvas.width = Math.round(width * dpr)
     this.canvas.height = Math.round(canvasHeight * dpr)
+
     this.canvas.style.width = width + 'px'
     this.canvas.style.height = canvasHeight + 'px'
 
     this.viewportHeight = height
+    this.hasAppliedResize = true
     this.updateCanvasPosition()
     this.scheduleRender()
   }
@@ -138,6 +164,10 @@ export class Waveform {
     this.resizeObserver = null
     this.unsubZoom?.()
     this.unsubMargin?.()
+    if (this.resizeDebounceId !== null) {
+      window.clearTimeout(this.resizeDebounceId)
+      this.resizeDebounceId = null
+    }
     this.cache.clear()
   }
 

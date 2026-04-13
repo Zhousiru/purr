@@ -9,8 +9,10 @@ import {
 import {
   blockDuration,
   fillColor,
+  LEFT_SAFE_AREA,
   preload,
   resolution,
+  RIGHT_SAFE_AREA,
   widthScale,
 } from '@/constants/editor'
 import { usePointerInRect } from '@/hooks/usePointerInRect'
@@ -21,6 +23,14 @@ import { HoverLayerRef } from './HoverLayer'
 import { seekHeightWithResolution, seekTimeWithResolution } from './utils'
 
 const DRAG_THRESHOLD = 3
+
+function isInsidePanelSafeArea(el: HTMLElement, clientX: number) {
+  const rect = el.getBoundingClientRect()
+  return (
+    clientX - rect.left < LEFT_SAFE_AREA ||
+    rect.right - clientX < RIGHT_SAFE_AREA
+  )
+}
 
 type WaveformCanvasProps = {
   path: string
@@ -121,6 +131,9 @@ export const WaveformCanvas = ({
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return
+      // Bail near the panel's left/right edges. Those are reserved for the
+      // adjacent resizable separator's hit zone.
+      if (isInsidePanelSafeArea(container, e.clientX)) return
       state = {
         startY: e.clientY,
         startScrollTop: scrollEl.scrollTop,

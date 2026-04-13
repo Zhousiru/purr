@@ -110,6 +110,20 @@ const currentEditingAudioDurationAtom = atom(
 export const useCurrentEditingAudioDurationValue = () =>
   useAtomValue(currentEditingAudioDurationAtom)
 
+const currentEditingTaskNameAtom = atom((get) => {
+  const taskAtom = get(currentEditingTaskAtom)
+  if (!taskAtom) return ''
+  return get(taskAtom).name
+})
+export const useCurrentEditingTaskNameValue = () =>
+  useAtomValue(currentEditingTaskNameAtom)
+
+const currentEditingLanguageAtom = atom(
+  (get) => findTranscribeTask(get).options.language,
+)
+export const useCurrentEditingLanguageValue = () =>
+  useAtomValue(currentEditingLanguageAtom)
+
 const addMarkContext = atom<{
   startHeight: number
 } | null>(null)

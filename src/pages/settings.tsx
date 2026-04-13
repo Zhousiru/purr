@@ -2,7 +2,7 @@ import { PageHeader } from '@/components/layout/page-header'
 
 export function SettingsPage() {
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-full flex-col">
       <PageHeader>Settings</PageHeader>
       <div className="flex grow">233</div>
     </div>

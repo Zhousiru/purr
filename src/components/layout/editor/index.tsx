@@ -13,7 +13,8 @@ import { usePointerInRect } from '@/hooks/usePointerInRect'
 import { player } from '@/lib/player'
 import { pointerMove, waveformScroll } from '@/subjects/editor'
 import { useEffect, useLayoutEffect, useRef } from 'react'
-import { FloatController } from './float-controller'
+import { Group, Panel, Separator } from 'react-resizable-panels'
+import { ActionPanel } from './action-panel'
 import { FollowModeDispatcher } from './follow-mode-dispatcher'
 import { MarksLayer } from './marks-layer'
 import { PlaybackIndicator } from './playback-indicator'
@@ -131,42 +132,61 @@ export function Editor() {
 
   return (
     <>
-      <div className="relative flex grow">
-        <div
-          ref={scrollContainerRef}
-          className="scrollbar-none absolute inset-0 overflow-y-auto"
-        >
+      <Group orientation="horizontal" id="editor-outer" className="grow">
+        <Panel id="action" defaultSize="350px" minSize="280px" maxSize="500px">
+          <ActionPanel />
+        </Panel>
+
+        <Separator className="border-border hover:border-accent active:border-accent w-0 border-r transition-colors outline-none" />
+
+        <Panel id="editor" className="relative">
+          <div
+            ref={scrollContainerRef}
+            className="scrollbar-none absolute inset-0 overflow-y-auto"
+          >
+            {ready && (
+              <div className="relative" style={{ height: totalHeight }}>
+                <Group
+                  orientation="horizontal"
+                  id="editor-inner"
+                  className="h-full"
+                >
+                  <Panel
+                    id="waveform"
+                    defaultSize="350px"
+                    minSize="200px"
+                    maxSize="600px"
+                    className="bg-secondary relative z-0"
+                  >
+                    <WaveformCanvas
+                      path={audioPath}
+                      duration={audioDuration}
+                      mergeChannels={false}
+                      scrollContainerRef={scrollContainerRef}
+                      hoverLayerRef={hoverLayerRef}
+                      totalHeight={totalHeight}
+                    />
+                  </Panel>
+
+                  <Separator className="border-border hover:border-accent active:border-accent w-0 border-r transition-colors outline-none" />
+
+                  <Panel id="text" className="relative z-20 pl-5">
+                    <TimelineContent />
+                  </Panel>
+                </Group>
+
+                <MarksLayer />
+              </div>
+            )}
+          </div>
+
           {ready && (
-            <div
-              className="relative isolate flex"
-              style={{ height: totalHeight }}
-            >
-              <div className="border-border bg-secondary relative z-0 w-[350px] shrink-0 border-r">
-                <WaveformCanvas
-                  path={audioPath}
-                  duration={audioDuration}
-                  mergeChannels={false}
-                  scrollContainerRef={scrollContainerRef}
-                  hoverLayerRef={hoverLayerRef}
-                  totalHeight={totalHeight}
-                />
-              </div>
-
-              <MarksLayer />
-
-              <div className="relative z-20 grow pl-5">
-                <TimelineContent />
-              </div>
-            </div>
+            <PlaybackIndicator scrollContainerRef={scrollContainerRef} />
           )}
-        </div>
 
-        {ready && <PlaybackIndicator scrollContainerRef={scrollContainerRef} />}
-
-        <FloatController />
-
-        <HoverLayer ref={hoverLayerRef} />
-      </div>
+          <HoverLayer ref={hoverLayerRef} />
+        </Panel>
+      </Group>
 
       {ready && (
         <FollowModeDispatcher scrollContainerRef={scrollContainerRef} />
