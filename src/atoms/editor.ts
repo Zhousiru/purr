@@ -133,6 +133,7 @@ export const useAddMarkContextValue = () => useAtomValue(addMarkContext)
 const isFollowModeAtom = atom(false)
 export const useIsFollowMode = () => useAtom(isFollowModeAtom)
 export const useIsFollowModeValue = () => useAtomValue(isFollowModeAtom)
+export const getIsFollowMode = () => store.get(isFollowModeAtom)
 
 const zoomLevelAtom = atom<ZoomLevel>(1)
 export const useZoomLevel = () => useAtom(zoomLevelAtom)

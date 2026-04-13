@@ -1,5 +1,7 @@
 import {
   getEffectiveResolution,
+  getIsFollowMode,
+  getWaveformViewportHeight,
   getZoomLevel,
   setZoomLevel,
   useAddMarkContextValue,
@@ -16,6 +18,7 @@ import {
   widthScale,
 } from '@/constants/editor'
 import { usePointerInRect } from '@/hooks/usePointerInRect'
+import { player } from '@/lib/player'
 import { Waveform } from '@/lib/waveform'
 import { userScrub } from '@/subjects/editor'
 import { RefObject, useEffect, useRef } from 'react'
@@ -216,24 +219,35 @@ export const WaveformCanvas = ({
 
       if (newZoom === currentZoom) return
 
-      const mouseY = e.clientY - scrollEl.getBoundingClientRect().top
-      const scrollTop = scrollEl.scrollTop
-      const oldResolution = getEffectiveResolution()
-      const mouseTime = seekTimeWithResolution(
-        scrollTop + mouseY,
-        oldResolution,
-      )
-
-      setZoomLevel(newZoom)
-
-      requestAnimationFrame(() => {
-        const newResolution = getEffectiveResolution()
-        const newMouseHeight = seekHeightWithResolution(
-          mouseTime,
-          newResolution,
+      if (getIsFollowMode()) {
+        setZoomLevel(newZoom)
+        requestAnimationFrame(() => {
+          const centerHeight = seekHeightWithResolution(
+            player.currentTime,
+            getEffectiveResolution(),
+          )
+          scrollEl.scrollTop = centerHeight - getWaveformViewportHeight() / 2
+        })
+      } else {
+        const mouseY = e.clientY - scrollEl.getBoundingClientRect().top
+        const scrollTop = scrollEl.scrollTop
+        const oldResolution = getEffectiveResolution()
+        const mouseTime = seekTimeWithResolution(
+          scrollTop + mouseY,
+          oldResolution,
         )
-        scrollEl.scrollTop = newMouseHeight - mouseY
-      })
+
+        setZoomLevel(newZoom)
+
+        requestAnimationFrame(() => {
+          const newResolution = getEffectiveResolution()
+          const newMouseHeight = seekHeightWithResolution(
+            mouseTime,
+            newResolution,
+          )
+          scrollEl.scrollTop = newMouseHeight - mouseY
+        })
+      }
     }
 
     container.addEventListener('wheel', handleWheel, { passive: false })

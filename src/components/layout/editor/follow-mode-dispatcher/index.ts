@@ -82,7 +82,9 @@ export function FollowModeDispatcher({
     // Wheel (incl. trackpad) is the explicit entry signal for wheel scrubbing.
     // Each tick extends the idle timer; momentum-driven scroll events also
     // extend it so inertia stays in user mode until it fully settles.
-    const onWheel = () => {
+    // Ctrl+wheel is a zoom gesture handled by the waveform canvas, not a scrub.
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) return
       addSource('wheel')
       bumpWheelIdle()
     }
