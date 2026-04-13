@@ -17,18 +17,15 @@ export function ActionPanel() {
     <div className="bg-secondary flex h-full flex-col">
       <div className="flex min-h-0 grow flex-col gap-4 p-4">
         <div>
-          <div
-            className="text-foreground truncate text-sm font-medium"
-            title={name}
-          >
-            {name || 'Untitled'}
+          <div className="text-sm font-medium" title={name}>
+            {name}
           </div>
         </div>
 
         <dl className="flex flex-col gap-2 text-xs">
           <InfoRow label="Path" value={path} mono />
           <InfoRow label="Duration" value={formatSec(duration, false)} />
-          <InfoRow label="Language" value={language || '—'} />
+          <InfoRow label="Language" value={language} />
         </dl>
       </div>
 
@@ -48,13 +45,10 @@ function InfoRow({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-muted-foreground text-[10px] uppercase tracking-wide">
+      <dt className="text-muted-foreground text-[10px] tracking-wide uppercase">
         {label}
       </dt>
-      <dd
-        className={`text-foreground truncate ${mono ? 'font-mono' : ''}`}
-        title={value}
-      >
+      <dd className={`${mono ? 'font-mono' : ''}`} title={value}>
         {value}
       </dd>
     </div>

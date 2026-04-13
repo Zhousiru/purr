@@ -19,7 +19,7 @@ function Line({
     <div
       className={cn(
         'rounded px-2 last:mb-1 hover:bg-white/10',
-        secondary && 'italic text-white/50',
+        secondary && 'text-white/50 italic',
       )}
     >
       {children}
@@ -34,7 +34,7 @@ export function WhisperServerTerminal() {
 
   return (
     <div className="relative grow">
-      <div className="absolute inset-0 overflow-y-auto whitespace-pre-wrap wrap-break-word bg-gray-600 px-2 py-4 font-mono text-white selection:bg-black/75!">
+      <div className="absolute inset-0 overflow-y-auto bg-neutral-800 px-2 py-4 font-mono wrap-break-word whitespace-pre-wrap text-white selection:bg-black/75!">
         <div>
           {lines.map((line, index) => (
             <Line
