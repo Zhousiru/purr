@@ -28,7 +28,8 @@ function formatDuration(seconds: number) {
   const h = Math.floor(seconds / 3600)
   const m = Math.floor((seconds % 3600) / 60)
   const s = Math.floor(seconds % 60)
-  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  if (h > 0)
+    return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
@@ -156,7 +157,7 @@ export function NewUrlTaskModal({
             </div>
 
             {fetchError && (
-              <div className="rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              <div className="bg-destructive/10 text-destructive rounded-xl px-3 py-2 text-xs">
                 {fetchError}
               </div>
             )}
@@ -166,7 +167,7 @@ export function NewUrlTaskModal({
                 <StatusIndicator status="done" />
                 <span className="truncate">{metadata.title}</span>
                 {metadata.duration != null && (
-                  <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+                  <span className="text-muted-foreground ml-auto shrink-0 text-xs">
                     {formatDuration(metadata.duration)}
                   </span>
                 )}
@@ -174,7 +175,7 @@ export function NewUrlTaskModal({
             )}
 
             {metadata?.uploader && (
-              <div className="px-2 text-xs text-muted-foreground">
+              <div className="text-muted-foreground px-2 text-xs">
                 {metadata.uploader}
               </div>
             )}
@@ -223,7 +224,7 @@ export function NewUrlTaskModal({
             </div>
 
             {downloadError && (
-              <div className="rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              <div className="bg-destructive/10 text-destructive rounded-xl px-3 py-2 text-xs">
                 Download failed: {downloadError}
               </div>
             )}
@@ -234,14 +235,14 @@ export function NewUrlTaskModal({
           <>
             <div className="text-lg">Downloading</div>
 
-            <div className="grow flex flex-col items-center justify-center gap-3">
+            <div className="flex grow flex-col items-center justify-center gap-3">
               <div className="flex h-9 w-full items-center gap-2 rounded-xl bg-black/5 px-2 text-sm">
                 <StatusIndicator
                   status="processing"
                   progress={downloadProgress}
                 />
                 <span className="truncate">{metadata?.title}</span>
-                <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+                <span className="text-muted-foreground ml-auto shrink-0 text-xs">
                   {Math.round(downloadProgress)}%
                 </span>
               </div>

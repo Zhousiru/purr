@@ -126,6 +126,7 @@ export function TimelineContent() {
               value={result.data[card.index].text}
               onChange={(e) => updateText(card.index, 'text', e.target.value)}
               className="border-accent scrollbar-none field-sizing-content w-full resize-none bg-transparent outline-none focus:border-b"
+              autoComplete="off"
             />
             {task.type === 'translate' && (
               <textarea
@@ -134,6 +135,7 @@ export function TimelineContent() {
                   updateText(card.index, 'translated', e.target.value)
                 }
                 className="border-accent scrollbar-none field-sizing-content w-full resize-none bg-transparent outline-none focus:border-b"
+                autoComplete="off"
               />
             )}
           </TextCard>

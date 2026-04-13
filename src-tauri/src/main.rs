@@ -34,7 +34,7 @@ fn main() {
   tauri::Builder::default()
     .plugin(
       tauri_plugin_prevent_default::Builder::new()
-        .with_flags(tauri_plugin_prevent_default::Flags::debug())
+        .with_flags(tauri_plugin_prevent_default::Flags::all())
         .build(),
     )
     .plugin(tauri_plugin_dialog::init())
