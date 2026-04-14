@@ -1,9 +1,14 @@
 import { EventCallback, UnlistenFn, listen } from '@tauri-apps/api/event'
-import { handleNotification, handleWhisperServerDaemon } from './handlers'
+import {
+  handleBinaryStatus,
+  handleNotification,
+  handleWhisperServerDaemon,
+} from './handlers'
 
 const eventMap = [
   ['app://whisper-server-daemon', handleWhisperServerDaemon],
   ['app://notification', handleNotification],
+  ['app://binary-status', handleBinaryStatus],
 ] as const
 
 const unlistenFns: Promise<UnlistenFn>[] = []

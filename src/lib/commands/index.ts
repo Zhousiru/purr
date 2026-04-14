@@ -1,3 +1,4 @@
+import { BinaryStatus } from '@/atoms/bin-status'
 import {
   DownloadResult,
   DurationResult,
@@ -49,6 +50,8 @@ export interface Commands {
     DownloadResult
   >
   cancelDownload: CommandFunction<null, void>
+  getBinaryStatuses: CommandFunction<null, Record<string, BinaryStatus>>
+  retryBinary: CommandFunction<{ id: string }, void>
 }
 
 export const cmd = new Proxy(

@@ -43,7 +43,6 @@ impl BinarySpec for FfmpegSpec {
     Ok(ReleaseInfo {
       version: "latest".into(),
       assets,
-      checksums: None,
     })
   }
 
@@ -52,7 +51,7 @@ impl BinarySpec for FfmpegSpec {
     http: &reqwest::Client,
     release: &ReleaseInfo,
     bin_dir: &Path,
-    on_progress: &ProgressFn,
+    on_progress: &ProgressFn<'_>,
   ) -> anyhow::Result<()> {
     if release.assets.is_empty() {
       anyhow::bail!(

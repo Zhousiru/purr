@@ -1,3 +1,8 @@
+import {
+  MediaSetupSummary,
+  useIsMediaReady,
+  useMediaSetupSummary,
+} from '@/atoms/bin-status'
 import { useRecentlyViewedTasks } from '@/atoms/recently-viewed'
 import { TaskRow } from '@/components/common/task-row'
 import { PageHeader } from '@/components/layout/page-header'
@@ -5,9 +10,30 @@ import { NewTaskModal } from '@/components/modal/new-tasks'
 import { NewUrlTaskModal } from '@/components/modal/new-url-task'
 import { WhisperServerGuardModal } from '@/components/modal/whisper-server-guard'
 import { useWhisperServerGuard } from '@/components/modal/whisper-server-guard/use-whisper-server-guard'
+import { cmd } from '@/lib/commands'
 import { cn } from '@/lib/utils/cn'
-import { IconLink, IconMicrophone, IconPlus } from '@tabler/icons-react'
+import {
+  IconAlertTriangle,
+  IconLink,
+  IconLoader2,
+  IconMicrophone,
+  IconPlus,
+} from '@tabler/icons-react'
 import { ReactNode, useState } from 'react'
+
+interface QuickActionCardProps {
+  icon: ReactNode
+  iconBgClass: string
+  iconColorClass: string
+  title: string
+  description: string
+  onClick?: () => void
+  comingSoon?: boolean
+  disabled?: boolean
+  disabledReason?: string
+  disabledProgress?: number
+  disabledVariant?: 'setup' | 'failed'
+}
 
 function QuickActionCard({
   icon,
@@ -17,21 +43,23 @@ function QuickActionCard({
   description,
   onClick,
   comingSoon,
-}: {
-  icon: ReactNode
-  iconBgClass: string
-  iconColorClass: string
-  title: string
-  description: string
-  onClick?: () => void
-  comingSoon?: boolean
-}) {
+  disabled,
+  disabledReason,
+  disabledProgress,
+  disabledVariant,
+}: QuickActionCardProps) {
+  const isInactive = comingSoon || (disabled && disabledVariant !== 'failed')
+  const displayDescription = disabled && disabledReason ? disabledReason : description
+  const showSpinner = disabled && disabledVariant === 'setup'
+  const showWarning = disabled && disabledVariant === 'failed'
+
   return (
     <button
-      onClick={comingSoon ? undefined : onClick}
+      onClick={isInactive ? undefined : onClick}
+      title={disabled ? disabledReason : undefined}
       className={cn(
-        'border-border flex flex-col items-start rounded-2xl border p-5 text-left transition',
-        comingSoon
+        'border-border relative flex flex-col items-start overflow-hidden rounded-2xl border p-5 text-left transition',
+        isInactive
           ? 'cursor-default opacity-50'
           : 'hover:border-border hover:bg-secondary cursor-pointer',
       )}
@@ -51,10 +79,50 @@ function QuickActionCard({
             Soon
           </span>
         )}
+        {showSpinner && (
+          <IconLoader2
+            size={12}
+            className="text-muted-foreground animate-spin"
+          />
+        )}
+        {showWarning && (
+          <IconAlertTriangle size={12} className="text-amber-500" />
+        )}
       </div>
-      <span className="text-muted-foreground mt-1 text-xs">{description}</span>
+      <span className="text-muted-foreground mt-1 text-xs">
+        {displayDescription}
+      </span>
+      {showSpinner && disabledProgress !== undefined && (
+        <div className="bg-border absolute right-0 bottom-0 left-0 h-0.5">
+          <div
+            className="bg-violet-500 h-full transition-[width]"
+            style={{ width: `${Math.round(disabledProgress * 100)}%` }}
+          />
+        </div>
+      )}
     </button>
   )
+}
+
+function buildSetupReason(summary: MediaSetupSummary): string {
+  switch (summary.phase) {
+    case 'installing':
+      return summary.progress !== undefined
+        ? `Setting up media tools… ${Math.round(summary.progress * 100)}%`
+        : 'Setting up media tools…'
+    case 'updating':
+      return summary.progress !== undefined
+        ? `Updating media tools… ${Math.round(summary.progress * 100)}%`
+        : 'Updating media tools…'
+    case 'checking':
+      return 'Checking for updates…'
+    case 'failed':
+      return 'Setup failed. Click to retry.'
+    case 'idle':
+      return 'Preparing media tools…'
+    default:
+      return 'Import audio from a web link'
+  }
 }
 
 export function LaunchpadPage() {
@@ -62,14 +130,30 @@ export function LaunchpadPage() {
   const [newUrlTaskModal, setNewUrlTaskModal] = useState(false)
   const { register: guardRegister, guard } = useWhisperServerGuard()
   const recentlyViewed = useRecentlyViewedTasks()
+  const isMediaReady = useIsMediaReady()
+  const mediaSummary = useMediaSetupSummary()
 
   function handleNewTask() {
     guard(() => setNewTaskModal(true))
   }
 
   function handleNewUrlTask() {
+    if (mediaSummary.phase === 'failed' && mediaSummary.failedId) {
+      cmd.retryBinary({ id: mediaSummary.failedId }).catch((e) => {
+        console.error('[bin-status] retry failed', e)
+      })
+      return
+    }
+    if (!isMediaReady) return
     guard(() => setNewUrlTaskModal(true))
   }
+
+  const urlDisabled = !isMediaReady
+  const urlVariant: 'setup' | 'failed' | undefined = urlDisabled
+    ? mediaSummary.phase === 'failed'
+      ? 'failed'
+      : 'setup'
+    : undefined
 
   return (
     <div className="flex h-full flex-col">
@@ -92,6 +176,10 @@ export function LaunchpadPage() {
             title="New Task From URL"
             description="Import audio from a web link"
             onClick={handleNewUrlTask}
+            disabled={urlDisabled}
+            disabledVariant={urlVariant}
+            disabledReason={urlDisabled ? buildSetupReason(mediaSummary) : undefined}
+            disabledProgress={mediaSummary.progress}
           />
           <QuickActionCard
             icon={<IconMicrophone size={20} />}

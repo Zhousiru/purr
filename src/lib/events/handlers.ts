@@ -1,4 +1,8 @@
 import {
+  BinaryStatusEvent,
+  setBinaryStatus,
+} from '@/atoms/bin-status'
+import {
   applyNotificationEvent,
   NotificationEvent,
 } from '@/atoms/notifications'
@@ -45,4 +49,8 @@ export function handleWhisperServerDaemon(event: Event<DaemonEventPayload>) {
 
 export function handleNotification(event: Event<NotificationEvent>) {
   applyNotificationEvent(event.payload)
+}
+
+export function handleBinaryStatus(event: Event<BinaryStatusEvent>) {
+  setBinaryStatus(event.payload.id, event.payload.status)
 }

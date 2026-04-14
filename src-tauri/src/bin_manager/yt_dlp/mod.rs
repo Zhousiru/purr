@@ -54,7 +54,6 @@ impl BinarySpec for YtDlpSpec {
     Ok(ReleaseInfo {
       version: rel.tag_name,
       assets,
-      checksums: None,
     })
   }
 
@@ -63,7 +62,7 @@ impl BinarySpec for YtDlpSpec {
     http: &reqwest::Client,
     release: &ReleaseInfo,
     bin_dir: &Path,
-    on_progress: &ProgressFn,
+    on_progress: &ProgressFn<'_>,
   ) -> anyhow::Result<()> {
     let asset_name = platform_asset_name();
     let asset = release

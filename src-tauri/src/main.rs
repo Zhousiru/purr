@@ -16,6 +16,7 @@ use tauri::{Manager, State, WindowEvent};
 
 use crate::{
   audio::commands::{get_audio_durations, get_audio_waveform_data},
+  bin_manager::commands::{get_binary_statuses, retry_binary},
   whisper_server::{
     commands::{
       is_whisper_server_running, kill_whisper_server, launch_whisper_server, list_models,
@@ -50,7 +51,9 @@ fn main() {
       get_audio_waveform_data,
       fetch_url_metadata,
       download_from_url,
-      cancel_download
+      cancel_download,
+      get_binary_statuses,
+      retry_binary
     ])
     .manage(WhisperServerDaemon(Default::default()))
     .manage(notify::NotificationState::default())

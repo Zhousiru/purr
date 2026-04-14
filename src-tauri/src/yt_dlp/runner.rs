@@ -33,8 +33,8 @@ impl SubprocessRunner {
   /// installed (first-run lazy init) before returning.
   pub async fn from_manager(manager: &BinManager) -> anyhow::Result<Self> {
     manager.ensure_all().await?;
-    let yt_dlp = manager.exe("yt-dlp", "yt-dlp").await?;
-    let ffmpeg_dir = manager.dir("ffmpeg").await.ok();
+    let yt_dlp = manager.exe("yt-dlp", "yt-dlp")?;
+    let ffmpeg_dir = manager.dir("ffmpeg").ok();
     Ok(Self::new(yt_dlp, ffmpeg_dir))
   }
 
