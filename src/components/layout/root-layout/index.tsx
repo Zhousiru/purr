@@ -3,6 +3,7 @@ import { RegisterEvents } from '@/components/common/register-events'
 import { SideMenu } from '@/components/layout/side-menu'
 import { TitleBar } from '@/components/layout/title-bar'
 import { Outlet } from '@tanstack/react-router'
+import { Toaster } from 'react-hot-toast'
 import { Group, Panel, Separator } from 'react-resizable-panels'
 
 export function RootLayout() {
@@ -35,6 +36,11 @@ export function RootLayout() {
           </div>
         </div>
       </div>
+      <Toaster
+        position="bottom-right"
+        gutter={8}
+        containerStyle={{ bottom: 16, right: 16 }}
+      />
     </JotaiProvider>
   )
 }

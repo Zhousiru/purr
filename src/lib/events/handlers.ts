@@ -1,4 +1,8 @@
 import {
+  applyNotificationEvent,
+  NotificationEvent,
+} from '@/atoms/notifications'
+import {
   getMonitor,
   getWhisperServerConfig,
   pushTerminalLine,
@@ -37,4 +41,8 @@ export function handleWhisperServerDaemon(event: Event<DaemonEventPayload>) {
   daemonSubject.next(event.payload)
 
   console.log(`DaemonEvent.${event.payload.type}`, lineData)
+}
+
+export function handleNotification(event: Event<NotificationEvent>) {
+  applyNotificationEvent(event.payload)
 }

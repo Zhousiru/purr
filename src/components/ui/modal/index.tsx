@@ -14,6 +14,7 @@ export function Modal({
   title,
   fixedTop,
   noAutoFocus,
+  dismissible = true,
   className,
   children,
 }: {
@@ -22,6 +23,7 @@ export function Modal({
   title?: string
   fixedTop?: string
   noAutoFocus?: boolean
+  dismissible?: boolean
   className?: string
   children: ReactNode
 }) {
@@ -33,7 +35,7 @@ export function Modal({
         <Dialog
           as="div"
           className="relative z-50"
-          onClose={onClose ?? (() => null)}
+          onClose={dismissible ? (onClose ?? (() => null)) : () => null}
           // We set the `initialFocus` to `Dialog.Panel` element to avoid the focus trap warning.
           initialFocus={noAutoFocus ? defaultFocusRef : undefined}
         >

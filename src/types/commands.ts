@@ -13,14 +13,25 @@ export interface UrlMetadata {
   title: string
   duration: number | null
   uploader: string | null
+  thumbnail: string | null
+  webpageUrl: string | null
+  isLive: boolean
 }
 
 export interface DownloadResult {
   path: string
   duration: number
+  title: string
 }
 
+export type DownloadStatus =
+  | 'downloading'
+  | 'finished'
+  | 'error'
+  | 'unknown'
+
 export interface DownloadProgress {
-  downloaded: number
-  total: number
+  status: DownloadStatus
+  ext: string
+  percent: number
 }

@@ -28,9 +28,17 @@ symphonia = { version = "0.5.4", features = ["wav", "flac", "mp3", "isomp4", "aa
 rayon = "1.10"
 reqwest = { version = "0.12", features = ["json", "blocking", "multipart"] }
 tauri-plugin-dialog = "2"
-yt-dlp = "2.7.2"
-tokio = { version = "1", features = ["sync", "time", "fs"] }
+tauri-plugin-clipboard-manager = "2"
+tokio = { version = "1", features = ["sync", "time", "fs", "process", "io-util", "macros"] }
 tauri-plugin-prevent-default = "4"
+tauri-plugin-window-state = "2"
+async-trait = "0.1"
+sha2 = "0.10"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+tar = "0.4"
+xz2 = "0.1"
 
 [features]
 # Enables the custom protocol used for production builds.

@@ -1,16 +1,16 @@
-import { DaemonEventPayload } from '@/types/events'
 import { EventCallback, UnlistenFn, listen } from '@tauri-apps/api/event'
-import { handleWhisperServerDaemon } from './handlers'
+import { handleNotification, handleWhisperServerDaemon } from './handlers'
 
-const eventMap: [string, EventCallback<DaemonEventPayload>][] = [
+const eventMap = [
   ['app://whisper-server-daemon', handleWhisperServerDaemon],
-]
+  ['app://notification', handleNotification],
+] as const
 
 const unlistenFns: Promise<UnlistenFn>[] = []
 
 export function registerEvents() {
   for (const [eventName, eventHandler] of eventMap) {
-    unlistenFns.push(listen(eventName, eventHandler))
+    unlistenFns.push(listen(eventName, eventHandler as EventCallback<never>))
   }
 
   return unlistenEvents

@@ -44,10 +44,11 @@ export interface Commands {
     Array<WaveformResult>
   >
   fetchUrlMetadata: CommandFunction<{ url: string }, UrlMetadata>
-  downloadAudioFromUrl: CommandFunction<
-    { url: string; outputDir: string },
+  downloadFromUrl: CommandFunction<
+    { url: string; outputDir: string; audioOnly: boolean },
     DownloadResult
   >
+  cancelDownload: CommandFunction<null, void>
 }
 
 export const cmd = new Proxy(
