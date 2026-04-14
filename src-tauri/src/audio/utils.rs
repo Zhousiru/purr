@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use symphonia::{
   core::{
     codecs::{CodecParameters, Decoder, DecoderOptions},
-    formats::{FormatOptions, FormatReader},
+    formats::{FormatOptions, FormatReader, Track},
     io::MediaSourceStream,
     meta::MetadataOptions,
     probe::Hint,
@@ -40,9 +40,18 @@ pub fn get_audio_decoder(codec_params: &CodecParameters) -> CommandResult<Box<dy
   Ok(decoder)
 }
 
+pub fn find_audio_track(reader: &dyn FormatReader) -> CommandResult<&Track> {
+  let codecs = default::get_codecs();
+  reader
+    .tracks()
+    .iter()
+    .find(|t| codecs.get_codec(t.codec_params.codec).is_some())
+    .ok_or_else(|| anyhow!("no decodable audio track").into())
+}
+
 pub fn calc_audio_duration(path: &str) -> CommandResult<Time> {
   let reader = get_audio_reader(path)?;
-  let track = reader.default_track().ok_or(anyhow!("no default track"))?;
+  let track = find_audio_track(&*reader)?;
   let codec_params = &track.codec_params;
   let time_base = codec_params
     .time_base

@@ -6,6 +6,7 @@ import {
 } from '@/atoms/editor'
 import { formatSec } from '@/lib/utils/time'
 import { PlaybackControls } from './playback-controls'
+import { VideoPreview } from './video-preview'
 
 export function ActionPanel() {
   const name = useCurrentEditingTaskNameValue()
@@ -21,6 +22,8 @@ export function ActionPanel() {
             {name}
           </div>
         </div>
+
+        <VideoPreview />
 
         <dl className="flex flex-col gap-2 text-xs">
           <InfoRow label="Path" value={path} mono />

@@ -6,7 +6,7 @@ use symphonia::core::{
   formats::{SeekMode, SeekTo},
 };
 
-use super::utils::{get_audio_decoder, get_audio_reader};
+use super::utils::{find_audio_track, get_audio_decoder, get_audio_reader};
 use crate::error::CommandResult;
 
 pub fn get_audio_samples(
@@ -15,7 +15,7 @@ pub fn get_audio_samples(
   end_sec: Option<usize>,
 ) -> CommandResult<(Vec<Vec<f32>>, u32)> {
   let mut reader = get_audio_reader(path)?;
-  let track = reader.default_track().ok_or(anyhow!("no default track"))?;
+  let track = find_audio_track(&*reader)?;
   let track_id = track.id;
   let codec_params = &track.codec_params;
 
