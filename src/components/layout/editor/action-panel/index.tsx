@@ -16,20 +16,22 @@ export function ActionPanel() {
 
   return (
     <div className="bg-secondary flex h-full flex-col">
-      <div className="flex min-h-0 grow flex-col gap-4 p-4">
-        <div>
-          <div className="text-sm font-medium" title={name}>
-            {name}
+      <div className="relative grow">
+        <div className="absolute inset-0 flex flex-col gap-2 overflow-auto p-4">
+          <div>
+            <div className="text-sm font-medium" title={name}>
+              {name}
+            </div>
           </div>
+
+          <VideoPreview />
+
+          <dl className="flex flex-col gap-2 text-xs">
+            <InfoRow label="Path" value={path} mono />
+            <InfoRow label="Duration" value={formatSec(duration, false)} />
+            <InfoRow label="Language" value={language} />
+          </dl>
         </div>
-
-        <VideoPreview />
-
-        <dl className="flex flex-col gap-2 text-xs">
-          <InfoRow label="Path" value={path} mono />
-          <InfoRow label="Duration" value={formatSec(duration, false)} />
-          <InfoRow label="Language" value={language} />
-        </dl>
       </div>
 
       <PlaybackControls />
