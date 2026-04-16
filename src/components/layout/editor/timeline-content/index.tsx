@@ -17,6 +17,35 @@ import { produce } from 'immer'
 import { useEffect, useRef } from 'react'
 import { TextCard } from './TextCard'
 
+type TextFieldProps = {
+  compact: boolean
+  value: string
+  onChange: (value: string) => void
+}
+
+function TextField({ compact, value, onChange }: TextFieldProps) {
+  const base =
+    'border-accent w-full bg-transparent outline-none focus:border-b'
+  if (compact) {
+    return (
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={base}
+        autoComplete="off"
+      />
+    )
+  }
+  return (
+    <textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={cn(base, 'scrollbar-none field-sizing-content resize-none')}
+      autoComplete="off"
+    />
+  )
+}
+
 export function TimelineContent() {
   const [task, setTask] = useCurrentEditingTask()
 
@@ -111,11 +140,13 @@ export function TimelineContent() {
         if (!d) return null
         const isEmphasized =
           highlighted.includes(card.id) || hoveredId === card.id
+        const compact = card.height < 60
         return (
           <TextCard
             key={card.id}
             start={d.start}
             end={d.end}
+            compact={compact}
             className={cn(
               'absolute inset-x-4',
               card.id === dragInvalidId
@@ -129,24 +160,20 @@ export function TimelineContent() {
             onFocus={() => handleCardFocus(card.id)}
             onBlur={() => handleCardBlur()}
           >
-            <textarea
+            <TextField
+              compact={compact}
               value={d.text}
-              onChange={(e) => updateText(card.id, 'text', e.target.value)}
-              className="border-accent scrollbar-none field-sizing-content w-full resize-none bg-transparent outline-none focus:border-b"
-              autoComplete="off"
+              onChange={(v) => updateText(card.id, 'text', v)}
             />
             {task.type === 'translate' && (
-              <textarea
+              <TextField
+                compact={compact}
                 value={
                   (result as TranslateResult).data.find(
                     (t) => t.id === card.id,
                   )?.translated ?? ''
                 }
-                onChange={(e) =>
-                  updateText(card.id, 'translated', e.target.value)
-                }
-                className="border-accent scrollbar-none field-sizing-content w-full resize-none bg-transparent outline-none focus:border-b"
-                autoComplete="off"
+                onChange={(v) => updateText(card.id, 'translated', v)}
               />
             )}
           </TextCard>

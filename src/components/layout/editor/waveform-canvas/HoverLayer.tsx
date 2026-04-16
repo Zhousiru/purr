@@ -1,4 +1,5 @@
 import {
+  getAddMarkContext,
   getCurrentEditingAudioDuration,
   getDataMap,
   setCurrentEditingTask,
@@ -41,57 +42,49 @@ function clampHeight(h: number): number {
   return Math.max(minH, Math.min(maxH, h))
 }
 
-/** Check whether the current hover position is a legal place for a boundary. */
+/**
+ * Check whether a new boundary at `contentHeight` is a legal placement.
+ * `addMarkCtx.startHeight` is assumed already clamped (stored clamped on first click).
+ */
 function isPositionLegal(
   contentHeight: number,
   addMarkCtx: { startHeight: number } | null,
 ): boolean {
   const data = Array.from(getDataMap().values())
-
   const time = seekTime(clampHeight(contentHeight))
 
   if (!addMarkCtx) {
-    // First boundary: must not land inside any existing subtitle.
     return !data.some((d) => time > d.start && time < d.end)
   }
 
-  // Second boundary: region must be contiguous and large enough.
-  const startTime = seekTime(clampHeight(addMarkCtx.startHeight))
+  const startTime = seekTime(addMarkCtx.startHeight)
   const [minTime, maxTime] =
     startTime < time ? [startTime, time] : [time, startTime]
 
   if (maxTime - minTime < MIN_DURATION) return false
 
-  // No existing subtitle should overlap the new region.
   return !data.some((d) => d.start < maxTime && d.end > minTime)
 }
 
 export const HoverLayer = ({ ref }: HoverLayerProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLDivElement>(null)
-  const addButtonRef = useRef<HTMLButtonElement>(null)
 
   const offsetRef = useRef(0)
   const visualHeightRef = useRef(0)
 
   const [showIndicator, setShowIndicator] = useState(false)
+  const [isLegalMark, setIsLegalMark] = useState(true)
 
   const [addMarkContext, setAddMarkContext] = useAddMarkContext()
 
-  // Keep a ref in sync so imperative callbacks see the latest value.
-  const addMarkContextRef = useRef(addMarkContext)
-  addMarkContextRef.current = addMarkContext
-
-  function updateLegality() {
+  function recomputeLegality() {
     const contentHeight = visualHeightRef.current + offsetRef.current
-    const legal = isPositionLegal(contentHeight, addMarkContextRef.current)
-    if (addButtonRef.current) {
-      addButtonRef.current.style.display = legal ? '' : 'none'
-    }
+    setIsLegalMark(isPositionLegal(contentHeight, getAddMarkContext()))
   }
 
-  // Re-check legality when addMarkContext changes (first boundary placed/cleared).
-  useEffect(updateLegality, [addMarkContext])
+  // Re-check when addMarkContext changes (first boundary placed/cleared).
+  useEffect(recomputeLegality, [addMarkContext])
 
   useImperativeHandle(
     ref,
@@ -106,11 +99,11 @@ export const HoverLayer = ({ ref }: HoverLayerProps) => {
         const height = y - containerRef.current!.getBoundingClientRect().top
         indicatorRef.current!.style.top = height + 'px'
         visualHeightRef.current = height
-        updateLegality()
+        recomputeLegality()
       },
       updateOffset(y) {
         offsetRef.current = y
-        updateLegality()
+        recomputeLegality()
       },
       setIsHover: setShowIndicator,
     }),
@@ -130,18 +123,15 @@ export const HoverLayer = ({ ref }: HoverLayerProps) => {
     void player.play().catch(() => {})
   }
 
-  // Handle adding mark.
   const handleAddMark: MouseEventHandler<HTMLButtonElement> = (e) => {
     const contentHeight = clampHeight(calcHeight(e))
 
     if (!addMarkContext) {
-      // First click: place the start boundary.
       setAddMarkContext({ startHeight: contentHeight })
       return
     }
 
-    // Second click: create the new subtitle.
-    const startTime = seekTime(clampHeight(addMarkContext.startHeight))
+    const startTime = seekTime(addMarkContext.startHeight)
     const endTime = seekTime(contentHeight)
     const [minTime, maxTime] =
       startTime < endTime ? [startTime, endTime] : [endTime, startTime]
@@ -149,21 +139,16 @@ export const HoverLayer = ({ ref }: HoverLayerProps) => {
     setCurrentEditingTask((prev) =>
       produce(prev, (draft) => {
         if (!draft.result) return
+        const entry = {
+          id: crypto.randomUUID(),
+          start: minTime,
+          end: maxTime,
+          text: 'New subtitle...',
+        }
         if (draft.type === 'transcribe') {
-          draft.result.data.push({
-            id: crypto.randomUUID(),
-            start: minTime,
-            end: maxTime,
-            text: 'New subtitle...',
-          })
+          draft.result.data.push(entry)
         } else {
-          draft.result.data.push({
-            id: crypto.randomUUID(),
-            start: minTime,
-            end: maxTime,
-            text: 'New subtitle...',
-            translated: '',
-          })
+          draft.result.data.push({ ...entry, translated: '' })
         }
         draft.result.data.sort((a, b) => a.start - b.start)
       }),
@@ -197,7 +182,7 @@ export const HoverLayer = ({ ref }: HoverLayerProps) => {
         >
           <TooltipGroup>
             {addMarkContext && (
-              <Tooltip content="Cancel" placement="top">
+              <Tooltip key="cancel" content="Cancel" placement="top">
                 <button
                   className="flex items-center justify-center px-1"
                   onClick={() => setAddMarkContext(null)}
@@ -208,25 +193,26 @@ export const HoverLayer = ({ ref }: HoverLayerProps) => {
               </Tooltip>
             )}
 
-            <Tooltip content="Add" placement="top">
-              <button
-                ref={addButtonRef}
-                className={cn(
-                  'flex items-center justify-center px-1',
-                  !addMarkContext && 'bg-card',
-                )}
-                onClick={handleAddMark}
-                tabIndex={showIndicator ? 0 : -1}
-              >
-                {addMarkContext ? (
-                  <IconCheck size={12} className="text-accent-foreground" />
-                ) : (
-                  <IconPlus size={12} className="text-muted-foreground" />
-                )}
-              </button>
-            </Tooltip>
+            {isLegalMark && (
+              <Tooltip key="add" content="Add" placement="top">
+                <button
+                  className={cn(
+                    'flex items-center justify-center px-1',
+                    !addMarkContext && 'bg-card',
+                  )}
+                  onClick={handleAddMark}
+                  tabIndex={showIndicator ? 0 : -1}
+                >
+                  {addMarkContext ? (
+                    <IconCheck size={12} className="text-accent-foreground" />
+                  ) : (
+                    <IconPlus size={12} className="text-muted-foreground" />
+                  )}
+                </button>
+              </Tooltip>
+            )}
 
-            <Tooltip content="Play" placement="top">
+            <Tooltip key="play" content="Play" placement="top">
               <button
                 className={cn(
                   'flex items-center justify-center px-1',

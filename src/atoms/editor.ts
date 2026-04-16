@@ -133,6 +133,7 @@ const addMarkContext = atom<{
 } | null>(null)
 export const useAddMarkContext = () => useAtom(addMarkContext)
 export const useAddMarkContextValue = () => useAtomValue(addMarkContext)
+export const getAddMarkContext = () => store.get(addMarkContext)
 
 const isFollowModeAtom = atom(false)
 export const useIsFollowMode = () => useAtom(isFollowModeAtom)
