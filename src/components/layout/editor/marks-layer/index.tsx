@@ -1,5 +1,5 @@
 import {
-  useActiveRowIndexValue,
+  useHighlightedRowsValue,
   useHoveredRowIndexValue,
   useIsFollowModeValue,
   useVisibleCardPositionsValue,
@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils/cn'
 
 export function MarksLayer() {
   const visibleCards = useVisibleCardPositionsValue()
-  const activeIndex = useActiveRowIndexValue()
+  const highlighted = useHighlightedRowsValue()
   const hoveredIndex = useHoveredRowIndexValue()
   const isFollowMode = useIsFollowModeValue()
 
@@ -16,14 +16,16 @@ export function MarksLayer() {
     <div className="pointer-events-none absolute inset-0 z-10">
       {visibleCards.map((card) => {
         const isHover = card.index === hoveredIndex
-        const isActive = card.index === activeIndex
-        const hasOtherActive = activeIndex !== -1 && activeIndex !== card.index
+        const isHighlighted = highlighted.includes(card.index)
+        const hasOtherHighlighted =
+          highlighted.length > 0 && !isHighlighted
         return (
           <div
             key={card.index}
             className={cn(
               'absolute inset-x-0 border-y border-transparent',
-              (isActive || (!hasOtherActive && !isFollowMode && isHover)) &&
+              (isHighlighted ||
+                (!hasOtherHighlighted && !isFollowMode && isHover)) &&
                 'border-accent bg-accent/10',
             )}
             style={{

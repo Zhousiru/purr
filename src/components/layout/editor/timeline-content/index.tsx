@@ -1,9 +1,9 @@
 import {
   getCardPositions,
   getWaveformViewportHeight,
-  setActiveRowIndex,
-  useActiveRowIndexValue,
+  setHighlightedRows,
   useCurrentEditingTask,
+  useHighlightedRowsValue,
   useHoveredRowIndexValue,
   useIsFollowModeValue,
   useVisibleCardPositionsValue,
@@ -26,7 +26,7 @@ export function TimelineContent() {
   const isFollowMode = useIsFollowModeValue()
 
   const visibleCards = useVisibleCardPositionsValue()
-  const activeIndex = useActiveRowIndexValue()
+  const highlighted = useHighlightedRowsValue()
   const hoveredIndex = useHoveredRowIndexValue()
 
   // Handle accessible keyboard event.
@@ -57,7 +57,7 @@ export function TimelineContent() {
   function handleCardFocus(index: number) {
     if (isFollowMode) return
 
-    setActiveRowIndex(index)
+    setHighlightedRows([index])
     const card = getCardPositions()[index]
     if (card) {
       const centerY = card.top + card.height / 2
@@ -68,7 +68,7 @@ export function TimelineContent() {
   function handleCardBlur() {
     if (isFollowMode) return
 
-    setActiveRowIndex(-1)
+    setHighlightedRows([])
   }
 
   // Edit text card content.
@@ -99,13 +99,13 @@ export function TimelineContent() {
     )
   }
 
-  const hasEmphasis = activeIndex !== -1 || hoveredIndex !== -1
+  const hasEmphasis = highlighted.length > 0 || hoveredIndex !== -1
 
   return (
     <div className="absolute inset-0" ref={containerRef}>
       {visibleCards.map((card) => {
         const isEmphasized =
-          activeIndex === card.index || hoveredIndex === card.index
+          highlighted.includes(card.index) || hoveredIndex === card.index
         return (
           <TextCard
             key={`${card.index}${result.data[card.index].start}${result.data[card.index].end}`}

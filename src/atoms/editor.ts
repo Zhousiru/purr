@@ -192,17 +192,41 @@ const totalHeightAtom = atom((get) => {
 })
 export const useTotalHeightValue = () => useAtomValue(totalHeightAtom)
 
+// Waveform column width — set by WaveformCanvas ResizeObserver, used by
+// BoundaryHandles to position handles at the separator line.
+const waveformColumnWidthAtom = atom(0)
+export const useWaveformColumnWidthValue = () =>
+  useAtomValue(waveformColumnWidthAtom)
+export const setWaveformColumnWidth = (width: number) =>
+  store.set(waveformColumnWidthAtom, width)
+
+// Imperative task setter for use outside React (e.g. drag handlers).
+export const setCurrentEditingTask = (
+  updater: (prev: Task) => Task,
+) => {
+  const taskAtom = store.get(currentEditingTaskAtom)
+  if (!taskAtom) {
+    throw new Error('Current editing task atom cannot be `null`.')
+  }
+  store.set(taskAtom, updater)
+}
+
+// Y position of the outer expansion limit during a boundary drag, or -1 when idle.
+const dragLimitYAtom = atom(-1)
+export const useDragLimitYValue = () => useAtomValue(dragLimitYAtom)
+export const setDragLimitY = (y: number) => store.set(dragLimitYAtom, y)
+
 // Row index hovered by pointer Y (shared across waveform / cards / gaps).
 const hoveredRowIndexAtom = atom(-1)
 export const useHoveredRowIndexValue = () => useAtomValue(hoveredRowIndexAtom)
 export const setHoveredRowIndex = (index: number) =>
   store.set(hoveredRowIndexAtom, index)
 
-// Row index actively focused (textarea focus or playback follow).
-const activeRowIndexAtom = atom(-1)
-export const useActiveRowIndexValue = () => useAtomValue(activeRowIndexAtom)
-export const setActiveRowIndex = (index: number) =>
-  store.set(activeRowIndexAtom, index)
+// Highlighted row indices (focus, playback follow, drag, etc.).
+const highlightedRowsAtom = atom<number[]>([])
+export const useHighlightedRowsValue = () => useAtomValue(highlightedRowsAtom)
+export const setHighlightedRows = (indices: number[]) =>
+  store.set(highlightedRowsAtom, indices)
 
 // Hit-test a Y coordinate (in scroll-content space) against card positions.
 // Returns -1 when the pointer lands in a gap or outside every row.

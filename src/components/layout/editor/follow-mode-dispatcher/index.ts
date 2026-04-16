@@ -1,6 +1,6 @@
 import {
   getWaveformViewportHeight,
-  setActiveRowIndex,
+  setHighlightedRows,
   useIsFollowModeValue,
 } from '@/atoms/editor'
 import { player } from '@/lib/player'
@@ -68,7 +68,7 @@ export function FollowModeDispatcher({
     const unsubTime = player.subCurrentTime((time) => {
       const index = determineCurrentTextIndex(time)
       if (index !== textLastFocusIndex) {
-        setActiveRowIndex(index)
+        setHighlightedRows(index === -1 ? [] : [index])
         textLastFocusIndex = index
       }
 
@@ -116,7 +116,7 @@ export function FollowModeDispatcher({
       if (wheelIdleTimer) clearTimeout(wheelIdleTimer)
       scrollEl.removeEventListener('wheel', onWheel)
       scrollEl.removeEventListener('scroll', onScroll)
-      setActiveRowIndex(-1)
+      setHighlightedRows([])
     }
   }, [isFollowMode, scrollContainerRef])
 

@@ -15,6 +15,7 @@ import { pointerMove, waveformScroll } from '@/subjects/editor'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { Group, Panel, Separator } from 'react-resizable-panels'
 import { ActionPanel } from './action-panel'
+import { BoundaryHandles } from './boundary-handles'
 import { FollowModeDispatcher } from './follow-mode-dispatcher'
 import { MarksLayer } from './marks-layer'
 import { PlaybackIndicator } from './playback-indicator'
@@ -179,6 +180,7 @@ export function Editor() {
                 </Group>
 
                 <MarksLayer />
+                <BoundaryHandles scrollContainerRef={scrollContainerRef} />
               </div>
             )}
           </div>

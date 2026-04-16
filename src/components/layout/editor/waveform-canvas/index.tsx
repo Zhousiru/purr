@@ -3,6 +3,7 @@ import {
   getIsFollowMode,
   getWaveformViewportHeight,
   getZoomLevel,
+  setWaveformColumnWidth,
   setZoomLevel,
   useAddMarkContextValue,
   ZOOM_LEVELS,
@@ -90,6 +91,7 @@ export const WaveformCanvas = ({
       const scrollRect = scrollContainerRef.current?.getBoundingClientRect()
       const waveformWidth = containerRef.current?.clientWidth
       if (!scrollRect || !waveformWidth) return
+      setWaveformColumnWidth(waveformWidth)
       hoverLayerRef.current?.updateBounding(
         new DOMRect(
           scrollRect.left,
