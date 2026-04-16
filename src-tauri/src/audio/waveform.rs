@@ -9,17 +9,42 @@ use symphonia::core::{
 use super::utils::{find_audio_track, get_audio_decoder, get_audio_reader};
 use crate::error::CommandResult;
 
+fn detect_channel_count(
+  reader: &mut Box<dyn symphonia::core::formats::FormatReader>,
+  decoder: &mut Box<dyn symphonia::core::codecs::Decoder>,
+  track_id: u32,
+) -> CommandResult<usize> {
+  loop {
+    let packet = reader.next_packet()?;
+
+    if packet.track_id() != track_id {
+      continue;
+    }
+
+    match decoder.decode(&packet) {
+      Ok(decoded) => {
+        let count = decoded.spec().channels.count();
+        return Ok(count);
+      }
+      Err(Error::IoError(_)) => {}
+      Err(Error::DecodeError(_)) => {}
+      Err(e) => return Err(e.into()),
+    }
+  }
+}
+
 pub fn get_audio_samples(
   path: &str,
   start_sec: usize,
   end_sec: Option<usize>,
 ) -> CommandResult<(Vec<Vec<f32>>, u32)> {
   let mut reader = get_audio_reader(path)?;
-  let track = find_audio_track(&*reader)?;
-  let track_id = track.id;
-  let codec_params = &track.codec_params;
+  let (track_id, codec_params) = {
+    let track = find_audio_track(&*reader)?;
+    (track.id, track.codec_params.clone())
+  };
 
-  let mut decoder = get_audio_decoder(codec_params)?;
+  let mut decoder = get_audio_decoder(&codec_params)?;
 
   let samples_per_sec = codec_params
     .time_base
@@ -30,13 +55,9 @@ pub fn get_audio_samples(
   let channel_count = match codec_params.channels {
     Some(channels) => channels.count(),
     None => {
-      let packet = reader.next_packet()?;
-      let decoded = decoder.decode(&packet)?;
-      let count = decoded.spec().channels.count();
-      reader.seek(
-        SeekMode::Accurate,
-        SeekTo::TimeStamp { ts: 0, track_id },
-      )?;
+      let count = detect_channel_count(&mut reader, &mut decoder, track_id)?;
+      reader.seek(SeekMode::Accurate, SeekTo::TimeStamp { ts: 0, track_id })?;
+      decoder = get_audio_decoder(&codec_params)?;
       count
     }
   };
@@ -73,12 +94,8 @@ pub fn get_audio_samples(
 
     let decoded = match decoder.decode(&packet) {
       Ok(d) => d,
-      Err(Error::IoError(_)) => {
-        continue;
-      }
-      Err(Error::DecodeError(_)) => {
-        continue;
-      }
+      Err(Error::IoError(_)) => continue,
+      Err(Error::DecodeError(_)) => continue,
       Err(e) => return Err(e.into()),
     };
 

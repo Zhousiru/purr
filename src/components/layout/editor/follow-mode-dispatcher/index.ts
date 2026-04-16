@@ -46,7 +46,7 @@ export function FollowModeDispatcher({
       if (!sources.delete(s)) return
       if (sources.size === 0 && resumeOnRelease) {
         resumeOnRelease = false
-        player.play()
+        void player.play().catch(() => {})
       }
     }
 

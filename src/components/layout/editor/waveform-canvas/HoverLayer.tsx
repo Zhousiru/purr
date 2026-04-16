@@ -67,7 +67,7 @@ export const HoverLayer = ({ ref }: HoverLayerProps) => {
 
   const handleSeek: MouseEventHandler<HTMLButtonElement> = (e) => {
     player.seek(seekTime(calcHeight(e)))
-    player.play()
+    void player.play().catch(() => {})
   }
 
   // Handle adding mark.

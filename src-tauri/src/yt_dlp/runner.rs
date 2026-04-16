@@ -97,9 +97,8 @@ impl SubprocessRunner {
       .ok_or_else(|| anyhow::anyhow!("ffmpeg directory not resolved"))?;
 
     let ffmpeg_dir_str = ffmpeg_dir.to_string_lossy().into_owned();
-    let progress_tmpl = format!(
-      "{PROGRESS_MARKER}%(progress.status)s %(info.ext)s %(progress._percent).1f"
-    );
+    let progress_tmpl =
+      format!("{PROGRESS_MARKER}%(progress.status)s %(info.ext)s %(progress._percent).1f");
 
     // Two arg sets share most options; build a base vec and splice in the
     // format-selection flags based on `audio_only`.

@@ -22,8 +22,8 @@ import { TimelineContent } from './timeline-content'
 import { HoverLayer, HoverLayerRef } from './waveform-canvas/HoverLayer'
 
 export function Editor() {
-  const audioPath = useCurrentEditingAudioPathValue()
-  const audioDuration = useCurrentEditingAudioDurationValue()
+  const sourcePath = useCurrentEditingAudioPathValue()
+  const sourceDuration = useCurrentEditingAudioDurationValue()
   const viewportHeight = useWaveformViewportHeightValue()
   const totalHeight = useTotalHeightValue()
 
@@ -56,14 +56,14 @@ export function Editor() {
   }, [])
 
   useEffect(() => {
-    if (player.currentSource !== audioPath) {
-      player.load(audioPath)
+    if (player.currentSource !== sourcePath) {
+      void player.load(sourcePath).catch(() => {})
     }
 
     return () => {
       player.pause()
     }
-  }, [audioPath])
+  }, [sourcePath])
 
   // Toggle playing by `Space`.
   useEffect(() => {
@@ -71,7 +71,7 @@ export function Editor() {
       if (e.code === 'Space') {
         e.preventDefault()
         e.stopPropagation()
-        player.togglePlay()
+        void player.togglePlay().catch(() => {})
       }
     }
 
@@ -95,7 +95,7 @@ export function Editor() {
   // Reset scrollTop when path changes
   useEffect(() => {
     scrollContainerRef.current?.scrollTo({ top: 0 })
-  }, [audioPath])
+  }, [sourcePath])
 
   // Single document-level pointer listener — feeds the shared `pointerMove`
   // stream that every consumer (`usePointerInRect`) subscribes to.
@@ -156,11 +156,11 @@ export function Editor() {
                     defaultSize="350px"
                     minSize="200px"
                     maxSize="600px"
-                    className="bg-secondary relative z-0"
+                    className="bg-secondary scrollbar-none relative z-0"
                   >
                     <WaveformCanvas
-                      path={audioPath}
-                      duration={audioDuration}
+                      path={sourcePath}
+                      duration={sourceDuration}
                       mergeChannels={false}
                       scrollContainerRef={scrollContainerRef}
                       hoverLayerRef={hoverLayerRef}
@@ -170,7 +170,10 @@ export function Editor() {
 
                   <Separator className="border-border hover:border-accent active:border-accent w-0 border-r transition-colors outline-none" />
 
-                  <Panel id="text" className="relative z-20 pl-5">
+                  <Panel
+                    id="text"
+                    className="scrollbar-none relative z-20 pl-5"
+                  >
                     <TimelineContent />
                   </Panel>
                 </Group>

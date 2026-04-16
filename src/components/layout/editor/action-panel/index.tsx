@@ -10,8 +10,8 @@ import { VideoPreview } from './video-preview'
 
 export function ActionPanel() {
   const name = useCurrentEditingTaskNameValue()
-  const path = useCurrentEditingAudioPathValue()
-  const duration = useCurrentEditingAudioDurationValue()
+  const sourcePath = useCurrentEditingAudioPathValue()
+  const sourceDuration = useCurrentEditingAudioDurationValue()
   const language = useCurrentEditingLanguageValue()
 
   return (
@@ -27,8 +27,8 @@ export function ActionPanel() {
           <VideoPreview />
 
           <dl className="flex flex-col gap-2 text-xs">
-            <InfoRow label="Path" value={path} mono />
-            <InfoRow label="Duration" value={formatSec(duration, false)} />
+            <InfoRow label="Path" value={sourcePath} mono />
+            <InfoRow label="Duration" value={formatSec(sourceDuration, false)} />
             <InfoRow label="Language" value={language} />
           </dl>
         </div>

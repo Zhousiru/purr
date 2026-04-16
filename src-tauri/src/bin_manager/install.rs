@@ -74,7 +74,9 @@ pub async fn perform_install(
     let pct = (downloaded as f32 / total as f32).clamp(0.0, 1.0);
     notify::update_progress(manager.app(), &notif_id, pct);
     let status = match &phase {
-      InstallPhase::First => BinaryStatus::Installing { progress: Some(pct) },
+      InstallPhase::First => BinaryStatus::Installing {
+        progress: Some(pct),
+      },
       InstallPhase::Update { from_version } => BinaryStatus::Updating {
         version_from: from_version.clone(),
         progress: Some(pct),

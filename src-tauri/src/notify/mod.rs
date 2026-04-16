@@ -92,13 +92,7 @@ pub fn succeed(app: &AppHandle, id: &str, desc: Option<String>) {
 
 /// Transition a notification to the `error` type with a required description.
 pub fn fail(app: &AppHandle, id: &str, desc: impl Into<String>) {
-  transition(
-    app,
-    id,
-    NotificationType::Error,
-    Some(desc.into()),
-    None,
-  );
+  transition(app, id, NotificationType::Error, Some(desc.into()), None);
 }
 
 fn transition(
@@ -130,10 +124,5 @@ fn transition(
 pub fn remove(app: &AppHandle, id: &str) {
   let state = app.state::<NotificationState>();
   state.inner.lock().unwrap().remove(id);
-  emit(
-    app,
-    NotificationEvent::Remove {
-      id: id.to_string(),
-    },
-  );
+  emit(app, NotificationEvent::Remove { id: id.to_string() });
 }

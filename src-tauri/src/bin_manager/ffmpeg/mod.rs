@@ -4,9 +4,7 @@ use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
 
-use crate::bin_manager::{
-  download, BinarySpec, ProgressFn, ReleaseAsset, ReleaseInfo,
-};
+use crate::bin_manager::{download, BinarySpec, ProgressFn, ReleaseAsset, ReleaseInfo};
 
 /// Downloads and manages ffmpeg + ffprobe as a single managed install. We
 /// mirror the same upstream sources ffmpeg-sidecar uses (gyan.dev / johnvan
@@ -206,11 +204,7 @@ async fn extract_asset(_archive: &Path, _bin_dir: &Path) -> anyhow::Result<()> {
 /// `bin_dir`. Used by Windows (gyan.dev bundle; binaries live in `bin/`) and
 /// macOS (evermeet zips; single binary at the root).
 #[cfg(any(target_os = "windows", target_os = "macos"))]
-fn extract_zip_flat(
-  archive: &Path,
-  bin_dir: &Path,
-  wanted: &[&'static str],
-) -> anyhow::Result<()> {
+fn extract_zip_flat(archive: &Path, bin_dir: &Path, wanted: &[&'static str]) -> anyhow::Result<()> {
   let file = std::fs::File::open(archive)?;
   let mut zip = zip::ZipArchive::new(file)?;
   let mut found: Vec<&'static str> = Vec::new();

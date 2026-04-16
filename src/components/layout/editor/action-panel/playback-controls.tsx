@@ -134,7 +134,9 @@ export function PlaybackControls() {
           <div className="pointer-events-none absolute inset-0 flex justify-center [&>*]:pointer-events-auto">
             <Tooltip content={isPlaying ? 'Pause' : 'Play'}>
               <ControlButton
-                onClick={() => player.togglePlay()}
+                onClick={() => {
+                  void player.togglePlay().catch(() => {})
+                }}
                 icon={
                   isPlaying ? (
                     <IconPlayerPauseFilled />

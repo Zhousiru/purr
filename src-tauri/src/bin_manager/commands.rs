@@ -16,10 +16,7 @@ pub async fn get_binary_statuses(
 }
 
 #[tauri::command]
-pub async fn retry_binary(
-  id: String,
-  manager: State<'_, Arc<BinManager>>,
-) -> CommandResult<()> {
+pub async fn retry_binary(id: String, manager: State<'_, Arc<BinManager>>) -> CommandResult<()> {
   manager.retry(&id)?;
   Ok(())
 }

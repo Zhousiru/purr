@@ -10,8 +10,7 @@ use crate::bin_manager::{
   download, executable_name, BinarySpec, ProgressFn, ReleaseAsset, ReleaseInfo,
 };
 
-const GITHUB_LATEST: &str =
-  "https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest";
+const GITHUB_LATEST: &str = "https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest";
 
 pub struct YtDlpSpec;
 
@@ -184,4 +183,3 @@ struct GithubAsset {
   name: String,
   browser_download_url: String,
 }
-
