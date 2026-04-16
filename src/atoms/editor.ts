@@ -2,7 +2,7 @@ import { cardOverscanHeight, resolution } from '@/constants/editor'
 import { TaskAtom } from '@/lib/db/task-atom-storage'
 import { createIsPlayingAtom } from '@/lib/player/atoms'
 import { store } from '@/lib/store'
-import { Task, TranslateTask } from '@/types/tasks'
+import { Task, Transcript, TranslateTask } from '@/types/tasks'
 import { atom, useAtom, useAtomValue } from 'jotai'
 import { Getter } from 'jotai/vanilla'
 import { transcribeTaskListAtom, translateTaskListAtom } from './tasks'
@@ -152,7 +152,7 @@ const effectiveResolutionAtom = atom((get) =>
 export const getEffectiveResolution = () => store.get(effectiveResolutionAtom)
 
 export type CardPosition = {
-  index: number
+  id: string
   top: number
   height: number
 }
@@ -165,10 +165,10 @@ const cardPositionsAtom = atom<CardPosition[]>((get) => {
   const marginBlock = get(marginBlockAtom)
   const effRes = get(effectiveResolutionAtom)
   const dpr = window.devicePixelRatio
-  return data.map((d, i) => {
+  return data.map((d) => {
     const top = marginBlock + (d.start * effRes) / dpr
     const bottom = marginBlock + (d.end * effRes) / dpr
-    return { index: i, top, height: bottom - top }
+    return { id: d.id, top, height: bottom - top }
   })
 })
 export const useCardPositionsValue = () => useAtomValue(cardPositionsAtom)
@@ -191,6 +191,17 @@ const totalHeightAtom = atom((get) => {
   return marginBlock * 2 + (duration * effRes) / window.devicePixelRatio
 })
 export const useTotalHeightValue = () => useAtomValue(totalHeightAtom)
+
+// Derived Map for O(1) subtitle lookup by UUID.
+const dataMapAtom = atom<ReadonlyMap<string, Transcript>>((get) => {
+  const taskAtom = get(currentEditingTaskAtom)
+  if (!taskAtom) return new Map()
+  const data = get(taskAtom).result?.data
+  if (!data) return new Map()
+  return new Map(data.map((d) => [d.id, d]))
+})
+export const useDataMapValue = () => useAtomValue(dataMapAtom)
+export const getDataMap = () => store.get(dataMapAtom)
 
 // Waveform column width — set by WaveformCanvas ResizeObserver, used by
 // BoundaryHandles to position handles at the separator line.
@@ -216,27 +227,32 @@ const dragLimitYAtom = atom(-1)
 export const useDragLimitYValue = () => useAtomValue(dragLimitYAtom)
 export const setDragLimitY = (y: number) => store.set(dragLimitYAtom, y)
 
-// Row index hovered by pointer Y (shared across waveform / cards / gaps).
-const hoveredRowIndexAtom = atom(-1)
-export const useHoveredRowIndexValue = () => useAtomValue(hoveredRowIndexAtom)
-export const setHoveredRowIndex = (index: number) =>
-  store.set(hoveredRowIndexAtom, index)
+// Subtitle UUID whose move-drag position is invalid (overlaps), or null.
+const dragInvalidIdAtom = atom<string | null>(null)
+export const useDragInvalidIdValue = () => useAtomValue(dragInvalidIdAtom)
+export const setDragInvalidId = (id: string | null) =>
+  store.set(dragInvalidIdAtom, id)
 
-// Highlighted row indices (focus, playback follow, drag, etc.).
-const highlightedRowsAtom = atom<number[]>([])
-export const useHighlightedRowsValue = () => useAtomValue(highlightedRowsAtom)
-export const setHighlightedRows = (indices: number[]) =>
-  store.set(highlightedRowsAtom, indices)
+// Subtitle UUID hovered by pointer Y (shared across waveform / cards / gaps).
+const hoveredRowIdAtom = atom<string | null>(null)
+export const useHoveredRowIdValue = () => useAtomValue(hoveredRowIdAtom)
+export const setHoveredRowId = (id: string | null) =>
+  store.set(hoveredRowIdAtom, id)
+
+// Highlighted subtitle UUIDs (focus, playback follow, drag, etc.).
+const highlightedRowIdsAtom = atom<string[]>([])
+export const useHighlightedRowIdsValue = () => useAtomValue(highlightedRowIdsAtom)
+export const setHighlightedRowIds = (ids: string[]) =>
+  store.set(highlightedRowIdsAtom, ids)
 
 // Hit-test a Y coordinate (in scroll-content space) against card positions.
-// Returns -1 when the pointer lands in a gap or outside every row.
-export function findRowIndexByY(y: number): number {
+// Returns null when the pointer lands in a gap or outside every row.
+export function findRowIdByY(y: number): string | null {
   const positions = store.get(cardPositionsAtom)
-  for (let i = 0; i < positions.length; i++) {
-    const p = positions[i]
+  for (const p of positions) {
     if (y >= p.top && y <= p.top + p.height) {
-      return p.index
+      return p.id
     }
   }
-  return -1
+  return null
 }

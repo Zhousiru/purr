@@ -1,10 +1,12 @@
 import {
   getCardPositions,
   getWaveformViewportHeight,
-  setHighlightedRows,
+  setHighlightedRowIds,
   useCurrentEditingTask,
-  useHighlightedRowsValue,
-  useHoveredRowIndexValue,
+  useDataMapValue,
+  useDragInvalidIdValue,
+  useHighlightedRowIdsValue,
+  useHoveredRowIdValue,
   useIsFollowModeValue,
   useVisibleCardPositionsValue,
 } from '@/atoms/editor'
@@ -26,8 +28,10 @@ export function TimelineContent() {
   const isFollowMode = useIsFollowModeValue()
 
   const visibleCards = useVisibleCardPositionsValue()
-  const highlighted = useHighlightedRowsValue()
-  const hoveredIndex = useHoveredRowIndexValue()
+  const dataMap = useDataMapValue()
+  const highlighted = useHighlightedRowIdsValue()
+  const hoveredId = useHoveredRowIdValue()
+  const dragInvalidId = useDragInvalidIdValue()
 
   // Handle accessible keyboard event.
   const containerRef = useRef<HTMLDivElement>(null)
@@ -54,11 +58,11 @@ export function TimelineContent() {
   }, [isFollowMode])
 
   // Active text card.
-  function handleCardFocus(index: number) {
+  function handleCardFocus(id: string) {
     if (isFollowMode) return
 
-    setHighlightedRows([index])
-    const card = getCardPositions()[index]
+    setHighlightedRowIds([id])
+    const card = getCardPositions().find((c) => c.id === id)
     if (card) {
       const centerY = card.top + card.height / 2
       const top = centerY - getWaveformViewportHeight() / 2
@@ -68,71 +72,78 @@ export function TimelineContent() {
   function handleCardBlur() {
     if (isFollowMode) return
 
-    setHighlightedRows([])
+    setHighlightedRowIds([])
   }
 
   // Edit text card content.
-  function updateText(
-    index: number,
-    type: 'text' | 'translated',
-    newText: string,
-  ) {
+  function updateText(id: string, type: 'text' | 'translated', newText: string) {
     setTask((prev) =>
       produce(prev, (draft) => {
         if (!draft.result) {
           throw new Error('Task does not have result yet.')
         }
 
+        const item = draft.result.data.find((d) => d.id === id)
+        if (!item) return
+
         if (draft.type === 'transcribe') {
           if (type === 'translated') {
             throw new Error('Cannot edit `translated` of a `transcribe` task.')
           }
-          draft.result.data[index].text = newText
+          item.text = newText
         } else {
           if (type === 'text') {
-            draft.result.data[index].text = newText
+            item.text = newText
           } else {
-            draft.result.data[index].translated = newText
+            ;(item as { translated: string }).translated = newText
           }
         }
       }),
     )
   }
 
-  const hasEmphasis = highlighted.length > 0 || hoveredIndex !== -1
+  const hasEmphasis = highlighted.length > 0 || hoveredId !== null
 
   return (
     <div className="absolute inset-0" ref={containerRef}>
       {visibleCards.map((card) => {
+        const d = dataMap.get(card.id)
+        if (!d) return null
         const isEmphasized =
-          highlighted.includes(card.index) || hoveredIndex === card.index
+          highlighted.includes(card.id) || hoveredId === card.id
         return (
           <TextCard
-            key={`${card.index}${result.data[card.index].start}${result.data[card.index].end}`}
-            start={result.data[card.index].start}
-            end={result.data[card.index].end}
+            key={card.id}
+            start={d.start}
+            end={d.end}
             className={cn(
               'absolute inset-x-4',
-              hasEmphasis && !isEmphasized && 'opacity-50',
+              card.id === dragInvalidId
+                ? 'opacity-25'
+                : hasEmphasis && !isEmphasized && 'opacity-50',
             )}
             style={{
               top: card.top,
               height: card.height,
             }}
-            onFocus={() => handleCardFocus(card.index)}
+            onFocus={() => handleCardFocus(card.id)}
             onBlur={() => handleCardBlur()}
           >
             <textarea
-              value={result.data[card.index].text}
-              onChange={(e) => updateText(card.index, 'text', e.target.value)}
+              value={d.text}
+              onChange={(e) => updateText(card.id, 'text', e.target.value)}
               className="border-accent scrollbar-none field-sizing-content w-full resize-none bg-transparent outline-none focus:border-b"
               autoComplete="off"
             />
             {task.type === 'translate' && (
               <textarea
-                value={(result as TranslateResult).data[card.index].translated}
+                value={
+                  (result as TranslateResult).data.find(
+                    (t) => t.id === card.id,
+                  )?.translated ?? ''
+                }
                 onChange={(e) =>
-                  updateText(card.index, 'translated', e.target.value)
+                  updateText(card.id, 'translated', e.target.value)
                 }
                 className="border-accent scrollbar-none field-sizing-content w-full resize-none bg-transparent outline-none focus:border-b"
                 autoComplete="off"

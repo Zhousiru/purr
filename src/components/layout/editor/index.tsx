@@ -1,6 +1,6 @@
 import {
-  findRowIndexByY,
-  setHoveredRowIndex,
+  findRowIdByY,
+  setHoveredRowId,
   setWaveformViewportHeight,
   setWaveformVisibleArea,
   useCurrentEditingAudioDurationValue,
@@ -116,18 +116,18 @@ export function Editor() {
     scrollRef: scrollContainerRef,
     onUpdate: ({ inside, y, rect }) => {
       if (!inside) {
-        setHoveredRowIndex(-1)
+        setHoveredRowId(null)
         return
       }
       const el = scrollContainerRef.current
       if (!el) return
       const contentY = y - rect.top + el.scrollTop
-      setHoveredRowIndex(findRowIndexByY(contentY))
+      setHoveredRowId(findRowIdByY(contentY))
     },
   })
 
   // Clear hover state on unmount.
-  useEffect(() => () => setHoveredRowIndex(-1), [])
+  useEffect(() => () => setHoveredRowId(null), [])
 
   const ready = viewportHeight > 0
 

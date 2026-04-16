@@ -13,6 +13,7 @@ export interface AudioMeta {
 }
 
 export interface Transcript {
+  id: string
   start: number
   end: number
   text: string

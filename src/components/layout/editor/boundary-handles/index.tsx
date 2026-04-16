@@ -1,7 +1,9 @@
 import {
   useCardPositionsValue,
-  useCurrentEditingTaskValue,
+  useDataMapValue,
   useDragLimitYValue,
+  useHighlightedRowIdsValue,
+  useHoveredRowIdValue,
   useWaveformColumnWidthValue,
   useWaveformVisibleAreaValue,
 } from '@/atoms/editor'
@@ -17,28 +19,28 @@ type BoundaryHandlesProps = {
 }
 
 export function BoundaryHandles({ scrollContainerRef }: BoundaryHandlesProps) {
-  const task = useCurrentEditingTaskValue()
-  const data = task.result?.data
+  const dataMap = useDataMapValue()
   const cardPositions = useCardPositionsValue()
   const waveformWidth = useWaveformColumnWidthValue()
   const visibleArea = useWaveformVisibleAreaValue()
 
   const dragLimitY = useDragLimitYValue()
+  const highlighted = useHighlightedRowIdsValue()
+  const hoveredId = useHoveredRowIdValue()
   const { onPointerDown } = useBoundaryDrag(scrollContainerRef)
 
   const boundaries = useMemo(() => {
-    if (!data) return []
-    return computeBoundaries(cardPositions, data)
-  }, [cardPositions, data])
+    if (dataMap.size === 0) return []
+    return computeBoundaries(cardPositions, dataMap)
+  }, [cardPositions, dataMap])
 
-  // Filter to visible range with overscan
   const visibleBoundaries = useMemo(() => {
     const start = visibleArea.startY - cardOverscanHeight
     const end = visibleArea.endY + cardOverscanHeight
     return boundaries.filter((b) => b.y >= start && b.y <= end)
   }, [boundaries, visibleArea])
 
-  if (!data || waveformWidth === 0) return null
+  if (dataMap.size === 0 || waveformWidth === 0) return null
 
   return (
     <div className="pointer-events-none absolute inset-0 z-50">
@@ -48,9 +50,13 @@ export function BoundaryHandles({ scrollContainerRef }: BoundaryHandlesProps) {
           style={{ top: dragLimitY }}
         />
       )}
-      {visibleBoundaries.map((boundary) => (
+      {visibleBoundaries.map((boundary) => {
+        const active =
+          highlighted.includes(boundary.id) || hoveredId === boundary.id
+        if (!active) return null
+        return (
         <div
-          key={`${boundary.type}-${boundary.index}`}
+          key={`${boundary.type}-${boundary.id}`}
           className={`bg-accent pointer-events-auto absolute rounded-sm opacity-70 hover:opacity-100 hover:shadow-md ${
             boundary.type === 'move' ? 'cursor-grab' : 'cursor-ns-resize'
           }`}
@@ -65,7 +71,8 @@ export function BoundaryHandles({ scrollContainerRef }: BoundaryHandlesProps) {
           }}
           onPointerDown={(e) => onPointerDown(e, boundary)}
         />
-      ))}
+        )
+      })}
     </div>
   )
 }

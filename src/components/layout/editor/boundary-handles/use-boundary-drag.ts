@@ -1,10 +1,14 @@
 import {
   getCurrentEditingTask,
+  getIsFollowMode,
   setCurrentEditingTask,
+  setDragInvalidId,
   setDragLimitY,
-  setHighlightedRows,
+  setHighlightedRowIds,
 } from '@/atoms/editor'
+import { determineCurrentTextId } from '@/components/layout/editor/follow-mode-dispatcher/utils'
 import { seekHeight, seekTime } from '@/components/layout/editor/waveform-canvas/utils'
+import { player } from '@/lib/player'
 import { userScrub } from '@/subjects/editor'
 import { produce } from 'immer'
 import { RefObject, useRef } from 'react'
@@ -14,6 +18,11 @@ const DRAG_THRESHOLD = 3
 const MIN_DURATION = 0.1
 const EDGE_ZONE = 60
 const MAX_SCROLL_SPEED = 12
+
+function findDataIndex(id: string) {
+  const data = getCurrentEditingTask().result?.data
+  return data?.findIndex((d) => d.id === id) ?? -1
+}
 
 export function useBoundaryDrag(
   scrollContainerRef: RefObject<HTMLDivElement | null>,
@@ -26,10 +35,10 @@ export function useBoundaryDrag(
     dragging: boolean
     rafId: number
     lastClientY: number
-    // For 'move': preserve the initial times and grab offset
     initialStart: number
     initialEnd: number
     grabTime: number
+    valid: boolean
   } | null>(null)
 
   function getContentY(clientY: number) {
@@ -39,67 +48,72 @@ export function useBoundaryDrag(
     return clientY - rect.top + scrollEl.scrollTop
   }
 
-  function applyDrag(contentY: number, boundary: BoundaryHandle) {
+  function checkOverlap(start: number, end: number, skipId: string) {
     const data = getCurrentEditingTask().result?.data
-    if (!data) return
+    if (!data) return false
+    for (const d of data) {
+      if (d.id === skipId) continue
+      if (start < d.end && end > d.start) return true
+    }
+    return false
+  }
 
+  function applyDrag(contentY: number) {
     const s = stateRef.current
     if (!s) return
+
+    const { boundary } = s
 
     if (boundary.type === 'move') {
       const newGrabTime = seekTime(contentY)
       const delta = newGrabTime - s.grabTime
       const duration = s.initialEnd - s.initialStart
-      let newStart = s.initialStart + delta
-      let newEnd = s.initialEnd + delta
+      const newStart = Math.max(0, s.initialStart + delta)
+      const newEnd = newStart + duration
 
-      // Clamp against previous card's end
-      const prevEnd = boundary.index > 0 ? data[boundary.index - 1].end : 0
-      if (newStart < prevEnd) {
-        newStart = prevEnd
-        newEnd = newStart + duration
-      }
-
-      // Clamp against next card's start
-      const nextStart =
-        boundary.index < data.length - 1
-          ? data[boundary.index + 1].start
-          : Infinity
-      if (newEnd > nextStart) {
-        newEnd = nextStart
-        newStart = newEnd - duration
-      }
+      const overlaps = checkOverlap(newStart, newEnd, boundary.id)
+      s.valid = !overlaps
+      setDragInvalidId(overlaps ? boundary.id : null)
 
       setCurrentEditingTask((prev) =>
         produce(prev, (draft) => {
           if (!draft.result) return
-          draft.result.data[boundary.index].start = newStart
-          draft.result.data[boundary.index].end = newEnd
+          const item = draft.result.data.find((d) => d.id === boundary.id)
+          if (!item) return
+          item.start = newStart
+          item.end = newEnd
         }),
       )
     } else {
-      // start / end boundary
+      const data = getCurrentEditingTask().result?.data
+      if (!data) return
+
+      const idx = data.findIndex((d) => d.id === boundary.id)
+      if (idx === -1) return
+
       const newTime = seekTime(contentY)
-      const { type, index } = boundary
+      const { type } = boundary
       let min = 0
       let max = Infinity
 
       if (type === 'end') {
-        min = data[index].start + MIN_DURATION
-        if (index < data.length - 1) max = data[index + 1].start
+        min = data[idx].start + MIN_DURATION
+        if (idx < data.length - 1) max = data[idx + 1].start
       } else {
-        max = data[index].end - MIN_DURATION
-        if (index > 0) min = data[index - 1].end
+        max = data[idx].end - MIN_DURATION
+        if (idx > 0) min = data[idx - 1].end
       }
 
       const clamped = Math.max(min, Math.min(max, newTime))
       setCurrentEditingTask((prev) =>
         produce(prev, (draft) => {
           if (!draft.result) return
+          const item = draft.result.data.find((d) => d.id === boundary.id)
+          if (!item) return
           if (type === 'end') {
-            draft.result.data[index].end = clamped
+            item.end = clamped
           } else {
-            draft.result.data[index].start = clamped
+            item.start = clamped
           }
         }),
       )
@@ -127,7 +141,7 @@ export function useBoundaryDrag(
     if (speed !== 0) {
       scrollEl.scrollTop += speed
       const contentY = getContentY(s.lastClientY)
-      applyDrag(contentY, s.boundary)
+      applyDrag(contentY)
     }
 
     s.rafId = requestAnimationFrame(autoScrollTick)
@@ -147,17 +161,17 @@ export function useBoundaryDrag(
         s.boundary.type === 'move' ? 'grabbing' : 'ns-resize'
       userScrub.next('start')
 
-      setHighlightedRows([s.boundary.index])
+      setHighlightedRowIds([s.boundary.id])
 
-      // Show the outer expansion limit line (boundary handles only).
       if (s.boundary.type !== 'move') {
         const data = getCurrentEditingTask().result?.data
         if (data) {
-          const { type, index } = s.boundary
-          if (type === 'end' && index < data.length - 1) {
-            setDragLimitY(seekHeight(data[index + 1].start))
-          } else if (type === 'start' && index > 0) {
-            setDragLimitY(seekHeight(data[index - 1].end))
+          const idx = findDataIndex(s.boundary.id)
+          const { type } = s.boundary
+          if (type === 'end' && idx < data.length - 1) {
+            setDragLimitY(seekHeight(data[idx + 1].start))
+          } else if (type === 'start' && idx > 0) {
+            setDragLimitY(seekHeight(data[idx - 1].end))
           }
         }
       }
@@ -166,7 +180,7 @@ export function useBoundaryDrag(
     }
 
     const contentY = getContentY(e.clientY)
-    applyDrag(contentY, s.boundary)
+    applyDrag(contentY)
   }
 
   function onPointerUp(e: PointerEvent) {
@@ -179,8 +193,40 @@ export function useBoundaryDrag(
       }
       cancelAnimationFrame(s.rafId)
       document.body.style.cursor = ''
-      setHighlightedRows([])
+
+      if (s.boundary.type === 'move') {
+        if (!s.valid) {
+          // Revert to original position.
+          setCurrentEditingTask((prev) =>
+            produce(prev, (draft) => {
+              if (!draft.result) return
+              const item = draft.result.data.find(
+                (d) => d.id === s.boundary.id,
+              )
+              if (!item) return
+              item.start = s.initialStart
+              item.end = s.initialEnd
+            }),
+          )
+        } else {
+          // Re-sort by start time so neighbor-based clamping stays correct.
+          setCurrentEditingTask((prev) =>
+            produce(prev, (draft) => {
+              if (!draft.result) return
+              draft.result.data.sort((a, b) => a.start - b.start)
+            }),
+          )
+        }
+      }
+
+      if (getIsFollowMode()) {
+        const id = determineCurrentTextId(player.currentTime)
+        setHighlightedRowIds(id ? [id] : [])
+      } else {
+        setHighlightedRowIds([])
+      }
       setDragLimitY(-1)
+      setDragInvalidId(null)
       userScrub.next('end')
     }
 
@@ -199,7 +245,7 @@ export function useBoundaryDrag(
     e.stopPropagation()
 
     const data = getCurrentEditingTask().result?.data
-    const d = data?.[boundary.index]
+    const d = data?.find((item) => item.id === boundary.id)
 
     stateRef.current = {
       boundary,
@@ -212,6 +258,7 @@ export function useBoundaryDrag(
       initialStart: d?.start ?? 0,
       initialEnd: d?.end ?? 0,
       grabTime: seekTime(getContentY(e.clientY)),
+      valid: true,
     }
 
     document.addEventListener('pointermove', onPointerMove)

@@ -1,13 +1,13 @@
 import {
   getWaveformViewportHeight,
-  setHighlightedRows,
+  setHighlightedRowIds,
   useIsFollowModeValue,
 } from '@/atoms/editor'
 import { player } from '@/lib/player'
 import { userScrub } from '@/subjects/editor'
 import { RefObject, useEffect } from 'react'
 import { seekHeight, seekTime } from '../waveform-canvas/utils'
-import { determineCurrentTextIndex } from './utils'
+import { determineCurrentTextId } from './utils'
 
 const WHEEL_IDLE_MS = 100
 
@@ -27,7 +27,7 @@ export function FollowModeDispatcher({
 
     const sources = new Set<'drag' | 'wheel'>()
     let expectedScrollTop = scrollEl.scrollTop
-    let textLastFocusIndex: number | null = null
+    let textLastFocusId: string | null = null
     let resumeOnRelease = false
     let wheelIdleTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -63,13 +63,11 @@ export function FollowModeDispatcher({
       player.seek(Math.max(0, newTime))
     }
 
-    // Player → scroll. Suspended while user is scrubbing so we don't fight
-    // native scroll animations.
     const unsubTime = player.subCurrentTime((time) => {
-      const index = determineCurrentTextIndex(time)
-      if (index !== textLastFocusIndex) {
-        setHighlightedRows(index === -1 ? [] : [index])
-        textLastFocusIndex = index
+      const id = determineCurrentTextId(time)
+      if (id !== textLastFocusId) {
+        setHighlightedRowIds(id ? [id] : [])
+        textLastFocusId = id
       }
 
       if (inUserMode()) return
@@ -79,19 +77,12 @@ export function FollowModeDispatcher({
       scrollEl.scrollTop = target
     })
 
-    // Wheel (incl. trackpad) is the explicit entry signal for wheel scrubbing.
-    // Each tick extends the idle timer; momentum-driven scroll events also
-    // extend it so inertia stays in user mode until it fully settles.
-    // Ctrl+wheel is a zoom gesture handled by the waveform canvas, not a scrub.
     const onWheel = (e: WheelEvent) => {
       if (e.ctrlKey) return
       addSource('wheel')
       bumpWheelIdle()
     }
 
-    // Scroll: while in user mode, seek the player to match the current center.
-    // While in player mode, this either matches `expectedScrollTop` (our own
-    // write, skip) or is some other source we can't classify — ignore.
     const onScroll = () => {
       const current = scrollEl.scrollTop
       if (current === expectedScrollTop) return
@@ -101,7 +92,6 @@ export function FollowModeDispatcher({
       if (sources.has('wheel')) bumpWheelIdle()
     }
 
-    // Drag emits explicit start / end from the waveform pointer handler.
     const scrubSub = userScrub.subscribe((phase) => {
       if (phase === 'start') addSource('drag')
       else removeSource('drag')
@@ -116,7 +106,7 @@ export function FollowModeDispatcher({
       if (wheelIdleTimer) clearTimeout(wheelIdleTimer)
       scrollEl.removeEventListener('wheel', onWheel)
       scrollEl.removeEventListener('scroll', onScroll)
-      setHighlightedRows([])
+      setHighlightedRowIds([])
     }
   }, [isFollowMode, scrollContainerRef])
 

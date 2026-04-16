@@ -5,37 +5,37 @@ export type BoundaryHandle = {
   y: number
   time: number
   type: 'start' | 'end' | 'move'
-  index: number // card index this handle controls
+  id: string // subtitle UUID this handle controls
 }
 
 export function computeBoundaries(
   positions: CardPosition[],
-  data: Transcript[],
+  dataMap: ReadonlyMap<string, Transcript>,
 ): BoundaryHandle[] {
   if (positions.length === 0) return []
 
   const boundaries: BoundaryHandle[] = []
 
   for (const card of positions) {
-    const d = data[card.index]
+    const d = dataMap.get(card.id)
     if (!d) continue
     boundaries.push({
       time: d.start,
       y: card.top,
       type: 'start',
-      index: card.index,
+      id: card.id,
     })
     boundaries.push({
       time: d.end,
       y: card.top + card.height,
       type: 'end',
-      index: card.index,
+      id: card.id,
     })
     boundaries.push({
       time: (d.start + d.end) / 2,
       y: card.top + card.height / 2,
       type: 'move',
-      index: card.index,
+      id: card.id,
     })
   }
 

@@ -63,7 +63,7 @@ export function pushTaskTranscript(
     }
     return {
       ...prev!,
-      data: [...prev!.data, data],
+      data: [...prev!.data, { ...data, id: data.id || crypto.randomUUID() }],
     }
   })
 }
@@ -78,7 +78,7 @@ export function pushTaskTranslation(
     }
     return {
       ...prev,
-      data: [...prev.data, data],
+      data: [...prev.data, { ...data, id: data.id || crypto.randomUUID() }],
     }
   })
 }

@@ -1,9 +1,9 @@
 import { getCurrentEditingTask } from '@/atoms/editor'
 
-export function determineCurrentTextIndex(time: number) {
+export function determineCurrentTextId(time: number): string | null {
   const data = getCurrentEditingTask().result?.data
   if (!data) {
-    return -1
+    return null
   }
 
   let left = 0
@@ -14,7 +14,7 @@ export function determineCurrentTextIndex(time: number) {
     const { start, end } = data[mid]
 
     if (time >= start && time < end) {
-      return mid
+      return data[mid].id
     } else if (time < start) {
       right = mid
     } else {
@@ -22,5 +22,5 @@ export function determineCurrentTextIndex(time: number) {
     }
   }
 
-  return -1
+  return null
 }

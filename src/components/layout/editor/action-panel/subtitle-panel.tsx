@@ -1,27 +1,28 @@
-import { useCurrentEditingTaskValue } from '@/atoms/editor'
-import { determineCurrentTextIndex } from '@/components/layout/editor/follow-mode-dispatcher/utils'
+import { getDataMap } from '@/atoms/editor'
+import { determineCurrentTextId } from '@/components/layout/editor/follow-mode-dispatcher/utils'
 import { player } from '@/lib/player'
 import { cn } from '@/lib/utils/cn'
 import { useEffect, useRef, useState } from 'react'
 
 export function SubtitlePanel() {
-  const task = useCurrentEditingTaskValue()
-  const data = task.result?.data
   const [text, setText] = useState('')
-  const prevIndexRef = useRef(-1)
+  const prevIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (!data) return
-
     const unsub = player.subCurrentTime((time) => {
-      const index = determineCurrentTextIndex(time)
-      if (index === prevIndexRef.current) return
-      prevIndexRef.current = index
-      setText(index === -1 ? '' : data[index].text)
+      const id = determineCurrentTextId(time)
+      if (id === prevIdRef.current) return
+      prevIdRef.current = id
+      if (!id) {
+        setText('')
+        return
+      }
+      const d = getDataMap().get(id)
+      setText(d?.text ?? '')
     })
 
     return () => unsub()
-  }, [data])
+  }, [])
 
   return (
     <div
