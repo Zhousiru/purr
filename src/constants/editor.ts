@@ -11,6 +11,7 @@ export const widthScale = 0.8
 
 // Subtitle cards.
 export const cardOverscanHeight = 200
+export const MIN_DURATION = 0.2
 
 // Horizontal "safe" insets at the left/right edges of a panel where pointer
 // interactions should be ignored — used to avoid fighting with adjacent

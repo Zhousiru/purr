@@ -9,6 +9,7 @@ import {
 } from '@/atoms/editor'
 import { determineCurrentTextId } from '@/components/layout/editor/follow-mode-dispatcher/utils'
 import { seekHeight, seekTime } from '@/components/layout/editor/waveform-canvas/utils'
+import { MIN_DURATION } from '@/constants/editor'
 import { player } from '@/lib/player'
 import { userScrub } from '@/subjects/editor'
 import { produce } from 'immer'
@@ -16,7 +17,6 @@ import { RefObject, useRef } from 'react'
 import { BoundaryHandle } from './compute-boundaries'
 
 const DRAG_THRESHOLD = 3
-const MIN_DURATION = 0.1
 const EDGE_ZONE = 60
 const MAX_SCROLL_SPEED = 12
 

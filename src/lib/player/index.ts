@@ -228,6 +228,14 @@ class Player {
     return !this.activeElement.paused
   }
 
+  public get playbackRate(): number {
+    return this.activeElement.playbackRate
+  }
+
+  public setPlaybackRate(rate: number) {
+    this.activeElement.playbackRate = rate
+  }
+
   public subCurrentTime(fn: TimeListener): () => void {
     this.timeListeners.add(fn)
     fn(this.activeElement.currentTime)

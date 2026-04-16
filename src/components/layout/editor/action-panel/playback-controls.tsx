@@ -8,7 +8,8 @@ import { player } from '@/lib/player'
 import { cn } from '@/lib/utils/cn'
 import { formatSec } from '@/lib/utils/time'
 import {
-  IconLanguage,
+  IconMultiplier1x,
+  IconMultiplier2x,
   IconPlayerPauseFilled,
   IconPlayerPlayFilled,
   IconShare2,
@@ -16,6 +17,12 @@ import {
 } from '@tabler/icons-react'
 import { MouseEventHandler, useEffect, useRef, useState } from 'react'
 import { ControlButton } from './control-button'
+
+const PLAYBACK_RATES = [1, 2] as const
+const PLAYBACK_RATE_ICONS = {
+  1: IconMultiplier1x,
+  2: IconMultiplier2x,
+} as const
 
 export function PlaybackControls() {
   const isPlaying = useIsPlayingValue()
@@ -29,6 +36,7 @@ export function PlaybackControls() {
   const formattedRemainDuration = '-' + formatSec(remainDuration, false)
 
   const [showTotalDuration, setShowTotalDuration] = useState(false)
+  const [playbackRate, setPlaybackRate] = useState(1)
 
   const barRef = useRef<HTMLDivElement>(null)
   const barInnerRef = useRef<HTMLDivElement>(null)
@@ -167,10 +175,24 @@ export function PlaybackControls() {
               small
             />
           </Tooltip>
-          <Tooltip content="Translate">
+          <Tooltip content="Playback rate">
             <ControlButton
-              onClick={() => alert('Translate')}
-              icon={<IconLanguage size={16} />}
+              onClick={() => {
+                const current = player.playbackRate
+                const idx = PLAYBACK_RATES.indexOf(
+                  current as (typeof PLAYBACK_RATES)[number],
+                )
+                const next = PLAYBACK_RATES[(idx + 1) % PLAYBACK_RATES.length]
+                player.setPlaybackRate(next)
+                setPlaybackRate(next)
+              }}
+              icon={(() => {
+                const Icon =
+                  PLAYBACK_RATE_ICONS[
+                    playbackRate as keyof typeof PLAYBACK_RATE_ICONS
+                  ]
+                return <Icon size={16} />
+              })()}
               small
             />
           </Tooltip>

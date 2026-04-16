@@ -111,6 +111,8 @@ const currentEditingAudioDurationAtom = atom(
 )
 export const useCurrentEditingAudioDurationValue = () =>
   useAtomValue(currentEditingAudioDurationAtom)
+export const getCurrentEditingAudioDuration = () =>
+  store.get(currentEditingAudioDurationAtom)
 
 const currentEditingTaskNameAtom = atom((get) => {
   const taskAtom = get(currentEditingTaskAtom)
