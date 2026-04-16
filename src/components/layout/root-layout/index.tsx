@@ -1,3 +1,5 @@
+import { ErrorBoundary } from '@/components/common/error-boundary'
+import { ErrorTrigger } from '@/components/common/error-boundary/trigger'
 import { JotaiProvider } from '@/components/common/jotai-provider'
 import { RegisterEvents } from '@/components/common/register-events'
 import { SideMenu } from '@/components/layout/side-menu'
@@ -12,29 +14,39 @@ export function RootLayout() {
       <RegisterEvents />
       <div className="flex h-full flex-col">
         <TitleBar />
-        <div className="relative grow">
-          <div className="absolute inset-0">
-            <Group orientation="horizontal" id="root-layout" className="h-full">
-              <Panel
-                id="side-menu"
-                defaultSize="300px"
-                minSize="220px"
-                maxSize="480px"
+        <ErrorBoundary>
+          <ErrorTrigger scope="outer" />
+          <div className="relative grow">
+            <div className="absolute inset-0">
+              <Group
+                orientation="horizontal"
+                id="root-layout"
+                className="h-full"
               >
-                <SideMenu />
-              </Panel>
+                <Panel
+                  id="side-menu"
+                  defaultSize="300px"
+                  minSize="220px"
+                  maxSize="480px"
+                >
+                  <SideMenu />
+                </Panel>
 
-              <Separator />
+                <Separator />
 
-              <Panel
-                id="content"
-                className="bg-background overflow-hidden rounded-tl-xl"
-              >
-                <Outlet />
-              </Panel>
-            </Group>
+                <Panel
+                  id="content"
+                  className="bg-background overflow-hidden rounded-tl-xl"
+                >
+                  <ErrorBoundary>
+                    <ErrorTrigger scope="inner" />
+                    <Outlet />
+                  </ErrorBoundary>
+                </Panel>
+              </Group>
+            </div>
           </div>
-        </div>
+        </ErrorBoundary>
       </div>
       <Toaster
         position="bottom-right"
