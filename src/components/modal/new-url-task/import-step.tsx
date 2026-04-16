@@ -123,7 +123,7 @@ export function ImportStep({
   if (metadata) {
     return (
       <div className="flex min-h-[340px] flex-col gap-4">
-        <div className="text-lg">Downloading</div>
+        <div className="text-lg">Downloading...</div>
 
         <div className="flex gap-3">
           {metadata.thumbnail ? (
@@ -141,12 +141,12 @@ export function ImportStep({
             <div className="line-clamp-2 text-sm leading-snug">
               {metadata.title}
             </div>
-            <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+            <div className="text-muted-foreground flex items-center gap-1 text-xs">
               {metadata.uploader && (
                 <span className="truncate">{metadata.uploader}</span>
               )}
               {metadata.uploader && metadata.duration != null && (
-                <span aria-hidden>·</span>
+                <span aria-hidden>/</span>
               )}
               {metadata.duration != null && (
                 <span>{formatDuration(metadata.duration)}</span>

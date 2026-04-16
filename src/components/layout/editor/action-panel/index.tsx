@@ -6,6 +6,7 @@ import {
 } from '@/atoms/editor'
 import { formatSec } from '@/lib/utils/time'
 import { PlaybackControls } from './playback-controls'
+import { SubtitlePanel } from './subtitle-panel'
 import { VideoPreview } from './video-preview'
 
 export function ActionPanel() {
@@ -15,7 +16,7 @@ export function ActionPanel() {
   const language = useCurrentEditingLanguageValue()
 
   return (
-    <div className="bg-secondary flex h-full flex-col">
+    <div className="bg-secondary relative flex h-full flex-col">
       <div className="relative grow">
         <div className="absolute inset-0 flex flex-col gap-2 overflow-auto p-4">
           <div>
@@ -28,10 +29,15 @@ export function ActionPanel() {
 
           <dl className="flex flex-col gap-2 text-xs">
             <InfoRow label="Path" value={sourcePath} mono />
-            <InfoRow label="Duration" value={formatSec(sourceDuration, false)} />
+            <InfoRow
+              label="Duration"
+              value={formatSec(sourceDuration, false)}
+            />
             <InfoRow label="Language" value={language} />
           </dl>
         </div>
+
+        <SubtitlePanel />
       </div>
 
       <PlaybackControls />
