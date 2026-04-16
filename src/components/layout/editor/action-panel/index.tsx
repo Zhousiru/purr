@@ -4,6 +4,7 @@ import {
   useCurrentEditingLanguageValue,
   useCurrentEditingTaskNameValue,
 } from '@/atoms/editor'
+import { cn } from '@/lib/utils/cn'
 import { formatSec } from '@/lib/utils/time'
 import { PlaybackControls } from './playback-controls'
 import { SubtitlePanel } from './subtitle-panel'
@@ -59,7 +60,7 @@ function InfoRow({
       <dt className="text-muted-foreground text-[10px] tracking-wide uppercase">
         {label}
       </dt>
-      <dd className={`${mono ? 'font-mono' : ''}`} title={value}>
+      <dd className={cn(mono && 'font-mono')} title={value}>
         {value}
       </dd>
     </div>

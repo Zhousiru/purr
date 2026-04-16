@@ -4,6 +4,7 @@ import {
   setCurrentEditingTask,
   setDragInvalidId,
   setDragLimitY,
+  setDraggingRowId,
   setHighlightedRowIds,
 } from '@/atoms/editor'
 import { determineCurrentTextId } from '@/components/layout/editor/follow-mode-dispatcher/utils'
@@ -19,9 +20,8 @@ const MIN_DURATION = 0.1
 const EDGE_ZONE = 60
 const MAX_SCROLL_SPEED = 12
 
-function findDataIndex(id: string) {
-  const data = getCurrentEditingTask().result?.data
-  return data?.findIndex((d) => d.id === id) ?? -1
+function setBodyCursor(cursor: string) {
+  document.body.style.cursor = cursor
 }
 
 export function useBoundaryDrag(
@@ -48,19 +48,12 @@ export function useBoundaryDrag(
     return clientY - rect.top + scrollEl.scrollTop
   }
 
-  function checkOverlap(start: number, end: number, skipId: string) {
-    const data = getCurrentEditingTask().result?.data
-    if (!data) return false
-    for (const d of data) {
-      if (d.id === skipId) continue
-      if (start < d.end && end > d.start) return true
-    }
-    return false
-  }
-
   function applyDrag(contentY: number) {
     const s = stateRef.current
     if (!s) return
+
+    const data = getCurrentEditingTask().result?.data
+    if (!data) return
 
     const { boundary } = s
 
@@ -71,7 +64,9 @@ export function useBoundaryDrag(
       const newStart = Math.max(0, s.initialStart + delta)
       const newEnd = newStart + duration
 
-      const overlaps = checkOverlap(newStart, newEnd, boundary.id)
+      const overlaps = data.some(
+        (d) => d.id !== boundary.id && newStart < d.end && newEnd > d.start,
+      )
       s.valid = !overlaps
       setDragInvalidId(overlaps ? boundary.id : null)
 
@@ -85,9 +80,6 @@ export function useBoundaryDrag(
         }),
       )
     } else {
-      const data = getCurrentEditingTask().result?.data
-      if (!data) return
-
       const idx = data.findIndex((d) => d.id === boundary.id)
       if (idx === -1) return
 
@@ -139,7 +131,7 @@ export function useBoundaryDrag(
     }
 
     if (speed !== 0) {
-      scrollEl.scrollTop += speed
+      scrollEl.scrollTo({ top: scrollEl.scrollTop + speed })
       const contentY = getContentY(s.lastClientY)
       applyDrag(contentY)
     }
@@ -157,20 +149,19 @@ export function useBoundaryDrag(
       if (Math.abs(e.clientY - s.startClientY) < DRAG_THRESHOLD) return
       s.dragging = true
       s.handleEl.setPointerCapture(e.pointerId)
-      document.body.style.cursor =
-        s.boundary.type === 'move' ? 'grabbing' : 'ns-resize'
+      setBodyCursor(s.boundary.type === 'move' ? 'grabbing' : 'ns-resize')
       userScrub.next('start')
 
+      setDraggingRowId(s.boundary.id)
       setHighlightedRowIds([s.boundary.id])
 
       if (s.boundary.type !== 'move') {
         const data = getCurrentEditingTask().result?.data
         if (data) {
-          const idx = findDataIndex(s.boundary.id)
-          const { type } = s.boundary
-          if (type === 'end' && idx < data.length - 1) {
+          const idx = data.findIndex((d) => d.id === s.boundary.id)
+          if (s.boundary.type === 'end' && idx < data.length - 1) {
             setDragLimitY(seekHeight(data[idx + 1].start))
-          } else if (type === 'start' && idx > 0) {
+          } else if (s.boundary.type === 'start' && idx > 0) {
             setDragLimitY(seekHeight(data[idx - 1].end))
           }
         }
@@ -192,7 +183,7 @@ export function useBoundaryDrag(
         s.handleEl.releasePointerCapture(e.pointerId)
       }
       cancelAnimationFrame(s.rafId)
-      document.body.style.cursor = ''
+      setBodyCursor('')
 
       if (s.boundary.type === 'move') {
         if (!s.valid) {
@@ -225,6 +216,7 @@ export function useBoundaryDrag(
       } else {
         setHighlightedRowIds([])
       }
+      setDraggingRowId(null)
       setDragLimitY(-1)
       setDragInvalidId(null)
       userScrub.next('end')

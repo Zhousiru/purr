@@ -227,6 +227,12 @@ const dragLimitYAtom = atom(-1)
 export const useDragLimitYValue = () => useAtomValue(dragLimitYAtom)
 export const setDragLimitY = (y: number) => store.set(dragLimitYAtom, y)
 
+// Subtitle UUID currently being dragged, or null.
+const draggingRowIdAtom = atom<string | null>(null)
+export const useDraggingRowIdValue = () => useAtomValue(draggingRowIdAtom)
+export const setDraggingRowId = (id: string | null) =>
+  store.set(draggingRowIdAtom, id)
+
 // Subtitle UUID whose move-drag position is invalid (overlaps), or null.
 const dragInvalidIdAtom = atom<string | null>(null)
 export const useDragInvalidIdValue = () => useAtomValue(dragInvalidIdAtom)
