@@ -1,3 +1,4 @@
+import { upsertNotification } from '@/atoms/notifications'
 import { transcribeTaskListAtom, translateTaskListAtom } from '@/atoms/tasks'
 import {
   BasicTaskOptions,
@@ -10,6 +11,10 @@ import { removeFromTaskListAtomWithDb } from '../db/task-atom-storage'
 import { store } from '../store'
 import { TaskPool } from './pool'
 import { transcribeProcessor, translateProcessor } from './processor'
+
+function taskKindLabel(type: Task['type']): string {
+  return type === 'transcribe' ? 'Transcription' : 'Translation'
+}
 
 // TODO: Custom max concurrency.
 const maxTranscribe = 1
@@ -74,6 +79,14 @@ export function addTask(
       break
     }
   }
+
+  upsertNotification({
+    id: `task-create-${id}`,
+    type: 'info',
+    title: `${taskKindLabel(type)} queued`,
+    desc: basicOptions.name,
+    silent: true,
+  })
 }
 
 export function stopTask(type: Task['type'], taskId: string) {

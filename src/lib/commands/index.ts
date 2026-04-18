@@ -1,4 +1,5 @@
 import { BinaryStatus } from '@/atoms/bin-status'
+import { Notification } from '@/atoms/notifications'
 import {
   DownloadResult,
   DurationResult,
@@ -52,6 +53,7 @@ export interface Commands {
   cancelDownload: CommandFunction<null, void>
   getBinaryStatuses: CommandFunction<null, Record<string, BinaryStatus>>
   retryBinary: CommandFunction<{ id: string }, void>
+  getInitialNotifications: CommandFunction<null, Notification[]>
 }
 
 export const cmd = new Proxy(

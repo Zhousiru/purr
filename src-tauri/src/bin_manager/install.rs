@@ -12,7 +12,7 @@ use super::status::{BinaryStatus, InstallPhase};
 /// tens of emits/sec.
 const PROGRESS_THROTTLE: Duration = Duration::from_millis(200);
 
-pub fn notification_id(spec_id: &str) -> String {
+fn install_note_id(spec_id: &str) -> String {
   format!("bin-install-{spec_id}")
 }
 
@@ -33,22 +33,17 @@ pub async fn perform_install(
   release: &ReleaseInfo,
 ) -> anyhow::Result<ResolvedBinary> {
   let spec_id = spec.id();
-  let notif_id = notification_id(spec_id);
+  let label = spec.display_name();
+  let notif_id = install_note_id(spec_id);
   let title = match &phase {
-    InstallPhase::First => format!("Installing {spec_id}"),
-    InstallPhase::Update { .. } => format!("Updating {spec_id}"),
+    InstallPhase::First => format!("Installing {label}"),
+    InstallPhase::Update { .. } => format!("Updating {label}"),
   };
 
   notify::upsert(
     manager.app(),
-    Notification {
-      id: notif_id.clone(),
-      kind: NotificationType::Progress,
-      title,
-      desc: Some(format!("v{}", release.version)),
-      progress: None,
-      last_updated: 0,
-    },
+    Notification::new(&notif_id, NotificationType::Progress, title)
+      .with_desc(format!("v{}", release.version)),
   );
 
   let initial_status = match &phase {
@@ -100,7 +95,7 @@ pub async fn perform_install(
       notify::succeed(
         manager.app(),
         &notif_id,
-        Some(format!("{} v{}", spec_id, release.version)),
+        Some(format!("{label} v{}", release.version)),
       );
       manager.set_record(
         spec_id,

@@ -1,3 +1,4 @@
+import { upsertNotification } from '@/atoms/notifications'
 import { Button } from '@/components/ui/button'
 import { LabelCheckbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -99,6 +100,13 @@ export function ImportStep({
         url: trimmed,
         outputDir,
         audioOnly,
+      })
+      upsertNotification({
+        id: `media-download-${result.path}`,
+        type: 'info',
+        title: 'Media downloaded',
+        desc: result.title,
+        silent: true,
       })
       onComplete(meta, result)
     } catch (e) {

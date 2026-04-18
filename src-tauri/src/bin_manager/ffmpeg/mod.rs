@@ -18,6 +18,10 @@ impl BinarySpec for FfmpegSpec {
     "ffmpeg"
   }
 
+  fn display_name(&self) -> &'static str {
+    "FFmpeg"
+  }
+
   fn provides(&self) -> &'static [&'static str] {
     &["ffmpeg", "ffprobe"]
   }

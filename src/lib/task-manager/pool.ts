@@ -1,3 +1,4 @@
+import { upsertNotification } from '@/atoms/notifications'
 import { Task, TaskStatus } from '@/types/tasks'
 import {
   TaskAtom,
@@ -52,6 +53,14 @@ export class TaskPool<T extends Task> {
     processor.promise
       .then(() => {
         this.updateTaskStatus(taskAtom, 'done')
+        const t = store.get(taskAtom)
+        const kind = t.type === 'transcribe' ? 'Transcription' : 'Translation'
+        upsertNotification({
+          id: `task-done-${t.id}`,
+          type: 'success',
+          title: `${kind} complete`,
+          desc: t.name,
+        })
       })
       .catch(() => {
         this.updateTaskStatus(taskAtom, 'stopped')

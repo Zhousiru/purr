@@ -52,6 +52,14 @@ pub trait BinarySpec: Send + Sync + 'static {
   /// Stable identifier, used as key in version.json and the manager state.
   fn id(&self) -> &'static str;
 
+  /// Human-readable label for user-facing copy (notification titles, error
+  /// messages). Defaults to `id()`, which is fine for already-presentable
+  /// ids like `yt-dlp`; specs with awkward ids (e.g. `ffmpeg → FFmpeg`)
+  /// override.
+  fn display_name(&self) -> &'static str {
+    self.id()
+  }
+
   /// Executable base names this spec owns. `.exe` is added by the manager
   /// on Windows. yt-dlp → `["yt-dlp"]`; ffmpeg → `["ffmpeg", "ffprobe"]`.
   fn provides(&self) -> &'static [&'static str];

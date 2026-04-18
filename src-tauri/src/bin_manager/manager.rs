@@ -7,12 +7,17 @@ use tauri::{AppHandle, Emitter};
 use tokio::sync::Mutex;
 
 use crate::event_name;
+use crate::notify::{self, Notification, NotificationType};
 
 use super::install;
 use super::metadata::{self, VersionEntry, VersionMap};
 use super::path_probe;
 use super::spec::{executable_name, BinarySource, BinarySpec, ResolvedBinary};
 use super::status::{BinaryRecord, BinaryStatus, BinaryStatusEvent, InstallPhase};
+
+fn check_note_id(id: &str) -> String {
+  format!("bin-check-{id}")
+}
 
 /// Hard cap on the GitHub-API roundtrip used by the background update check.
 /// Distinct from the reqwest client's overall 60s ceiling — this is tight
@@ -351,11 +356,34 @@ impl BinManager {
       },
     );
 
+    let label = spec.display_name();
+    let note_id = check_note_id(spec.id());
+    notify::upsert(
+      &self.app,
+      Notification::new(
+        &note_id,
+        NotificationType::Progress,
+        format!("Checking {label} for updates"),
+      )
+      .with_desc(format!("Currently at {cur}"))
+      .silent(),
+    );
+
     let fetch = tokio::time::timeout(FETCH_LATEST_TIMEOUT, spec.fetch_latest(&self.http)).await;
     let release = match fetch {
       Ok(Ok(r)) => r,
       Ok(Err(e)) => {
         eprintln!("[bin_manager] {} update check failed: {e:#}", spec.id());
+        notify::upsert(
+          &self.app,
+          Notification::new(
+            &note_id,
+            NotificationType::Error,
+            format!("{label} update check failed"),
+          )
+          .with_desc(format!("{e}"))
+          .silent(),
+        );
         self.mark_ready_fallback(spec, cur);
         return Ok(());
       }
@@ -365,6 +393,16 @@ impl BinManager {
           spec.id(),
           FETCH_LATEST_TIMEOUT
         );
+        notify::upsert(
+          &self.app,
+          Notification::new(
+            &note_id,
+            NotificationType::Error,
+            format!("{label} update check timed out"),
+          )
+          .with_desc(format!("After {:?}", FETCH_LATEST_TIMEOUT))
+          .silent(),
+        );
         self.mark_ready_fallback(spec, cur);
         return Ok(());
       }
@@ -372,9 +410,23 @@ impl BinManager {
 
     if cur == release.version {
       eprintln!("[bin_manager] {} already at {cur}", spec.id());
+      notify::upsert(
+        &self.app,
+        Notification::new(
+          &note_id,
+          NotificationType::Info,
+          format!("{label} is up to date"),
+        )
+        .with_desc(format!("No updates available, current: {cur}"))
+        .silent(),
+      );
       self.mark_ready_fallback(spec, cur);
       return Ok(());
     }
+
+    // An update is available — drop the silent "checking" entry; the install
+    // flow surfaces its own (non-silent) progress notification.
+    notify::remove(&self.app, &note_id);
 
     eprintln!(
       "[bin_manager] updating {} from {cur} -> {}",

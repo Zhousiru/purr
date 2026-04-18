@@ -5,6 +5,7 @@ import {
 import {
   applyNotificationEvent,
   NotificationEvent,
+  upsertNotification,
 } from '@/atoms/notifications'
 import {
   getMonitor,
@@ -18,6 +19,10 @@ import { DaemonEventPayload } from '@/types/events'
 import { Event } from '@tauri-apps/api/event'
 import { daemonSubject } from './subjects'
 
+// Single-card lifecycle id so Starting → Ready → Stopped transitions replace
+// in place rather than stacking three entries on the notifications page.
+const WHISPER_NOTE_ID = 'whisper-server'
+
 export function handleWhisperServerDaemon(event: Event<DaemonEventPayload>) {
   const lineData = event.payload.data ?? ''
 
@@ -25,11 +30,23 @@ export function handleWhisperServerDaemon(event: Event<DaemonEventPayload>) {
     case 'launch':
       resetTerminalLines()
       setIsRunning(true)
+      upsertNotification({
+        id: WHISPER_NOTE_ID,
+        type: 'progress',
+        title: 'Whisper server starting',
+        silent: true,
+      })
       break
 
     case 'exit':
       setIsReady(false)
       setIsRunning(false)
+      upsertNotification({
+        id: WHISPER_NOTE_ID,
+        type: 'info',
+        title: 'Whisper server stopped',
+        silent: true,
+      })
       break
   }
 
@@ -38,6 +55,14 @@ export function handleWhisperServerDaemon(event: Event<DaemonEventPayload>) {
 
     const config = getWhisperServerConfig()
     getMonitor().reconnect(`http://${config.host}:${config.port}`)
+
+    upsertNotification({
+      id: WHISPER_NOTE_ID,
+      type: 'success',
+      title: 'Whisper server ready',
+      desc: `${config.host}:${config.port}`,
+      silent: true,
+    })
   }
 
   pushTerminalLine(event.payload.type, lineData)

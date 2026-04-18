@@ -7,6 +7,7 @@ import {
 import { RootLayout } from './components/layout/root-layout'
 import { EditorPage } from './pages/editor'
 import { LaunchpadPage } from './pages/launchpad'
+import { NotificationsPage } from './pages/notifications'
 import { SettingsPage } from './pages/settings'
 import { WhisperServerPage } from './pages/whisper-server'
 
@@ -37,6 +38,12 @@ const editorRoute = createRoute({
   component: EditorPage,
 })
 
+const notificationsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/notifications',
+  component: NotificationsPage,
+})
+
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
@@ -53,6 +60,7 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   launchpadRoute,
   editorRoute,
+  notificationsRoute,
   settingsRoute,
   whisperServerRoute,
 ])
