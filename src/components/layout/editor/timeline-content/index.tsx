@@ -1,5 +1,6 @@
 import {
   getCardPositions,
+  getHoveredRowId,
   getWaveformViewportHeight,
   setHighlightedRowIds,
   useCurrentEditingTask,
@@ -11,6 +12,7 @@ import {
   useVisibleCardPositionsValue,
 } from '@/atoms/editor'
 import { cn } from '@/lib/utils/cn'
+import { isTypingInInput } from '@/lib/utils/focus'
 import { waveformScroll } from '@/subjects/editor'
 import { TranslateResult } from '@/types/tasks'
 import { produce } from 'immer'
@@ -104,6 +106,32 @@ export function TimelineContent() {
     setHighlightedRowIds([])
   }
 
+  // Delete hovered row on `X` when no input is focused.
+  useEffect(() => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== 'x') return
+      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
+      if (isTypingInInput()) return
+
+      const id = getHoveredRowId()
+      if (!id) return
+
+      e.preventDefault()
+      setTask((prev) =>
+        produce(prev, (draft) => {
+          if (!draft.result) return
+          draft.result.data = draft.result.data.filter(
+            (d) => d.id !== id,
+          ) as typeof draft.result.data
+        }),
+      )
+    }
+
+    document.addEventListener('keydown', handleKeydown)
+
+    return () => document.removeEventListener('keydown', handleKeydown)
+  }, [setTask])
+
   // Edit text card content.
   function updateText(id: string, type: 'text' | 'translated', newText: string) {
     setTask((prev) =>
@@ -147,6 +175,7 @@ export function TimelineContent() {
             start={d.start}
             end={d.end}
             compact={compact}
+            hovered={hoveredId === card.id}
             className={cn(
               'absolute inset-x-4',
               card.id === dragInvalidId

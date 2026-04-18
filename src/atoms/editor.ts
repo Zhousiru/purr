@@ -245,6 +245,7 @@ export const setDragInvalidId = (id: string | null) =>
 // Subtitle UUID hovered by pointer Y (shared across waveform / cards / gaps).
 const hoveredRowIdAtom = atom<string | null>(null)
 export const useHoveredRowIdValue = () => useAtomValue(hoveredRowIdAtom)
+export const getHoveredRowId = () => store.get(hoveredRowIdAtom)
 export const setHoveredRowId = (id: string | null) =>
   store.set(hoveredRowIdAtom, id)
 
