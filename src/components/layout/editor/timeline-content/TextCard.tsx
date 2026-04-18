@@ -59,6 +59,9 @@ export const TextCard = ({
           className={cn(
             'flex min-w-0 flex-1',
             compact ? 'flex-row gap-2' : 'min-h-0 flex-col gap-2',
+            compact &&
+              hovered &&
+              'mask-[linear-gradient(to_right,black,black_calc(100%-6rem),transparent_calc(100%-2rem))]',
           )}
         >
           {children}
