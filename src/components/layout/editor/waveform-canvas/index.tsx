@@ -1,13 +1,6 @@
 import {
-  getEffectiveResolution,
-  getIsFollowMode,
-  getWaveformViewportHeight,
-  getZoomLevel,
   setWaveformColumnWidth,
-  setZoomLevel,
   useAddMarkContextValue,
-  ZOOM_LEVELS,
-  ZoomLevel,
 } from '@/atoms/editor'
 import {
   blockDuration,
@@ -19,13 +12,12 @@ import {
   widthScale,
 } from '@/constants/editor'
 import { usePointerInRect } from '@/hooks/usePointerInRect'
-import { player } from '@/lib/player'
 import { Waveform } from '@/lib/waveform'
 import { userScrub } from '@/subjects/editor'
 import { RefObject, useEffect, useRef } from 'react'
 import { HoverLayerRef } from './HoverLayer'
 import { TimeAxisBackground } from './TimeAxisBackground'
-import { seekHeightWithResolution, seekTimeWithResolution } from './utils'
+import { handleZoomWheel } from './utils'
 
 const DRAG_THRESHOLD = 3
 
@@ -84,34 +76,21 @@ export const WaveformCanvas = ({
     }
   }, [path, duration, mergeChannels, scrollContainerRef])
 
-  // Position the fixed hover layer — use the scroll container's viewport rect
-  // with the waveform column's width for a stable bounding.
   useEffect(() => {
-    const updateBounding = () => {
-      const scrollRect = scrollContainerRef.current?.getBoundingClientRect()
+    const update = () => {
       const waveformWidth = containerRef.current?.clientWidth
-      if (!scrollRect || !waveformWidth) return
+      if (!waveformWidth) return
       setWaveformColumnWidth(waveformWidth)
-      hoverLayerRef.current?.updateBounding(
-        new DOMRect(
-          scrollRect.left,
-          scrollRect.top,
-          waveformWidth,
-          scrollRect.height,
-        ),
-      )
     }
 
-    const observer = new ResizeObserver(updateBounding)
-    if (scrollContainerRef.current) observer.observe(scrollContainerRef.current)
+    const observer = new ResizeObserver(update)
     if (containerRef.current) observer.observe(containerRef.current)
 
     return () => observer.disconnect()
-  }, [scrollContainerRef, hoverLayerRef])
+  }, [])
 
-  // Drive the hoisted hover layer from rect hit-testing, not DOM enter/leave.
-  // The indicator's button lives outside this container's subtree, so relying
-  // on mouseleave would flicker each time the pointer crossed onto the button.
+  // Hit-test rather than mouseenter/leave so the indicator buttons
+  // (rendered outside this subtree) don't cause flicker.
   usePointerInRect({
     targetRef: containerRef,
     onUpdate: ({ inside, x, y }) => {
@@ -188,73 +167,18 @@ export const WaveformCanvas = ({
     }
   }, [scrollContainerRef])
 
-  // Handle container scroll for hover layer
+  // Attached to the scroll container so wheel events from the hover layer
+  // pill (rendered outside this subtree) also reach the zoom handler.
   useEffect(() => {
     const scrollEl = scrollContainerRef.current
     if (!scrollEl) return
 
-    const onScroll = () => {
-      hoverLayerRef.current?.updateOffset(scrollEl.scrollTop)
-    }
-
-    scrollEl.addEventListener('scroll', onScroll, { passive: true })
-    return () => scrollEl.removeEventListener('scroll', onScroll)
-  }, [scrollContainerRef, hoverLayerRef])
-
-  // Handle zoom with Ctrl + wheel
-  useEffect(() => {
-    const container = containerRef.current
-    const scrollEl = scrollContainerRef.current
-    if (!container || !scrollEl) return
-
     const handleWheel = (e: WheelEvent) => {
-      if (!e.ctrlKey) return
-      e.preventDefault()
-
-      const currentZoom = getZoomLevel()
-      const currentIndex = ZOOM_LEVELS.indexOf(currentZoom)
-
-      const newIndex =
-        e.deltaY > 0
-          ? Math.max(0, currentIndex - 1)
-          : Math.min(ZOOM_LEVELS.length - 1, currentIndex + 1)
-      const newZoom = ZOOM_LEVELS[newIndex] as ZoomLevel
-
-      if (newZoom === currentZoom) return
-
-      if (getIsFollowMode()) {
-        setZoomLevel(newZoom)
-        requestAnimationFrame(() => {
-          const centerHeight = seekHeightWithResolution(
-            player.currentTime,
-            getEffectiveResolution(),
-          )
-          scrollEl.scrollTop = centerHeight - getWaveformViewportHeight() / 2
-        })
-      } else {
-        const mouseY = e.clientY - scrollEl.getBoundingClientRect().top
-        const scrollTop = scrollEl.scrollTop
-        const oldResolution = getEffectiveResolution()
-        const mouseTime = seekTimeWithResolution(
-          scrollTop + mouseY,
-          oldResolution,
-        )
-
-        setZoomLevel(newZoom)
-
-        requestAnimationFrame(() => {
-          const newResolution = getEffectiveResolution()
-          const newMouseHeight = seekHeightWithResolution(
-            mouseTime,
-            newResolution,
-          )
-          scrollEl.scrollTop = newMouseHeight - mouseY
-        })
-      }
+      handleZoomWheel(e, scrollEl)
     }
 
-    container.addEventListener('wheel', handleWheel, { passive: false })
-    return () => container.removeEventListener('wheel', handleWheel)
+    scrollEl.addEventListener('wheel', handleWheel, { passive: false })
+    return () => scrollEl.removeEventListener('wheel', handleWheel)
   }, [scrollContainerRef])
 
   const addMarkContext = useAddMarkContextValue()
@@ -267,10 +191,8 @@ export const WaveformCanvas = ({
     >
       <TimeAxisBackground />
 
-      {/* Canvas with absolute positioning */}
       <canvas ref={canvasRef} className="pointer-events-none absolute left-0" />
 
-      {/* AddMark indicator */}
       {addMarkContext && (
         <div
           className="border-accent pointer-events-none absolute inset-x-0 border-t"

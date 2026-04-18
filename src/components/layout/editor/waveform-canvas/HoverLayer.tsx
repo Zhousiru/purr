@@ -4,6 +4,7 @@ import {
   getDataMap,
   setCurrentEditingTask,
   useAddMarkContext,
+  useWaveformColumnWidthValue,
 } from '@/atoms/editor'
 import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
 import { MIN_DURATION } from '@/constants/editor'
@@ -16,36 +17,32 @@ import {
   MouseEvent,
   MouseEventHandler,
   Ref,
+  RefObject,
   SetStateAction,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
   useState,
 } from 'react'
-import { seekHeight, seekTime } from './utils'
+import { clientYToContentY, seekHeight, seekTime } from './utils'
 
 export interface HoverLayerRef {
-  updateBounding: (rect: DOMRect) => void
   updateMouse: (x: number, y: number) => void
-  updateOffset: (y: number) => void
   setIsHover: Dispatch<SetStateAction<boolean>>
 }
 
 type HoverLayerProps = {
   ref?: Ref<HoverLayerRef>
+  scrollContainerRef: RefObject<HTMLDivElement | null>
 }
 
-/** Clamp a content-space height so `seekTime` stays within [0, duration]. */
 function clampHeight(h: number): number {
   const minH = seekHeight(0)
   const maxH = seekHeight(getCurrentEditingAudioDuration())
   return Math.max(minH, Math.min(maxH, h))
 }
 
-/**
- * Check whether a new boundary at `contentHeight` is a legal placement.
- * `addMarkCtx.startHeight` is assumed already clamped (stored clamped on first click).
- */
 function isPositionLegal(
   contentHeight: number,
   addMarkCtx: { startHeight: number } | null,
@@ -66,65 +63,61 @@ function isPositionLegal(
   return !data.some((d) => d.start < maxTime && d.end > minTime)
 }
 
-export const HoverLayer = ({ ref }: HoverLayerProps) => {
-  const containerRef = useRef<HTMLDivElement>(null)
+export const HoverLayer = ({ ref, scrollContainerRef }: HoverLayerProps) => {
   const indicatorRef = useRef<HTMLDivElement>(null)
-
-  const offsetRef = useRef(0)
-  const visualHeightRef = useRef(0)
 
   const [showIndicator, setShowIndicator] = useState(false)
   const [isLegalMark, setIsLegalMark] = useState(true)
 
   const [addMarkContext, setAddMarkContext] = useAddMarkContext()
+  const waveformWidth = useWaveformColumnWidthValue()
 
-  function recomputeLegality() {
-    const contentHeight = visualHeightRef.current + offsetRef.current
-    setIsLegalMark(isPositionLegal(contentHeight, getAddMarkContext()))
-  }
+  const syncLegality = useCallback(() => {
+    const scrollEl = scrollContainerRef.current
+    const indicator = indicatorRef.current
+    if (!scrollEl || !indicator) return
+    const stickyY = parseFloat(indicator.style.top) || 0
+    const contentY = stickyY + scrollEl.scrollTop
+    setIsLegalMark(isPositionLegal(contentY, getAddMarkContext()))
+  }, [scrollContainerRef])
 
-  // Re-check when addMarkContext changes (first boundary placed/cleared).
-  useEffect(recomputeLegality, [addMarkContext])
+  useEffect(syncLegality, [syncLegality])
+
+  useEffect(() => {
+    const scrollEl = scrollContainerRef.current
+    if (!scrollEl) return
+    scrollEl.addEventListener('scroll', syncLegality, { passive: true })
+    return () => scrollEl.removeEventListener('scroll', syncLegality)
+  }, [scrollContainerRef, syncLegality])
 
   useImperativeHandle(
     ref,
     () => ({
-      updateBounding(rect) {
-        containerRef.current!.style.top = rect.top + 'px'
-        containerRef.current!.style.left = rect.left + 'px'
-        containerRef.current!.style.width = rect.width + 'px'
-        containerRef.current!.style.height = rect.height + 'px'
-      },
       updateMouse(_, y) {
-        const height = y - containerRef.current!.getBoundingClientRect().top
-        indicatorRef.current!.style.top = height + 'px'
-        visualHeightRef.current = height
-        recomputeLegality()
-      },
-      updateOffset(y) {
-        offsetRef.current = y
-        recomputeLegality()
+        const scrollEl = scrollContainerRef.current
+        const indicator = indicatorRef.current
+        if (!scrollEl || !indicator) return
+        indicator.style.top = y - scrollEl.getBoundingClientRect().top + 'px'
+        syncLegality()
       },
       setIsHover: setShowIndicator,
     }),
-    [],
+    [scrollContainerRef, syncLegality],
   )
 
-  function calcHeight(e: MouseEvent) {
-    return (
-      e.clientY -
-      containerRef.current!.getBoundingClientRect().top +
-      offsetRef.current
-    )
+  function calcContentY(e: MouseEvent): number {
+    const scrollEl = scrollContainerRef.current
+    if (!scrollEl) return 0
+    return clientYToContentY(e.clientY, scrollEl)
   }
 
   const handleSeek: MouseEventHandler<HTMLButtonElement> = (e) => {
-    player.seek(seekTime(calcHeight(e)))
+    player.seek(seekTime(calcContentY(e)))
     void player.play().catch(() => {})
   }
 
   const handleAddMark: MouseEventHandler<HTMLButtonElement> = (e) => {
-    const contentHeight = clampHeight(calcHeight(e))
+    const contentHeight = clampHeight(calcContentY(e))
 
     if (!addMarkContext) {
       setAddMarkContext({ startHeight: contentHeight })
@@ -159,12 +152,12 @@ export const HoverLayer = ({ ref }: HoverLayerProps) => {
 
   return (
     <div
-      ref={containerRef}
-      className="pointer-events-none fixed z-50 overflow-hidden"
+      className="pointer-events-none absolute inset-y-0 left-0 z-30"
+      style={{ width: waveformWidth }}
     >
       <div
         ref={indicatorRef}
-        className={cn('absolute inset-x-0', !showIndicator && 'opacity-0')}
+        className={cn('sticky inset-x-0 h-0', !showIndicator && 'opacity-0')}
       >
         <div
           className={cn(
@@ -219,7 +212,6 @@ export const HoverLayer = ({ ref }: HoverLayerProps) => {
                   addMarkContext && 'bg-card',
                 )}
                 onClick={handleSeek}
-                // Prevent focus when not show.
                 tabIndex={showIndicator ? 0 : -1}
               >
                 <IconPlayerPlay

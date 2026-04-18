@@ -181,6 +181,10 @@ export function Editor() {
 
                 <MarksLayer />
                 <BoundaryHandles scrollContainerRef={scrollContainerRef} />
+                <HoverLayer
+                  ref={hoverLayerRef}
+                  scrollContainerRef={scrollContainerRef}
+                />
               </div>
             )}
           </div>
@@ -188,8 +192,6 @@ export function Editor() {
           {ready && (
             <PlaybackIndicator scrollContainerRef={scrollContainerRef} />
           )}
-
-          <HoverLayer ref={hoverLayerRef} />
         </Panel>
       </Group>
 

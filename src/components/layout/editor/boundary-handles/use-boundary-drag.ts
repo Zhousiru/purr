@@ -8,7 +8,11 @@ import {
   setHighlightedRowIds,
 } from '@/atoms/editor'
 import { determineCurrentTextId } from '@/components/layout/editor/follow-mode-dispatcher/utils'
-import { seekHeight, seekTime } from '@/components/layout/editor/waveform-canvas/utils'
+import {
+  clientYToContentY,
+  seekHeight,
+  seekTime,
+} from '@/components/layout/editor/waveform-canvas/utils'
 import { MIN_DURATION } from '@/constants/editor'
 import { player } from '@/lib/player'
 import { userScrub } from '@/subjects/editor'
@@ -44,8 +48,7 @@ export function useBoundaryDrag(
   function getContentY(clientY: number) {
     const scrollEl = scrollContainerRef.current
     if (!scrollEl) return 0
-    const rect = scrollEl.getBoundingClientRect()
-    return clientY - rect.top + scrollEl.scrollTop
+    return clientYToContentY(clientY, scrollEl)
   }
 
   function applyDrag(contentY: number) {
