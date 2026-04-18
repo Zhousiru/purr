@@ -13,10 +13,6 @@
     "strict": true,
     "incremental": true
   },
-  "include": [
-    "vite.config.ts",
-    "eslint.config.mjs",
-    "postcss.config.js"
-  ],
+  "include": ["vite.config.ts", "eslint.config.mjs"],
   "exclude": ["node_modules", "src-tauri"]
 }
