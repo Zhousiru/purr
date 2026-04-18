@@ -104,7 +104,7 @@ export function TaskRow({ taskAtom }: { taskAtom: TaskAtom<Task> }) {
 
   return (
     <div
-      className="relative cursor-pointer overflow-hidden rounded-xl hover:bg-black/5"
+      className="relative overflow-hidden rounded-xl hover:bg-black/5"
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
       onClick={handleClick}

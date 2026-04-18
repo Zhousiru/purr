@@ -9,19 +9,12 @@ export function SubtitlePanel() {
   const prevIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    const unsub = player.subCurrentTime((time) => {
+    return player.subCurrentTime((time) => {
       const id = determineCurrentTextId(time)
       if (id === prevIdRef.current) return
       prevIdRef.current = id
-      if (!id) {
-        setText('')
-        return
-      }
-      const d = getDataMap().get(id)
-      setText(d?.text ?? '')
+      setText(id ? (getDataMap().get(id)?.text ?? '') : '')
     })
-
-    return () => unsub()
   }, [])
 
   return (
