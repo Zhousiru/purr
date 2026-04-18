@@ -35,7 +35,10 @@ function TaskRowActions({ taskAtom }: { taskAtom: TaskAtom<Task> }) {
 
   return (
     <>
-      <div className="absolute inset-y-0 right-0 flex items-center gap-0.5 pr-2">
+      <div
+        className="absolute inset-y-0 right-0 flex items-center gap-0.5 pr-2"
+        onClick={(e) => e.stopPropagation()}
+      >
         {canStop && (
           <button
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded hover:bg-black/5"

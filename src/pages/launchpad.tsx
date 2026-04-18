@@ -49,7 +49,8 @@ function QuickActionCard({
   disabledVariant,
 }: QuickActionCardProps) {
   const isInactive = comingSoon || (disabled && disabledVariant !== 'failed')
-  const displayDescription = disabled && disabledReason ? disabledReason : description
+  const displayDescription =
+    disabled && disabledReason ? disabledReason : description
   const showSpinner = disabled && disabledVariant === 'setup'
   const showWarning = disabled && disabledVariant === 'failed'
 
@@ -58,7 +59,7 @@ function QuickActionCard({
       onClick={isInactive ? undefined : onClick}
       title={disabled ? disabledReason : undefined}
       className={cn(
-        'border-border relative flex flex-col items-start overflow-hidden rounded-2xl border p-5 text-left transition',
+        'border-border relative flex flex-col items-start overflow-hidden rounded-xl border p-6 text-left',
         isInactive
           ? 'cursor-default opacity-50'
           : 'hover:border-border hover:bg-secondary cursor-pointer',
@@ -95,7 +96,7 @@ function QuickActionCard({
       {showSpinner && disabledProgress !== undefined && (
         <div className="bg-border absolute right-0 bottom-0 left-0 h-0.5">
           <div
-            className="bg-violet-500 h-full transition-[width]"
+            className="h-full bg-violet-500 transition-[width]"
             style={{ width: `${Math.round(disabledProgress * 100)}%` }}
           />
         </div>
@@ -159,50 +160,54 @@ export function LaunchpadPage() {
     <div className="flex h-full flex-col">
       <PageHeader>Launchpad</PageHeader>
 
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="grid grid-cols-3 gap-3">
-          <QuickActionCard
-            icon={<IconPlus size={20} />}
-            iconBgClass="bg-blue-50"
-            iconColorClass="text-blue-500"
-            title="New Task"
-            description="Transcribe audio files from your device"
-            onClick={handleNewTask}
-          />
-          <QuickActionCard
-            icon={<IconLink size={20} />}
-            iconBgClass="bg-violet-50"
-            iconColorClass="text-violet-500"
-            title="New Task From URL"
-            description="Import audio from a web link"
-            onClick={handleNewUrlTask}
-            disabled={urlDisabled}
-            disabledVariant={urlVariant}
-            disabledReason={urlDisabled ? buildSetupReason(mediaSummary) : undefined}
-            disabledProgress={mediaSummary.progress}
-          />
-          <QuickActionCard
-            icon={<IconMicrophone size={20} />}
-            iconBgClass="bg-rose-50"
-            iconColorClass="text-rose-500"
-            title="Live Record"
-            description="Record and transcribe live audio"
-            comingSoon
-          />
-        </div>
-
-        {recentlyViewed.length > 0 && (
-          <div className="mt-8">
-            <div className="px-2 text-xs font-medium opacity-50">
-              Recently Viewed
-            </div>
-            <div className="mt-1 flex flex-col gap-0.5">
-              {recentlyViewed.map((taskAtom, i) => (
-                <TaskRow key={i} taskAtom={taskAtom} />
-              ))}
-            </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto mt-[20vh] w-full max-w-4xl">
+          <div className="grid grid-cols-3 gap-3 px-2">
+            <QuickActionCard
+              icon={<IconPlus size={20} />}
+              iconBgClass="bg-blue-50"
+              iconColorClass="text-blue-500"
+              title="New Task"
+              description="Transcribe audio files from your device"
+              onClick={handleNewTask}
+            />
+            <QuickActionCard
+              icon={<IconLink size={20} />}
+              iconBgClass="bg-violet-50"
+              iconColorClass="text-violet-500"
+              title="New Task From URL"
+              description="Import audio from a web link"
+              onClick={handleNewUrlTask}
+              disabled={urlDisabled}
+              disabledVariant={urlVariant}
+              disabledReason={
+                urlDisabled ? buildSetupReason(mediaSummary) : undefined
+              }
+              disabledProgress={mediaSummary.progress}
+            />
+            <QuickActionCard
+              icon={<IconMicrophone size={20} />}
+              iconBgClass="bg-rose-50"
+              iconColorClass="text-rose-500"
+              title="Live Record"
+              description="Record and transcribe live audio"
+              comingSoon
+            />
           </div>
-        )}
+
+          {recentlyViewed.length > 0 && (
+            <div className="mt-8">
+              <div className="px-2 text-xs font-medium opacity-50">
+                Recently Viewed
+              </div>
+              <div className="mt-1 flex flex-col gap-0.5">
+                {recentlyViewed.slice(0, 5).map((taskAtom, i) => (
+                  <TaskRow key={i} taskAtom={taskAtom} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <NewTaskModal isOpen={newTaskModal} onClose={setNewTaskModal} />
