@@ -21,8 +21,12 @@ export default defineConfig({
     hmr: host ? { protocol: 'ws', host, port: 1421 } : undefined,
     watch: { ignored: ['**/src-tauri/**'] },
   },
+  css: {
+    transformer: 'lightningcss',
+  },
   build: {
     outDir: 'dist',
     target: 'esnext',
+    cssMinify: 'lightningcss',
   },
 })
