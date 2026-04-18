@@ -2948,6 +2948,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-clipboard-manager",
  "tauri-plugin-dialog",
+ "tauri-plugin-fs",
  "tauri-plugin-prevent-default",
  "tauri-plugin-window-state",
  "thiserror 1.0.69",

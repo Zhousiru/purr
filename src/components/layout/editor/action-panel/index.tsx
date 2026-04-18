@@ -4,9 +4,11 @@ import {
   useCurrentEditingLanguageValue,
   useCurrentEditingTaskNameValue,
 } from '@/atoms/editor'
+import { ExportSubtitlesModal } from '@/components/modal/export-subtitles'
 import { cn } from '@/lib/utils/cn'
 import { formatSec } from '@/lib/utils/time'
 import { IconFileExport, IconLanguage } from '@tabler/icons-react'
+import { useState } from 'react'
 import { ActionButton } from './action-button'
 import { PlaybackControls } from './playback-controls'
 import { SubtitlePanel } from './subtitle-panel'
@@ -17,6 +19,8 @@ export function ActionPanel() {
   const sourcePath = useCurrentEditingAudioPathValue()
   const sourceDuration = useCurrentEditingAudioDurationValue()
   const language = useCurrentEditingLanguageValue()
+
+  const [exportOpen, setExportOpen] = useState(false)
 
   const isVideo = !!sourcePath && sourcePath.toLowerCase().endsWith('.mp4')
 
@@ -53,7 +57,7 @@ export function ActionPanel() {
             <div className="mb-1 px-2 text-xs font-medium opacity-50">
               Actions
             </div>
-            <ActionButton>
+            <ActionButton onClick={() => setExportOpen(true)}>
               <IconFileExport size={16} />
               Export
             </ActionButton>
@@ -68,6 +72,8 @@ export function ActionPanel() {
       </div>
 
       <PlaybackControls />
+
+      <ExportSubtitlesModal isOpen={exportOpen} onClose={setExportOpen} />
     </div>
   )
 }

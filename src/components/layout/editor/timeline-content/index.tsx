@@ -11,6 +11,7 @@ import {
   useIsFollowModeValue,
   useVisibleCardPositionsValue,
 } from '@/atoms/editor'
+import { getIsAnyModalOpen } from '@/atoms/modal-open'
 import { cn } from '@/lib/utils/cn'
 import { isTypingInInput } from '@/lib/utils/focus'
 import { waveformScroll } from '@/subjects/editor'
@@ -69,6 +70,7 @@ export function TimelineContent() {
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.code === 'Escape') {
+        if (getIsAnyModalOpen()) return
         const focused = document.activeElement
         if (!containerRef.current!.contains(focused)) {
           return
@@ -111,6 +113,7 @@ export function TimelineContent() {
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() !== 'x') return
       if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
+      if (getIsAnyModalOpen()) return
       if (isTypingInInput()) return
 
       const id = getHoveredRowId()

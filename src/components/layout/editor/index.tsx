@@ -1,3 +1,4 @@
+import { getIsAnyModalOpen } from '@/atoms/modal-open'
 import {
   findRowIdByY,
   setHoveredRowId,
@@ -11,6 +12,7 @@ import {
 import { WaveformCanvas } from '@/components/layout/editor/waveform-canvas'
 import { usePointerInRect } from '@/hooks/usePointerInRect'
 import { player } from '@/lib/player'
+import { isTypingInInput } from '@/lib/utils/focus'
 import { pointerMove, waveformScroll } from '@/subjects/editor'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { Group, Panel, Separator } from 'react-resizable-panels'
@@ -70,6 +72,8 @@ export function Editor() {
   useEffect(() => {
     const handleTogglePlay = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
+        if (getIsAnyModalOpen()) return
+        if (isTypingInInput()) return
         e.preventDefault()
         e.stopPropagation()
         void player.togglePlay().catch(() => {})
@@ -115,7 +119,7 @@ export function Editor() {
     targetRef: scrollContainerRef,
     scrollRef: scrollContainerRef,
     onUpdate: ({ inside, y, rect }) => {
-      if (!inside) {
+      if (!inside || getIsAnyModalOpen()) {
         setHoveredRowId(null)
         return
       }

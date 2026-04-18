@@ -13,6 +13,11 @@
     "core:window:allow-close",
     "core:window:allow-is-maximized",
     "dialog:default",
+    "fs:allow-write-text-file",
+    {
+      "identifier": "fs:scope",
+      "allow": [{ "path": "**" }]
+    },
     "window-state:default",
     "clipboard-manager:allow-read-text"
   ]

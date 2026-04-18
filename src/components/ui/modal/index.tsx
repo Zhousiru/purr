@@ -1,3 +1,4 @@
+import { useRegisterModalOpen } from '@/atoms/modal-open'
 import { cn } from '@/lib/utils/cn'
 import {
   Dialog,
@@ -28,6 +29,8 @@ export function Modal({
   children: ReactNode
 }) {
   const defaultFocusRef = useRef<HTMLDivElement>(null)
+
+  useRegisterModalOpen(isOpen)
 
   return (
     <>
