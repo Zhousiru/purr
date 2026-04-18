@@ -27,7 +27,7 @@ const Select = ({ items, className, ref, ...props }: SelectProps) => {
   return (
     <Listbox ref={ref} {...props}>
       <div className={className}>
-        <ListboxButton className="z-20 flex h-9 w-full items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm shadow placeholder:text-muted-foreground focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50">
+        <ListboxButton className="z-20 flex h-9 w-full items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50">
           {({ value }) => (
             <>
               <div className="overflow-hidden text-ellipsis whitespace-nowrap">

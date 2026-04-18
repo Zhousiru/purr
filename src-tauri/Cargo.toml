@@ -29,6 +29,7 @@ rayon = "1.10"
 reqwest = { version = "0.12", features = ["json", "blocking", "multipart"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
+tauri-plugin-opener = "2"
 tauri-plugin-clipboard-manager = "2"
 tokio = { version = "1", features = ["sync", "time", "fs", "process", "io-util", "macros"] }
 tauri-plugin-prevent-default = "4"

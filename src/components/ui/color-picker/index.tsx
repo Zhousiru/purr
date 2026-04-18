@@ -54,7 +54,7 @@ export function ColorPicker({ value, onChange, className }: ColorPickerProps) {
   return (
     <Popover className={cn('relative', className)}>
       <PopoverButton
-        className="border-border focus-visible:ring-ring flex h-9 w-full items-center gap-2 rounded-md border bg-transparent px-2 text-sm shadow focus-visible:ring-2 focus-visible:outline-none"
+        className="border-border focus-visible:ring-ring flex h-9 w-full items-center gap-2 rounded-md border bg-transparent px-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
         aria-label="Pick color"
       >
         <span

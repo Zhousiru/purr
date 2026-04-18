@@ -21,7 +21,7 @@ const CheckboxPrimitive = ({ className, ref, ...props }: CheckboxPrimitiveProps)
     <Checkbox
       ref={ref}
       className={cn(
-        'group relative h-4 w-4 shrink-0 overflow-hidden rounded-sm border border-border shadow focus-visible:outline-none focus-visible:ring-2',
+        'group relative h-4 w-4 shrink-0 overflow-hidden rounded-sm border border-border focus-visible:outline-none focus-visible:ring-2',
         className,
       )}
       {...props}
