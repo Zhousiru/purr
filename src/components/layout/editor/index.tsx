@@ -162,7 +162,6 @@ export function Editor() {
                     <WaveformCanvas
                       path={sourcePath}
                       duration={sourceDuration}
-                      mergeChannels={false}
                       scrollContainerRef={scrollContainerRef}
                       hoverLayerRef={hoverLayerRef}
                       totalHeight={totalHeight}

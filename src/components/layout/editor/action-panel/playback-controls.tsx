@@ -2,17 +2,19 @@ import {
   useCurrentEditingAudioDurationValue,
   useIsFollowMode,
   useIsPlayingValue,
+  useMergeChannels,
 } from '@/atoms/editor'
 import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
 import { player } from '@/lib/player'
 import { cn } from '@/lib/utils/cn'
 import { formatSec } from '@/lib/utils/time'
 import {
+  IconColumns1,
+  IconColumns2,
   IconMultiplier1x,
   IconMultiplier2x,
   IconPlayerPauseFilled,
   IconPlayerPlayFilled,
-  IconShare2,
   IconViewfinder,
 } from '@tabler/icons-react'
 import { MouseEventHandler, useEffect, useRef, useState } from 'react'
@@ -27,6 +29,7 @@ const PLAYBACK_RATE_ICONS = {
 export function PlaybackControls() {
   const isPlaying = useIsPlayingValue()
   const [isFollowMode, setIsFollowMode] = useIsFollowMode()
+  const [mergeChannels, setMergeChannels] = useMergeChannels()
 
   const totalDuration = useCurrentEditingAudioDurationValue()
   const [currentTime, setCurrentTime] = useState(0)
@@ -167,16 +170,9 @@ export function PlaybackControls() {
               small
             />
           </Tooltip>
-          <Tooltip content="Export">
-            <ControlButton
-              className="ml-auto"
-              onClick={() => alert('Export')}
-              icon={<IconShare2 size={16} />}
-              small
-            />
-          </Tooltip>
           <Tooltip content="Playback rate">
             <ControlButton
+              className="ml-auto"
               onClick={() => {
                 const current = player.playbackRate
                 const idx = PLAYBACK_RATES.indexOf(
@@ -193,6 +189,19 @@ export function PlaybackControls() {
                   ]
                 return <Icon size={16} />
               })()}
+              small
+            />
+          </Tooltip>
+          <Tooltip content="Toggle waveform">
+            <ControlButton
+              onClick={() => setMergeChannels((prev) => !prev)}
+              icon={
+                mergeChannels ? (
+                  <IconColumns1 size={16} />
+                ) : (
+                  <IconColumns2 size={16} />
+                )
+              }
               small
             />
           </Tooltip>

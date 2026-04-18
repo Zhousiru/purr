@@ -140,6 +140,11 @@ export const useIsFollowMode = () => useAtom(isFollowModeAtom)
 export const useIsFollowModeValue = () => useAtomValue(isFollowModeAtom)
 export const getIsFollowMode = () => store.get(isFollowModeAtom)
 
+const mergeChannelsAtom = atom(false)
+export const useMergeChannels = () => useAtom(mergeChannelsAtom)
+export const useMergeChannelsValue = () => useAtomValue(mergeChannelsAtom)
+export const getMergeChannels = () => store.get(mergeChannelsAtom)
+
 const zoomLevelAtom = atom<ZoomLevel>(1)
 export const useZoomLevel = () => useAtom(zoomLevelAtom)
 export const useZoomLevelValue = () => useAtomValue(zoomLevelAtom)

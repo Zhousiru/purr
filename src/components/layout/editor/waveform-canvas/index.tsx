@@ -1,6 +1,8 @@
 import {
+  getMergeChannels,
   setWaveformColumnWidth,
   useAddMarkContextValue,
+  useMergeChannelsValue,
 } from '@/atoms/editor'
 import {
   blockDuration,
@@ -32,7 +34,6 @@ function isInsidePanelSafeArea(el: HTMLElement, clientX: number) {
 type WaveformCanvasProps = {
   path: string
   duration: number
-  mergeChannels: boolean
   scrollContainerRef: RefObject<HTMLDivElement | null>
   hoverLayerRef: RefObject<HoverLayerRef | null>
   totalHeight: number
@@ -41,11 +42,11 @@ type WaveformCanvasProps = {
 export const WaveformCanvas = ({
   path,
   duration,
-  mergeChannels,
   scrollContainerRef,
   hoverLayerRef,
   totalHeight,
 }: WaveformCanvasProps) => {
+  const mergeChannels = useMergeChannelsValue()
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const waveformRef = useRef<Waveform | null>(null)
@@ -62,7 +63,7 @@ export const WaveformCanvas = ({
       duration,
       {
         blockDuration,
-        mergeChannels,
+        mergeChannels: getMergeChannels(),
         preload,
         resolution,
         fillColor,
@@ -74,7 +75,11 @@ export const WaveformCanvas = ({
       waveformRef.current?.dispose()
       waveformRef.current = null
     }
-  }, [path, duration, mergeChannels, scrollContainerRef])
+  }, [path, duration, scrollContainerRef])
+
+  useEffect(() => {
+    waveformRef.current?.setMergeChannels(mergeChannels)
+  }, [mergeChannels])
 
   useEffect(() => {
     const update = () => {

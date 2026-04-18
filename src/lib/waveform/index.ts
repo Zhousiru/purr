@@ -98,6 +98,12 @@ export class Waveform {
     this.scheduleRender()
   }
 
+  setMergeChannels(mergeChannels: boolean) {
+    if (this.options.mergeChannels === mergeChannels) return
+    this.options.mergeChannels = mergeChannels
+    this.scheduleRender()
+  }
+
   private handleScroll() {
     this.scrollTop = this.scrollContainer.scrollTop
 
