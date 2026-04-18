@@ -35,6 +35,17 @@ impl SubprocessRunner {
     manager.ensure_all().await?;
     let yt_dlp = manager.exe("yt-dlp", "yt-dlp")?;
     let ffmpeg_dir = manager.dir("ffmpeg").ok();
+    match &ffmpeg_dir {
+      Some(dir) => eprintln!(
+        "[yt-dlp] runner using yt-dlp={} --ffmpeg-location={}",
+        yt_dlp.display(),
+        dir.display()
+      ),
+      None => eprintln!(
+        "[yt-dlp] runner using yt-dlp={} (no ffmpeg resolved — downloads will fail)",
+        yt_dlp.display()
+      ),
+    }
     Ok(Self::new(yt_dlp, ffmpeg_dir))
   }
 

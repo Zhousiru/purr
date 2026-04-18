@@ -198,6 +198,14 @@ impl BinManager {
           .get(id)
           .map(|e| e.version.clone())
           .unwrap_or_else(|| "unknown".into());
+        let dir_str = resolved
+          .dir()
+          .map(|p| p.display().to_string())
+          .unwrap_or_else(|| "<unknown>".into());
+        eprintln!(
+          "[bin_manager] {id} resolved via managed v{version} at {dir_str}"
+        );
+        self.notify_ready(spec.as_ref(), BinarySource::Managed, &version, &dir_str);
         let status = if spec.auto_update() {
           BinaryStatus::Installed { version }
         } else {
@@ -209,6 +217,12 @@ impl BinManager {
         self.set_record(id, status, Some(resolved));
       } else if spec.probe_path() {
         if let Some(resolved) = self.try_path(spec.as_ref()) {
+          let dir_str = resolved
+            .dir()
+            .map(|p| p.display().to_string())
+            .unwrap_or_else(|| "<unknown>".into());
+          eprintln!("[bin_manager] {id} resolved via system PATH at {dir_str}");
+          self.notify_ready(spec.as_ref(), BinarySource::SystemPath, "system", &dir_str);
           self.set_record(
             id,
             BinaryStatus::Ready {
@@ -217,9 +231,42 @@ impl BinManager {
             },
             Some(resolved),
           );
+        } else {
+          eprintln!("[bin_manager] {id} not found on $PATH; will install");
         }
+      } else {
+        eprintln!("[bin_manager] {id} not present on disk; will install");
       }
     }
+  }
+
+  fn notify_ready(
+    &self,
+    spec: &dyn BinarySpec,
+    source: BinarySource,
+    version: &str,
+    dir: &str,
+  ) {
+    let label = spec.display_name();
+    let source_label = match source {
+      BinarySource::Managed => "managed",
+      BinarySource::SystemPath => "system PATH",
+    };
+    let desc = if version == "system" {
+      format!("Using {source_label} — {dir}")
+    } else {
+      format!("Using {source_label} v{version} — {dir}")
+    };
+    notify::upsert(
+      &self.app,
+      Notification::new(
+        format!("bin-ready-{}", spec.id()),
+        NotificationType::Info,
+        format!("{label} ready"),
+      )
+      .with_desc(desc)
+      .silent(),
+    );
   }
 
   async fn resolve_or_install(
