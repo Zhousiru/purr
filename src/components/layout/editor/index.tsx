@@ -11,6 +11,7 @@ import {
 } from '@/atoms/editor'
 import { WaveformCanvas } from '@/components/layout/editor/waveform-canvas'
 import { usePointerInRect } from '@/hooks/usePointerInRect'
+import { rescueStaleIntelligence } from '@/lib/intelligence/runner'
 import { player } from '@/lib/player'
 import { isTypingInInput } from '@/lib/utils/focus'
 import { pointerMove, waveformScroll } from '@/subjects/editor'
@@ -19,6 +20,8 @@ import { Group, Panel, Separator } from 'react-resizable-panels'
 import { ActionPanel } from './action-panel'
 import { BoundaryHandles } from './boundary-handles'
 import { FollowModeDispatcher } from './follow-mode-dispatcher'
+import { OutlinePanel } from './intelligence-panels/outline-panel'
+import { SummaryPanel } from './intelligence-panels/summary-panel'
 import { MarksLayer } from './marks-layer'
 import { PlaybackIndicator } from './playback-indicator'
 import { TimelineContent } from './timeline-content'
@@ -133,6 +136,12 @@ export function Editor() {
   // Clear hover state on unmount.
   useEffect(() => () => setHoveredRowId(null), [])
 
+  // Flip any intelligence state left in `processing` (crash / force-quit) to
+  // `error` so the panel UI shows Retry instead of an endless spinner.
+  useEffect(() => {
+    rescueStaleIntelligence()
+  }, [])
+
   const ready = viewportHeight > 0
 
   return (
@@ -201,6 +210,9 @@ export function Editor() {
       {ready && (
         <FollowModeDispatcher scrollContainerRef={scrollContainerRef} />
       )}
+
+      <OutlinePanel />
+      <SummaryPanel />
     </>
   )
 }

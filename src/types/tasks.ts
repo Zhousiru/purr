@@ -36,10 +36,37 @@ export interface TranscribeResult {
   data: Transcript[]
 }
 
+export type IntelligenceStatus = 'processing' | 'done' | 'error'
+
+export interface OutlineItem {
+  id: string
+  title: string
+  timestamp: number
+  level: 1 | 2 | 3
+}
+
+export interface OutlineState {
+  status: IntelligenceStatus
+  items?: OutlineItem[]
+  error?: string
+  generatedAt?: number
+  model?: string
+}
+
+export interface SummaryState {
+  status: IntelligenceStatus
+  content?: string
+  error?: string
+  generatedAt?: number
+  model?: string
+}
+
 export interface TranscribeTask extends BasicTask {
   type: 'transcribe'
   options: TranscribeOptions
   result: TranscribeResult | null
+  outline?: OutlineState
+  summary?: SummaryState
 }
 
 export interface TranslateOptions {

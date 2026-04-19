@@ -12,6 +12,7 @@ import { formatSec } from '@/lib/utils/time'
 import { IconFileExport, IconLanguage } from '@tabler/icons-react'
 import { useState } from 'react'
 import { ActionButton } from './action-button'
+import { IntelligenceSection } from './intelligence-section'
 import { PlaybackControls } from './playback-controls'
 import { SubtitlePanel } from './subtitle-panel'
 import { TranslationsSection } from './translations-section'
@@ -61,6 +62,8 @@ export function ActionPanel() {
           </div>
 
           <TranslationsSection />
+
+          <IntelligenceSection />
 
           <div className="flex flex-col px-2">
             <div className="mb-1 px-2 text-xs font-medium opacity-50">
