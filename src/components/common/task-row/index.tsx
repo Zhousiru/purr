@@ -1,5 +1,6 @@
-import { setCurrentEditingTaskAtom } from '@/atoms/editor'
+import { findTaskAtomById, setCurrentEditingTaskAtom } from '@/atoms/editor'
 import { addRecentlyViewed } from '@/atoms/recently-viewed'
+import { ensureViewedAndFlag } from '@/atoms/viewed-variations'
 import { TaskInfoModal } from '@/components/modal/task-info'
 import { WhisperServerGuardModal } from '@/components/modal/whisper-server-guard'
 import { useWhisperServerGuard } from '@/components/modal/whisper-server-guard/use-whisper-server-guard'
@@ -12,7 +13,7 @@ import {
 import { StatusIndicator } from '@/components/ui/status-indicator'
 import { TaskAtom } from '@/lib/db/task-atom-storage'
 import { removeTask, startTask, stopTask } from '@/lib/task-manager'
-import { Task } from '@/types/tasks'
+import { Task, TranscribeTask, TranslateTask } from '@/types/tasks'
 import {
   IconDots,
   IconInfoCircle,
@@ -101,7 +102,18 @@ export function TaskRow({ taskAtom }: { taskAtom: TaskAtom<Task> }) {
 
   function handleClick() {
     addRecentlyViewed(task.id)
-    setCurrentEditingTaskAtom(taskAtom)
+
+    if (task.type === 'transcribe') {
+      setCurrentEditingTaskAtom(taskAtom as TaskAtom<TranscribeTask>)
+    } else {
+      const parentId = (task as TranslateTask).parentTaskId
+      const parentAtom = findTaskAtomById(parentId)
+      if (parentAtom) {
+        setCurrentEditingTaskAtom(parentAtom as TaskAtom<TranscribeTask>)
+        ensureViewedAndFlag(parentId, task.id)
+      }
+    }
+
     navigate({ to: '/editor', search: { id: task.id } })
   }
 

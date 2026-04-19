@@ -1,5 +1,9 @@
+import { llmProviderConfigAtom } from '@/atoms/llm-provider'
+import { upsertNotification } from '@/atoms/notifications'
 import { getMonitor } from '@/atoms/whisper-server'
-import { TranscribeTask, TranslateTask } from '@/types/tasks'
+import { translate } from '@/lib/translator'
+import { TranscribeTask, TranslateTask, Translation } from '@/types/tasks'
+import { produce } from 'immer'
 import { PrimitiveAtom } from 'jotai'
 import { store } from '../store'
 import {
@@ -99,42 +103,94 @@ export const transcribeProcessor: TaskProcessor<TranscribeTask> = (
 export const translateProcessor: TaskProcessor<TranslateTask> = (
   taskAtom: PrimitiveAtom<TranslateTask>,
 ) => {
-  // FIXME: Fake processor.
+  const controller = new AbortController()
 
-  let abort: null | (() => void) = null
+  const abort = () => {
+    controller.abort()
+  }
 
-  const promise = new Promise<void>((resolve, reject) => {
+  const promise = (async () => {
     if (!isRecoveredTask(taskAtom)) {
-      initTaskResult(taskAtom, {
-        progress: 0,
-        data: [],
-      })
+      initTaskResult(taskAtom, { progress: 0, data: [] })
     }
 
-    const intervalId = setInterval(() => {
-      store.set(taskAtom, (prev) => ({
-        ...prev,
-        result: {
-          progress: prev.result!.progress + 10,
-          data: [],
-        },
-      }))
+    const task = store.get(taskAtom)
+    const source = task.sourceSnapshot
+    const total = source.length
 
-      if (store.get(taskAtom).result!.progress === 100) {
-        clearInterval(intervalId)
-        resolve()
-      }
-    }, 500)
-
-    abort = () => {
-      clearInterval(intervalId)
-      reject()
+    if (total === 0) {
+      updateTaskProgress(taskAtom, 100)
       return
     }
-  })
+
+    const existing = task.result?.data ?? []
+    const doneIds = new Set(existing.map((t) => t.id))
+    const remaining = source.filter((s) => !doneIds.has(s.id))
+    const doneBefore = existing.length
+
+    if (remaining.length === 0) {
+      updateTaskProgress(taskAtom, 100)
+      return
+    }
+
+    const config = store.get(llmProviderConfigAtom)
+
+    const startedAt = performance.now()
+    console.log(
+      `[translate] start "${task.name}" provider=${config.provider} model=${task.options.model} lang=${task.options.targetLanguage} total=${total} remaining=${remaining.length} batchSize=${task.options.batchSize} concurrency=${task.options.batchConcurrency}`,
+    )
+
+    try {
+      await translate(
+        remaining,
+        task.options,
+        config,
+        {
+          onLine: (t: Translation) => {
+            store.set(taskAtom, (prev) =>
+              produce(prev, (draft) => {
+                if (!draft.result) {
+                  draft.result = { progress: 0, data: [] }
+                }
+                const idx = draft.result.data.findIndex((d) => d.id === t.id)
+                if (idx >= 0) {
+                  draft.result.data[idx] = t
+                } else {
+                  draft.result.data.push(t)
+                }
+              }),
+            )
+          },
+          onProgress: (ratio) => {
+            const thisRun = Math.round(ratio * remaining.length)
+            const overall = ((doneBefore + thisRun) / total) * 100
+            updateTaskProgress(taskAtom, overall)
+          },
+        },
+        controller.signal,
+      )
+    } catch (err) {
+      if (controller.signal.aborted) {
+        console.log(`[translate] aborted "${task.name}"`)
+        throw err
+      }
+      const message = err instanceof Error ? err.message : String(err)
+      console.error(`[translate] failed "${task.name}":`, message)
+      upsertNotification({
+        id: `task-error-${task.id}`,
+        type: 'error',
+        title: 'Translation failed',
+        desc: `${task.name}: ${message}`,
+      })
+      throw err
+    }
+
+    const elapsedMs = Math.round(performance.now() - startedAt)
+    console.log(`[translate] done "${task.name}" in ${elapsedMs}ms`)
+  })()
 
   return {
-    abort: abort!,
+    abort,
     promise,
   }
 }

@@ -47,6 +47,7 @@ export interface TranslateOptions {
   model: string
   prompt: string
   batchSize: number
+  batchConcurrency: number
 }
 
 export interface TranslateResult {

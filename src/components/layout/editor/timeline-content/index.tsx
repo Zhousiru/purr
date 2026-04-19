@@ -4,6 +4,7 @@ import {
   getWaveformViewportHeight,
   setHighlightedRowIds,
   useCurrentEditingTask,
+  useCurrentEditingTaskAtomValue,
   useDataMapValue,
   useDragInvalidIdValue,
   useHighlightedRowIdsValue,
@@ -12,23 +13,30 @@ import {
   useVisibleCardPositionsValue,
 } from '@/atoms/editor'
 import { getIsAnyModalOpen } from '@/atoms/modal-open'
+import { translateTaskListAtom } from '@/atoms/tasks'
+import { useViewState } from '@/atoms/viewed-variations'
+import { TaskAtom } from '@/lib/db/task-atom-storage'
+import { store } from '@/lib/store'
 import { cn } from '@/lib/utils/cn'
 import { isTypingInInput } from '@/lib/utils/focus'
 import { waveformScroll } from '@/subjects/editor'
-import { TranslateResult } from '@/types/tasks'
+import { TranscribeTask, TranslateTask, Translation } from '@/types/tasks'
+import { IconLoader2 } from '@tabler/icons-react'
 import { produce } from 'immer'
-import { useEffect, useRef } from 'react'
+import { useAtom, useAtomValue } from 'jotai'
+import { useEffect, useMemo, useRef } from 'react'
 import { TextCard } from './TextCard'
 
 type TextFieldProps = {
   compact: boolean
   value: string
   onChange: (value: string) => void
+  readOnly?: boolean
 }
 
-function TextField({ compact, value, onChange }: TextFieldProps) {
+function TextField({ compact, value, onChange, readOnly }: TextFieldProps) {
   const base =
-    'border-accent w-full bg-transparent outline-none focus:border-b'
+    'border-transparent w-full bg-transparent outline-none border-b focus:border-accent'
   if (compact) {
     return (
       <input
@@ -36,6 +44,7 @@ function TextField({ compact, value, onChange }: TextFieldProps) {
         onChange={(e) => onChange(e.target.value)}
         className={base}
         autoComplete="off"
+        readOnly={readOnly}
       />
     )
   }
@@ -45,11 +54,91 @@ function TextField({ compact, value, onChange }: TextFieldProps) {
       onChange={(e) => onChange(e.target.value)}
       className={cn(base, 'scrollbar-none field-sizing-content resize-none')}
       autoComplete="off"
+      readOnly={readOnly}
+    />
+  )
+}
+
+function FieldSpinner() {
+  return (
+    <div className="text-foreground/40 flex items-center gap-1.5 text-xs">
+      <IconLoader2 size={12} className="animate-spin" />
+      <span>Translating…</span>
+    </div>
+  )
+}
+
+type ViewedSource =
+  | { kind: 'transcribe'; atom: TaskAtom<TranscribeTask> }
+  | { kind: 'translate'; atom: TaskAtom<TranslateTask> }
+
+function TranscribeVariationField({
+  atom,
+  cardId,
+  compact,
+}: {
+  atom: TaskAtom<TranscribeTask>
+  cardId: string
+  compact: boolean
+}) {
+  const [task, setTask] = useAtom(atom)
+  const item = task.result?.data.find((d) => d.id === cardId)
+  if (!item) return null
+
+  return (
+    <TextField
+      compact={compact}
+      value={item.text}
+      onChange={(v) =>
+        setTask((prev) =>
+          produce(prev, (draft) => {
+            const it = draft.result?.data.find((d) => d.id === cardId)
+            if (it) it.text = v
+          }),
+        )
+      }
+    />
+  )
+}
+
+function TranslateVariationField({
+  atom,
+  cardId,
+  compact,
+}: {
+  atom: TaskAtom<TranslateTask>
+  cardId: string
+  compact: boolean
+}) {
+  const [task, setTask] = useAtom(atom)
+  const item = task.result?.data.find((d) => d.id === cardId)
+
+  if (!item) {
+    const wip = task.status === 'processing' || task.status === 'queued'
+    if (wip) return <FieldSpinner />
+    return <TextField compact={compact} value="" onChange={() => {}} readOnly />
+  }
+
+  return (
+    <TextField
+      compact={compact}
+      value={(item as Translation).translated}
+      onChange={(v) =>
+        setTask((prev) =>
+          produce(prev, (draft) => {
+            const it = draft.result?.data.find((d) => d.id === cardId) as
+              | Translation
+              | undefined
+            if (it) it.translated = v
+          }),
+        )
+      }
     />
   )
 }
 
 export function TimelineContent() {
+  const parentAtom = useCurrentEditingTaskAtomValue()!
   const [task, setTask] = useCurrentEditingTask()
 
   const result = task.result
@@ -64,6 +153,30 @@ export function TimelineContent() {
   const highlighted = useHighlightedRowIdsValue()
   const hoveredId = useHoveredRowIdValue()
   const dragInvalidId = useDragInvalidIdValue()
+
+  const viewState = useViewState(task.id)
+  const translateAtoms = useAtomValue(translateTaskListAtom)
+
+  // Resolve viewed task ids → source atoms (parent transcribe or a translate atom).
+  const viewedSources = useMemo<ViewedSource[]>(() => {
+    if (!viewState) return [{ kind: 'transcribe', atom: parentAtom }]
+    return viewState.viewed
+      .map<ViewedSource | null>((id) => {
+        if (id === task.id) return { kind: 'transcribe', atom: parentAtom }
+        const a = translateAtoms.find((ta) => store.get(ta).id === id)
+        return a ? { kind: 'translate', atom: a } : null
+      })
+      .filter((x): x is ViewedSource => x !== null)
+  }, [viewState, task.id, parentAtom, translateAtoms])
+
+  const flaggedSource = useMemo<ViewedSource | undefined>(() => {
+    if (!viewState) return viewedSources[0]
+    return (
+      viewedSources.find(
+        (s) => store.get(s.atom).id === viewState.flagged,
+      ) ?? viewedSources[0]
+    )
+  }, [viewedSources, viewState])
 
   // Handle accessible keyboard event.
   const containerRef = useRef<HTMLDivElement>(null)
@@ -108,7 +221,9 @@ export function TimelineContent() {
     setHighlightedRowIds([])
   }
 
-  // Delete hovered row on `X` when no input is focused.
+  // Delete hovered row on `X` when no input is focused. Deletes from the
+  // parent transcribe; translate-task entries for that id become orphan
+  // rows that no longer render (cards derive from the parent).
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() !== 'x') return
@@ -123,9 +238,7 @@ export function TimelineContent() {
       setTask((prev) =>
         produce(prev, (draft) => {
           if (!draft.result) return
-          draft.result.data = draft.result.data.filter(
-            (d) => d.id !== id,
-          ) as typeof draft.result.data
+          draft.result.data = draft.result.data.filter((d) => d.id !== id)
         }),
       )
     }
@@ -134,33 +247,6 @@ export function TimelineContent() {
 
     return () => document.removeEventListener('keydown', handleKeydown)
   }, [setTask])
-
-  // Edit text card content.
-  function updateText(id: string, type: 'text' | 'translated', newText: string) {
-    setTask((prev) =>
-      produce(prev, (draft) => {
-        if (!draft.result) {
-          throw new Error('Task does not have result yet.')
-        }
-
-        const item = draft.result.data.find((d) => d.id === id)
-        if (!item) return
-
-        if (draft.type === 'transcribe') {
-          if (type === 'translated') {
-            throw new Error('Cannot edit `translated` of a `transcribe` task.')
-          }
-          item.text = newText
-        } else {
-          if (type === 'text') {
-            item.text = newText
-          } else {
-            ;(item as { translated: string }).translated = newText
-          }
-        }
-      }),
-    )
-  }
 
   const hasEmphasis = highlighted.length > 0 || hoveredId !== null
 
@@ -172,6 +258,13 @@ export function TimelineContent() {
         const isEmphasized =
           highlighted.includes(card.id) || hoveredId === card.id
         const compact = card.height < 60
+
+        const sources = compact
+          ? flaggedSource
+            ? [flaggedSource]
+            : []
+          : viewedSources
+
         return (
           <TextCard
             key={card.id}
@@ -192,21 +285,22 @@ export function TimelineContent() {
             onFocus={() => handleCardFocus(card.id)}
             onBlur={() => handleCardBlur()}
           >
-            <TextField
-              compact={compact}
-              value={d.text}
-              onChange={(v) => updateText(card.id, 'text', v)}
-            />
-            {task.type === 'translate' && (
-              <TextField
-                compact={compact}
-                value={
-                  (result as TranslateResult).data.find(
-                    (t) => t.id === card.id,
-                  )?.translated ?? ''
-                }
-                onChange={(v) => updateText(card.id, 'translated', v)}
-              />
+            {sources.map((s, i) =>
+              s.kind === 'transcribe' ? (
+                <TranscribeVariationField
+                  key={`t-${i}`}
+                  atom={s.atom}
+                  cardId={card.id}
+                  compact={compact}
+                />
+              ) : (
+                <TranslateVariationField
+                  key={`l-${i}`}
+                  atom={s.atom}
+                  cardId={card.id}
+                  compact={compact}
+                />
+              ),
             )}
           </TextCard>
         )

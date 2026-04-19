@@ -99,6 +99,7 @@ export function Tooltip({
   typeof useTooltip
 >[0]) {
   const tooltip = useTooltip(options)
+  if (!content) return <>{children}</>
   return (
     <TooltipContext.Provider value={tooltip}>
       <TooltipTrigger>{children}</TooltipTrigger>

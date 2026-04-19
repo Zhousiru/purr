@@ -2,7 +2,7 @@ import { cardOverscanHeight, resolution } from '@/constants/editor'
 import { TaskAtom } from '@/lib/db/task-atom-storage'
 import { createIsPlayingAtom } from '@/lib/player/atoms'
 import { store } from '@/lib/store'
-import { Task, Transcript, TranslateTask } from '@/types/tasks'
+import { Task, TranscribeTask, Transcript } from '@/types/tasks'
 import { atom, useAtom, useAtomValue } from 'jotai'
 import { Getter } from 'jotai/vanilla'
 import { transcribeTaskListAtom, translateTaskListAtom } from './tasks'
@@ -10,9 +10,10 @@ import { transcribeTaskListAtom, translateTaskListAtom } from './tasks'
 export const ZOOM_LEVELS = [0.5, 1, 2, 4, 8, 16] as const
 export type ZoomLevel = (typeof ZOOM_LEVELS)[number]
 
-const currentEditingTaskAtom = atom<TaskAtom<Task> | null>(null)
-export const setCurrentEditingTaskAtom = (taskAtom: TaskAtom<Task> | null) =>
-  store.set(currentEditingTaskAtom, taskAtom)
+const currentEditingTaskAtom = atom<TaskAtom<TranscribeTask> | null>(null)
+export const setCurrentEditingTaskAtom = (
+  taskAtom: TaskAtom<TranscribeTask> | null,
+) => store.set(currentEditingTaskAtom, taskAtom)
 export const useCurrentEditingTaskAtomValue = () =>
   useAtomValue(currentEditingTaskAtom)
 
@@ -78,26 +79,12 @@ export const useWaveformVisibleAreaValue = () =>
 const isPlayingAtom = createIsPlayingAtom()
 export const useIsPlayingValue = () => useAtomValue(isPlayingAtom)
 
-const findTranscribeTask = (get: Getter) => {
+const findTranscribeTask = (get: Getter): TranscribeTask => {
   const taskAtom = get(currentEditingTaskAtom)
   if (!taskAtom) {
     throw new Error('Current editing task atom cannot be `null`.')
   }
-  const task = get(taskAtom)
-
-  if (task.type === 'transcribe') {
-    return task
-  }
-
-  const parentTaskId = (task as TranslateTask).parentTaskId
-  const parentTaskAtom = get(transcribeTaskListAtom).find(
-    (ta) => store.get(ta).id === parentTaskId,
-  )
-  if (!parentTaskAtom) {
-    throw new Error('Invalid `parentTaskId`.')
-  }
-
-  return get(parentTaskAtom)
+  return get(taskAtom)
 }
 
 const currentEditingAudioPathAtom = atom(
@@ -221,7 +208,7 @@ export const setWaveformColumnWidth = (width: number) =>
 
 // Imperative task setter for use outside React (e.g. drag handlers).
 export const setCurrentEditingTask = (
-  updater: (prev: Task) => Task,
+  updater: (prev: TranscribeTask) => TranscribeTask,
 ) => {
   const taskAtom = store.get(currentEditingTaskAtom)
   if (!taskAtom) {

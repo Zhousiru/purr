@@ -1,0 +1,17 @@
+export const SUGGESTED_LANGUAGES: string[] = [
+  'English',
+  'Japanese',
+  'Chinese (Simplified)',
+  'Chinese (Traditional)',
+  'Korean',
+  'Spanish',
+  'French',
+  'German',
+  'Russian',
+  'Portuguese',
+  'Italian',
+  'Arabic',
+  'Hindi',
+  'Vietnamese',
+  'Thai',
+]

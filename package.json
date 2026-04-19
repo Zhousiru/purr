@@ -13,6 +13,10 @@
     "format": "prettier . -w"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.71",
+    "@ai-sdk/google": "^3.0.64",
+    "@ai-sdk/openai": "^3.0.53",
+    "@ai-sdk/openai-compatible": "^2.0.41",
     "@floating-ui/react": "^0.27.16",
     "@headlessui/react": "^2.2.9",
     "@tabler/icons-react": "^3.36.1",
@@ -24,6 +28,7 @@
     "@tauri-apps/plugin-fs": "~2.5.0",
     "@tauri-apps/plugin-opener": "^2.5.3",
     "@tauri-apps/plugin-window-state": "^2.4.1",
+    "ai": "^6.0.168",
     "clsx": "^2.1.1",
     "dexie": "^4.2.1",
     "filesize": "^11.0.13",

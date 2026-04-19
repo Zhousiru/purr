@@ -1,5 +1,8 @@
+import { useCurrentEditingTaskValue } from '@/atoms/editor'
+import { useViewState } from '@/atoms/viewed-variations'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
+import { Select } from '@/components/ui/select'
 import {
   AssStyle,
   DEFAULT_ASS_STYLE,
@@ -14,7 +17,10 @@ import toast from 'react-hot-toast'
 import { AssStyleControls } from './ass-style-controls'
 import { FormatList } from './format-list'
 import { Preview } from './preview'
-import { useExportSegments } from './use-export-segments'
+import {
+  useExportSegments,
+  useVariationOptions,
+} from './use-export-segments'
 
 function sanitizeFilename(name: string): string {
   return name.replace(/[\\/:*?"<>|]+/g, '_').trim() || 'subtitles'
@@ -27,18 +33,27 @@ export function ExportSubtitlesModal({
   isOpen: boolean
   onClose: (value: boolean) => void
 }) {
+  const parent = useCurrentEditingTaskValue()
+  const viewState = useViewState(parent.id)
+  const variations = useVariationOptions()
+
   const [format, setFormat] = useState<ExportFormat>('vtt')
   const [assStyle, setAssStyle] = useState<AssStyle>(DEFAULT_ASS_STYLE)
   const [isWriting, setIsWriting] = useState(false)
+  const [variationId, setVariationId] = useState<string>(parent.id)
 
   useLayoutEffect(() => {
     if (!isOpen) return
     setFormat('vtt')
     setAssStyle(DEFAULT_ASS_STYLE)
     setIsWriting(false)
-  }, [isOpen])
+    // Default to the flagged variation; fall back to parent if it's missing.
+    const candidate = viewState?.flagged ?? parent.id
+    const exists = variations.some((v) => v.id === candidate)
+    setVariationId(exists ? candidate : parent.id)
+  }, [isOpen, viewState?.flagged, parent.id, variations])
 
-  const { segments, meta } = useExportSegments()
+  const { segments, meta } = useExportSegments(variationId)
 
   const previewText = useMemo(() => {
     const desc = resolveFormat(format)
@@ -76,6 +91,11 @@ export function ExportSubtitlesModal({
 
   const noData = segments.length === 0
 
+  const selectItems = variations.map((v) => ({
+    key: v.id,
+    name: v.label,
+  }))
+
   return (
     <Modal
       isOpen={isOpen}
@@ -87,7 +107,14 @@ export function ExportSubtitlesModal({
         className="grid grid-cols-[220px_minmax(0,1fr)] items-start gap-3"
         style={{ height: '62vh' }}
       >
-        <FormatList value={format} onChange={setFormat} />
+        <div className="flex flex-col gap-2">
+          <Select
+            items={selectItems}
+            value={variationId}
+            onChange={(v: string) => setVariationId(v)}
+          />
+          <FormatList value={format} onChange={setFormat} />
+        </div>
 
         <div className="flex h-full min-h-0 min-w-0 flex-col gap-2">
           {format === 'ass' && (

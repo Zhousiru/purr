@@ -155,12 +155,12 @@ export function addTaskFromUrl(
 export function addTranslationTask(
   parentTask: TranscribeTask,
   config: TranslateOptions,
-) {
+): string {
   const nameGenerator = new NameGenerator(translateTaskListAtom)
   const sourceSnapshot = structuredClone(parentTask.result!.data)
   const name = `${parentTask.name} [${config.targetLanguage}]`
 
-  addTask(
+  const id = addTask(
     'translate',
     {
       name,
@@ -172,4 +172,6 @@ export function addTranslationTask(
   )
 
   nameGenerator.dispose()
+
+  return id
 }

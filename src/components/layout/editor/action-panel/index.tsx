@@ -3,8 +3,10 @@ import {
   useCurrentEditingAudioPathValue,
   useCurrentEditingLanguageValue,
   useCurrentEditingTaskNameValue,
+  useCurrentEditingTaskValue,
 } from '@/atoms/editor'
 import { ExportSubtitlesModal } from '@/components/modal/export-subtitles'
+import { TranslateOptionsModal } from '@/components/modal/translate-options'
 import { cn } from '@/lib/utils/cn'
 import { formatSec } from '@/lib/utils/time'
 import { IconFileExport, IconLanguage } from '@tabler/icons-react'
@@ -12,6 +14,7 @@ import { useState } from 'react'
 import { ActionButton } from './action-button'
 import { PlaybackControls } from './playback-controls'
 import { SubtitlePanel } from './subtitle-panel'
+import { TranslationsSection } from './translations-section'
 import { VideoPreview } from './video-preview'
 
 export function ActionPanel() {
@@ -19,8 +22,12 @@ export function ActionPanel() {
   const sourcePath = useCurrentEditingAudioPathValue()
   const sourceDuration = useCurrentEditingAudioDurationValue()
   const language = useCurrentEditingLanguageValue()
+  const parentTranscribeTask = useCurrentEditingTaskValue()
 
   const [exportOpen, setExportOpen] = useState(false)
+  const [translateOpen, setTranslateOpen] = useState(false)
+
+  const canTranslate = !!parentTranscribeTask.result?.data.length
 
   const isVideo = !!sourcePath && sourcePath.toLowerCase().endsWith('.mp4')
 
@@ -53,6 +60,8 @@ export function ActionPanel() {
             </dl>
           </div>
 
+          <TranslationsSection />
+
           <div className="flex flex-col px-2">
             <div className="mb-1 px-2 text-xs font-medium opacity-50">
               Actions
@@ -61,7 +70,15 @@ export function ActionPanel() {
               <IconFileExport size={16} />
               Export
             </ActionButton>
-            <ActionButton>
+            <ActionButton
+              onClick={() => setTranslateOpen(true)}
+              disabled={!canTranslate}
+              title={
+                canTranslate
+                  ? undefined
+                  : 'Complete a transcription first to translate it.'
+              }
+            >
               <IconLanguage size={16} />
               Translate
             </ActionButton>
@@ -74,6 +91,11 @@ export function ActionPanel() {
       <PlaybackControls />
 
       <ExportSubtitlesModal isOpen={exportOpen} onClose={setExportOpen} />
+      <TranslateOptionsModal
+        isOpen={translateOpen}
+        onClose={setTranslateOpen}
+        parentTask={parentTranscribeTask}
+      />
     </div>
   )
 }

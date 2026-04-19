@@ -36,17 +36,17 @@ export function addTask(
   type: 'transcribe',
   basicOptions: BasicTaskOptions,
   options: TranscribeOptions,
-): void
+): string
 export function addTask(
   type: 'translate',
   basicOptions: TranslateBasicTaskOptions,
   options: TranslateOptions,
-): void
+): string
 export function addTask(
   type: Task['type'],
   basicOptions: BasicTaskOptions | TranslateBasicTaskOptions,
   options: TranscribeOptions | TranslateOptions,
-): void {
+): string {
   const id = crypto.randomUUID()
 
   switch (type) {
@@ -87,6 +87,8 @@ export function addTask(
     desc: basicOptions.name,
     silent: true,
   })
+
+  return id
 }
 
 export function stopTask(type: Task['type'], taskId: string) {
