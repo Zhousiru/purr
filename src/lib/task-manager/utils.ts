@@ -55,7 +55,7 @@ export function updateTaskProgress<T extends Task>(
 
 export function pushTaskTranscript(
   taskAtom: PrimitiveAtom<TranscribeTask>,
-  data: Transcript,
+  data: Omit<Transcript, 'id'> & { id?: string },
 ) {
   updateTaskResult(taskAtom, (prev) => {
     if (!prev) {
@@ -70,7 +70,7 @@ export function pushTaskTranscript(
 
 export function pushTaskTranslation(
   taskAtom: PrimitiveAtom<TranslateTask>,
-  data: Translation,
+  data: Omit<Translation, 'id'> & { id?: string },
 ) {
   updateTaskResult(taskAtom, (prev) => {
     if (!prev) {

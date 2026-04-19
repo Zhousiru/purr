@@ -172,9 +172,13 @@ export function TimelineContent() {
   const flaggedSource = useMemo<ViewedSource | undefined>(() => {
     if (!viewState) return viewedSources[0]
     return (
-      viewedSources.find(
-        (s) => store.get(s.atom).id === viewState.flagged,
-      ) ?? viewedSources[0]
+      viewedSources.find((s) => {
+        const id =
+          s.kind === 'transcribe'
+            ? store.get(s.atom).id
+            : store.get(s.atom).id
+        return id === viewState.flagged
+      }) ?? viewedSources[0]
     )
   }, [viewedSources, viewState])
 

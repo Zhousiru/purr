@@ -10,6 +10,7 @@ import { Tooltip, TooltipGroup } from '@/components/ui/tooltip'
 import { MIN_DURATION } from '@/constants/editor'
 import { player } from '@/lib/player'
 import { cn } from '@/lib/utils/cn'
+import { Translation } from '@/types/tasks'
 import { IconCheck, IconPlayerPlay, IconPlus, IconX } from '@tabler/icons-react'
 import { produce } from 'immer'
 import {
@@ -141,7 +142,9 @@ export const HoverLayer = ({ ref, scrollContainerRef }: HoverLayerProps) => {
         if (draft.type === 'transcribe') {
           draft.result.data.push(entry)
         } else {
-          draft.result.data.push({ ...entry, translated: '' })
+          // Immer's draft union doesn't narrow `data` to Translation[],
+          // so cast the inserted entry to satisfy the wider element type.
+          draft.result.data.push({ ...entry, translated: '' } as Translation)
         }
         draft.result.data.sort((a, b) => a.start - b.start)
       }),

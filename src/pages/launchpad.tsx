@@ -33,6 +33,7 @@ interface QuickActionCardProps {
   disabledReason?: string
   disabledProgress?: number
   disabledVariant?: 'setup' | 'failed'
+  className?: string
 }
 
 function QuickActionCard({
@@ -47,6 +48,7 @@ function QuickActionCard({
   disabledReason,
   disabledProgress,
   disabledVariant,
+  className,
 }: QuickActionCardProps) {
   const isInactive = comingSoon || (disabled && disabledVariant !== 'failed')
   const displayDescription =
@@ -63,6 +65,7 @@ function QuickActionCard({
         isInactive
           ? 'cursor-default opacity-50'
           : 'hover:border-border hover:bg-secondary cursor-pointer',
+        className,
       )}
     >
       <div
@@ -192,6 +195,7 @@ export function LaunchpadPage() {
               title="Live Record"
               description="Record and transcribe live audio"
               comingSoon
+              className="hidden" // Temporarily hidden until implemented
             />
           </div>
 
