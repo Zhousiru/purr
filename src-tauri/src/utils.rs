@@ -1,4 +1,4 @@
-use std::{fs::read_dir, io, os::windows::fs::MetadataExt, path::Path};
+use std::{fs::read_dir, io, path::Path};
 
 pub fn dir_size<P: AsRef<Path>>(path: P) -> io::Result<u64> {
   let entries = read_dir(path)?;
@@ -11,7 +11,7 @@ pub fn dir_size<P: AsRef<Path>>(path: P) -> io::Result<u64> {
     if metadata.is_dir() {
       total_size += dir_size(entry.path())?
     } else {
-      total_size += metadata.file_size()
+      total_size += metadata.len()  // 跨os通用
     }
   }
 
