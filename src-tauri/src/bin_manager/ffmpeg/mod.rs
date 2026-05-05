@@ -40,7 +40,7 @@ impl BinarySpec for FfmpegSpec {
     // machine-readable endpoint, and "latest" is accurate.
     let assets = platform_assets()
       .into_iter()
-      .map(|(name, url)| ReleaseAsset { name, url })
+      .map(|(name, url, _wanted)| ReleaseAsset { name, url })
       .collect();
     Ok(ReleaseInfo {
       version: "latest".into(),
@@ -66,19 +66,30 @@ impl BinarySpec for FfmpegSpec {
     let tmp_dir = bin_dir.join(".tmp");
     tokio::fs::create_dir_all(&tmp_dir).await?;
 
+    let wanted_per_asset: Vec<Vec<&'static str>> = platform_assets()
+      .into_iter()
+      .map(|(_, _, w)| w)
+      .collect();
+
     for (idx, asset) in release.assets.iter().enumerate() {
       let archive_name = format!("ffmpeg-asset-{idx}.bin");
       let tmp = tmp_dir.join(&archive_name);
       download::download_to_file(http, &asset.url, &tmp, |d, t| on_progress(d, t)).await?;
-      extract_asset(&tmp, bin_dir).await?;
+      let wanted = wanted_per_asset
+        .get(idx)
+        .map(|w| w.as_slice())
+        .unwrap_or(&[]);
+      extract_asset(&tmp, bin_dir, wanted).await?;
       let _ = tokio::fs::remove_file(&tmp).await;
     }
 
     set_executable_bits(bin_dir).await?;
     let _ = tokio::fs::remove_dir_all(&tmp_dir).await;
 
-    // Sanity check — if we couldn't locate ffmpeg or ffprobe after extract,
-    // bail with a useful error so the manager surfaces it via notify::fail.
+    // Final sanity check — bail only after every asset has been processed,
+    // so a single archive missing a binary doesn't fail the install when a
+    // later archive supplies it (e.g. macOS ships ffmpeg / ffprobe in
+    // separate zips).
     for name in ["ffmpeg", "ffprobe"] {
       let p = bin_dir.join(executable_name(name));
       if !tokio::fs::try_exists(&p).await.unwrap_or(false) {
@@ -102,12 +113,13 @@ fn executable_name(base: &str) -> String {
 /// worldwide) since gyan.dev/johnvansickle are single-origin and slow from
 /// most of the world. macOS stays on evermeet because BtbN doesn't build
 /// for macOS.
-fn platform_assets() -> Vec<(String, String)> {
+fn platform_assets() -> Vec<(String, String, Vec<&'static str>)> {
   #[cfg(target_os = "windows")]
   {
     vec![(
       "BtbN/ffmpeg-master-latest-win64-gpl".into(),
       "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip".into(),
+      vec!["ffmpeg.exe", "ffprobe.exe"],
     )]
   }
 
@@ -123,6 +135,7 @@ fn platform_assets() -> Vec<(String, String)> {
       format!(
         "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-{slug}-gpl.tar.xz"
       ),
+      vec!["ffmpeg", "ffprobe"],
     )]
   }
 
@@ -132,10 +145,12 @@ fn platform_assets() -> Vec<(String, String)> {
       (
         "evermeet/ffmpeg".into(),
         "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip".into(),
+        vec!["ffmpeg"],
       ),
       (
         "evermeet/ffprobe".into(),
         "https://evermeet.cx/ffmpeg/getrelease/ffprobe/zip".into(),
+        vec!["ffprobe"],
       ),
     ]
   }
@@ -147,11 +162,16 @@ fn platform_assets() -> Vec<(String, String)> {
 }
 
 #[cfg(target_os = "windows")]
-async fn extract_asset(archive: &Path, bin_dir: &Path) -> anyhow::Result<()> {
+async fn extract_asset(
+  archive: &Path,
+  bin_dir: &Path,
+  wanted: &[&'static str],
+) -> anyhow::Result<()> {
   let archive = archive.to_path_buf();
   let bin_dir = bin_dir.to_path_buf();
+  let wanted: Vec<&'static str> = wanted.to_vec();
   tokio::task::spawn_blocking(move || -> anyhow::Result<()> {
-    extract_zip_flat(&archive, &bin_dir, &["ffmpeg.exe", "ffprobe.exe"])
+    extract_zip_flat(&archive, &bin_dir, &wanted)
   })
   .await
   .map_err(|e| anyhow::anyhow!("ffmpeg extract join error: {e}"))??;
@@ -159,9 +179,14 @@ async fn extract_asset(archive: &Path, bin_dir: &Path) -> anyhow::Result<()> {
 }
 
 #[cfg(target_os = "linux")]
-async fn extract_asset(archive: &Path, bin_dir: &Path) -> anyhow::Result<()> {
+async fn extract_asset(
+  archive: &Path,
+  bin_dir: &Path,
+  wanted: &[&'static str],
+) -> anyhow::Result<()> {
   let archive = archive.to_path_buf();
   let bin_dir = bin_dir.to_path_buf();
+  let wanted: Vec<&'static str> = wanted.to_vec();
   tokio::task::spawn_blocking(move || -> anyhow::Result<()> {
     let file = std::fs::File::open(&archive)?;
     let xz = xz2::read::XzDecoder::new(file);
@@ -172,7 +197,7 @@ async fn extract_asset(archive: &Path, bin_dir: &Path) -> anyhow::Result<()> {
       let Some(file_name) = path.file_name().and_then(|s| s.to_str()) else {
         continue;
       };
-      if file_name == "ffmpeg" || file_name == "ffprobe" {
+      if wanted.iter().any(|w| *w == file_name) {
         let dest = bin_dir.join(file_name);
         if dest.exists() {
           let _ = std::fs::remove_file(&dest);
@@ -188,11 +213,16 @@ async fn extract_asset(archive: &Path, bin_dir: &Path) -> anyhow::Result<()> {
 }
 
 #[cfg(target_os = "macos")]
-async fn extract_asset(archive: &Path, bin_dir: &Path) -> anyhow::Result<()> {
+async fn extract_asset(
+  archive: &Path,
+  bin_dir: &Path,
+  wanted: &[&'static str],
+) -> anyhow::Result<()> {
   let archive = archive.to_path_buf();
   let bin_dir = bin_dir.to_path_buf();
+  let wanted: Vec<&'static str> = wanted.to_vec();
   tokio::task::spawn_blocking(move || -> anyhow::Result<()> {
-    extract_zip_flat(&archive, &bin_dir, &["ffmpeg", "ffprobe"])
+    extract_zip_flat(&archive, &bin_dir, &wanted)
   })
   .await
   .map_err(|e| anyhow::anyhow!("ffmpeg extract join error: {e}"))??;
@@ -200,7 +230,11 @@ async fn extract_asset(archive: &Path, bin_dir: &Path) -> anyhow::Result<()> {
 }
 
 #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
-async fn extract_asset(_archive: &Path, _bin_dir: &Path) -> anyhow::Result<()> {
+async fn extract_asset(
+  _archive: &Path,
+  _bin_dir: &Path,
+  _wanted: &[&'static str],
+) -> anyhow::Result<()> {
   anyhow::bail!("unsupported platform for ffmpeg install")
 }
 
@@ -211,7 +245,6 @@ async fn extract_asset(_archive: &Path, _bin_dir: &Path) -> anyhow::Result<()> {
 fn extract_zip_flat(archive: &Path, bin_dir: &Path, wanted: &[&'static str]) -> anyhow::Result<()> {
   let file = std::fs::File::open(archive)?;
   let mut zip = zip::ZipArchive::new(file)?;
-  let mut found: Vec<&'static str> = Vec::new();
 
   for i in 0..zip.len() {
     let mut entry = zip.by_index(i)?;
@@ -233,14 +266,8 @@ fn extract_zip_flat(archive: &Path, bin_dir: &Path, wanted: &[&'static str]) -> 
     }
     let mut out = std::fs::File::create(&dest)?;
     std::io::copy(&mut entry, &mut out)?;
-    found.push(matched);
   }
 
-  for w in wanted {
-    if !found.iter().any(|f| f == w) {
-      anyhow::bail!("archive missing expected entry: {w}");
-    }
-  }
   Ok(())
 }
 
